@@ -1,0 +1,57 @@
+{
+  "name": "conda-assettoken",
+  "version": "0.1.0",
+  "description": "",
+  "main": "",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "./node_modules/.bin/truffle test",
+    "compile": "./node_modules/.bin/truffle compile",
+    "deploy": "./node_modules/.bin/truffle migrate",
+    "deploy-ropsten": "./node_modules/.bin/truffle migrate --network ropsten",
+    "deploy-mainnet": "./node_modules/.bin/truffle migrate --network mainnet",
+    "test-win": "./node_modules/.bin/truffle.cmd test",
+    "compile-win": "./node_modules/.bin/truffle.cmd compile",
+    "deploy-win": "./node_modules/.bin/truffle.cmd migrate",
+    "deploy-ropsten-win": "./node_modules/.bin/truffle.cmd migrate --network ropsten",
+    "deploy-mainnet-win": "./node_modules/.bin/truffle.cmd migrate --network mainnet",
+    "lint": "./node_modules/.bin/solium -d contracts",
+    "coverage": "concurrently --success first --names \"TestRPC,Coverage\" --kill-others \"./node_modules/.bin/testrpc-sc --port 8555\" \"./node_modules/.bin/solidity-coverage\"",
+    "docs:init": "./node_modules/.bin/doxity init",
+    "docs:compile": "./node_modules/.bin/doxity compile",
+    "docs:develop": "./node_modules/.bin/doxity develop",
+    "docs:publish": "./node_modules/.bin/doxity publish",
+    "docs:build": "./node_modules/.bin/doxity build"
+  },
+  "author": [
+    "Paul Pöltner <paul.poeltner@conda.at>",
+    "Johannes Mayer <johannes.mayer@conda.at>"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/conda-ag/conda-assettoken"
+  },
+  "homepage": "https://conda.online/",
+  "devDependencies": {
+    "@digix/doxity": "^0.5.2",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.26.0",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-stage-2": "^6.24.1",
+    "babel-preset-stage-3": "^6.24.1",
+    "babel-register": "^6.26.0",
+    "concurrently": "^3.5.1",
+    "solc": "^0.4.24",
+    "solidity-coverage": "^0.5.3",
+    "solium": "^1.1.7",
+    "truffle-hdwallet-provider": "0.0.5"
+  },
+  "dependencies": {
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7.1.1",
+    "zeppelin-solidity": "^1.9.0"
+  }
+}
