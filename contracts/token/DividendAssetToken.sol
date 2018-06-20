@@ -43,9 +43,7 @@ contract DividendAssetToken is BasicAssetToken {
 
     enum DividendType { Ether, ERC20 }
 
-    /// @dev `Dividend` is the structure that saves the status of a 
-    ///     dividend distribution
-
+    /** @dev `Dividend` is the structure that saves the status of a dividend distribution*/
     struct Dividend {
         uint256 blockNumber;
         uint256 timestamp;
@@ -83,7 +81,7 @@ contract DividendAssetToken is BasicAssetToken {
 // Dividend Payment for Ether
 ///////////////////
 
-    /// @notice Receives ether to be distriubted to all token owners
+    /** @dev Receives ether to be distriubted to all token owners*/
     function depositDividend() public payable onlyOwner {
 
         // gets the current number of total token distributed
@@ -113,7 +111,10 @@ contract DividendAssetToken is BasicAssetToken {
 // Dividend Payment for ERC20 Dividend
 ///////////////////
 
-    /// @notice Receives ether to be distriubted to all token owners
+    /** @dev Receives ether to be distriubted to all token owners
+      * @param _dividendToken Token address
+      * @param _amount The amount of tokens for deposit
+      */
     function depositERC20Dividend(address _dividendToken, uint256 _amount) public onlyOwner {
 
         require(_amount > 0);
@@ -149,8 +150,9 @@ contract DividendAssetToken is BasicAssetToken {
 // Claim dividends
 ///////////////////
 
-    /// @notice Token holder can claim the payout of dividends for a specific dividend payout
-    /// @param _dividendIndex the index of the specific dividend distribution
+    /** @dev Token holder can claim the payout of dividends for a specific dividend payout
+      * @param _dividendIndex the index of the specific dividend distribution
+      */
     function claimDividend(uint256 _dividendIndex) public validDividendIndex(_dividendIndex) {
         // Loads the details for the specific Dividend payment
         Dividend storage dividend = dividends[_dividendIndex];
@@ -189,8 +191,10 @@ contract DividendAssetToken is BasicAssetToken {
         }
     }
 
-
-    /// @notice Claim all dividiends
+    /** @dev Claim all dividiends
+      * @notice In case function call runs out of gas run single address calls against claimDividend function
+      * @param _dividendIndex The index of the specific dividend distribution
+      */
     function claimDividendAll() public { //todo: claimMultiple(address[]) instead of claimAll
         // The claim all function should only be executed once
         require(dividendsClaimed[msg.sender] < dividends.length);
@@ -204,8 +208,10 @@ contract DividendAssetToken is BasicAssetToken {
         }
     }
 
-    /// @notice Dividends which have not been claimed
-    /// @param _dividendIndex the index to be recycled
+    /** @dev Dividends which have not been claimed
+      * @notice In case function call runs out of gas run single address calls against claimDividend function
+      * @param _dividendIndex The index to be recycled
+      */
     function recycleDividend(uint256 _dividendIndex) public onlyOwner validDividendIndex(_dividendIndex) {
         
         // Get the dividend distribution
