@@ -101,28 +101,47 @@ contract BasicAssetToken is Ownable {
 ///////////////////
 // Set / Get Metadata
 ///////////////////
+
+    /** @dev Change the underlying base currency.
+      * @param _token Address of the token used as underlying base currency.
+      */
     function setBaseCurrency(address _token) public onlyOwner canMint {
         require(_token != address(0));
         
         baseCurrency = _token;
     }
 
+    /** @dev Defines the base conversion of number of tokens to the initial rate. For regulatory checks. 
+      * @param _baseRate Base conversion of number of tokens to the initial rate.
+      */
     function setBaseRate(uint256 _baseRate) public onlyOwner canMint {
         baseRate = _baseRate;
     }
 
+    /** @dev Set the name of the token.
+      * @param _name The name of the token.
+      */
     function setName(string _name) public onlyOwner canMint {
         name = _name;
     }
 
+    /** @dev Set the symbol of the token.
+      * @param _symbol The symbol of the token.
+      */
     function setSymbol(string _symbol) public onlyOwner canMint {
         symbol = _symbol;
     }
 
+    /** @dev Set the description of the token.
+      * @param _shortDescription The description of the token.
+      */
     function setShortDescription(string _shortDescription) public onlyOwner canMint {
         shortDescription = _shortDescription;
     }
 
+    /** @dev Set the address of the crowdsale contract.
+      * @param _crowdsale The address of the crowdsale.
+      */
     function setCrowdsaleAddress(address _crowdsale) public onlyOwner canMint {
         require(_crowdsale != address(0));
 
@@ -244,7 +263,6 @@ contract BasicAssetToken is Ownable {
     ///  From MonolithDAO Token.sol
     /// @param _spender The address which will spend the funds.
     ///  @param _addedValue The amount of tokens to increase the allowance by.
-
     function increaseApproval(address _spender, uint _addedValue) public returns (bool) {
         allowed[msg.sender][_spender] = allowed[msg.sender][_spender].add(_addedValue);
         emit Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
@@ -259,7 +277,6 @@ contract BasicAssetToken is Ownable {
     /// From MonolithDAO Token.sol
     /// @param _spender The address which will spend the funds.
     /// @param _subtractedValue The amount of tokens to decrease the allowance by.
-
     function decreaseApproval(address _spender, uint _subtractedValue) public returns (bool) {
         uint oldValue = allowed[msg.sender][_spender];
         if (_subtractedValue > oldValue) {
@@ -284,7 +301,6 @@ contract BasicAssetToken is Ownable {
     /// @param _to The address that will receive the minted tokens.
     /// @param _amount The amount of tokens to mint.
     /// @return A boolean that indicates if the operation was successful.
-
     function mint(address _to, uint256 _amount) public onlyOwner canMint returns (bool) {
         uint256 curTotalSupply = totalSupply();
 
@@ -316,6 +332,9 @@ contract BasicAssetToken is Ownable {
 // Burn - only during minting 
 ////////////////
 
+    /** @dev Burn someone's tokens (only allowed during minting phase). 
+      * @param _who Eth address of person who's tokens should be burned.
+      */
     function burn(address _who, uint256 _value) public canMint onlyOwner returns (bool) {
         uint256 curTotalSupply = totalSupply();
 
