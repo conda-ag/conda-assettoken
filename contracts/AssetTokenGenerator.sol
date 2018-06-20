@@ -27,7 +27,7 @@ contract AssetTokenGenerator {
 ////////////////
 
     /** @dev Generate a new AssetToken.
-      * @param return The token address of the generated token.
+      * @return The token address of the generated token.
       */
     function generateToken() public returns (address tokenAddress) {
         // create the company Token
@@ -40,7 +40,10 @@ contract AssetTokenGenerator {
     }
 
     /** @dev Generate a token with assigned attributes.
-      * @param return The token address of the generated token.
+      * @param _name The name of the token.
+      * @param _symbol The symbol of the token.
+      * @param _shortDescription The description of the token.
+      * @return The token address of the generated token.
       */
     function generateTokenWithAttributes(
         string _name, 
@@ -60,6 +63,9 @@ contract AssetTokenGenerator {
         return address(token);
     }
 
+    /** @dev Get the token addresses of the person executing the function.
+        @return The token addresses of the message sender.
+    */
     function getOwnTokens() public view returns (address[]) {
         return assetToken[msg.sender];
     }
