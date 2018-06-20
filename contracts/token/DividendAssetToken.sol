@@ -193,7 +193,6 @@ contract DividendAssetToken is BasicAssetToken {
 
     /** @dev Claim all dividiends
       * @notice In case function call runs out of gas run single address calls against claimDividend function
-      * @param _dividendIndex The index of the specific dividend distribution
       */
     function claimDividendAll() public { //todo: claimMultiple(address[]) instead of claimAll
         // The claim all function should only be executed once
