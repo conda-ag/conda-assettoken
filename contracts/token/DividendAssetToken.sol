@@ -38,7 +38,7 @@ contract DividendAssetToken is BasicAssetToken {
 // Variables
 ///////////////////
 
-    // `recycleLockedTimespan` devines the time, when the dividends will be recycled
+    /** @dev `recycleLockedTimespan` devines the time, when the dividends will be recycled*/
     uint256 public recycleLockedTimespan = 1 years;
 
     enum DividendType { Ether, ERC20 }
@@ -120,7 +120,7 @@ contract DividendAssetToken is BasicAssetToken {
         require(_amount > 0);
 
         if (!ERC20(_dividendToken).transferFrom(msg.sender, this, _amount)) {
-            revert();
+            revert(); // it shouldn't return anything but according to ERC20 standard it could if badly implemented
         }
 
         // gets the current number of total token distributed
