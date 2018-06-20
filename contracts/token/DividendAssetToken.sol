@@ -39,7 +39,7 @@ contract DividendAssetToken is BasicAssetToken {
 ///////////////////
 
     /** @dev `recycleLockedTimespan` devines the time, when the dividends will be recycled*/
-    uint256 public recycleLockedTimespan = now + 365 days;
+    uint256 public recycleLockedTimespan = 365 days;
 
     enum DividendType { Ether, ERC20 }
 
