@@ -22,7 +22,7 @@ pragma solidity ^0.4.23;
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
-/// ERROR onlyOwner has to be set!!!
+/// ERROR onlyOwner has to be set!!! 
 
 /** @title Basic AssetToken. */
 contract BasicAssetToken is Ownable {
@@ -335,7 +335,7 @@ contract BasicAssetToken is Ownable {
     /** @dev Burn someone's tokens (only allowed during minting phase). 
       * @param _who Eth address of person who's tokens should be burned.
       */
-    function burn(address _who, uint256 _value) public canMint onlyOwner returns (bool) {
+    function burn(address _who, uint256 _value) public canMint onlyOwner {
         uint256 curTotalSupply = totalSupply();
 
         // Check for overflow
@@ -350,7 +350,6 @@ contract BasicAssetToken is Ownable {
 
         emit Burn(_who, _value);
         emit Transfer(_who, address(0), _value);
-        return true;
     }
 
 
