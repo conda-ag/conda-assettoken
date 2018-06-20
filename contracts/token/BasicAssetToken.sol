@@ -22,14 +22,15 @@ pragma solidity ^0.4.23;
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
-/// @title This contract includes the basic asset token features
-/// @author Paul Pöltner / CONDA (paul.poeltner@conda.at)
-
-
 /// ERROR onlyOwner has to be set!!!
 
 /** @title Basic AssetToken. */
 contract BasicAssetToken is Ownable {
+    /*
+    * @title This contract includes the basic AssetToken features
+    * @author Paul Pöltner / Conda
+    * @dev CRWDAssetToken inherits from DividendAssetToken which inherits from BasicAssetToken
+    */
 
     using SafeMath for uint256;
 

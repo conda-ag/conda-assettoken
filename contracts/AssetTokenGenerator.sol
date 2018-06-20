@@ -4,7 +4,12 @@ import "./token/BasicAssetToken.sol";
 
 /** @title AssetToken generator. */
 contract AssetTokenGenerator {
-
+    /*
+    * @title This contract can create project specific Crwd AssetToken
+    * @author Paul Pöltner / Conda
+    * @dev CRWDAssetToken inherits from DividendAssetToken which inherits from BasicAssetToken
+    */
+    
 ///////////////////
 // Variables
 ///////////////////

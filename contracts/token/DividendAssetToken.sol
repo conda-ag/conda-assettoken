@@ -26,6 +26,12 @@ import "zeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 
 /** @title Dividend AssetToken. */
 contract DividendAssetToken is BasicAssetToken {
+    /*
+    * @title This contract includes the dividend AssetToken features
+    * @author Paul Pöltner / Conda
+    * @dev CRWDAssetToken inherits from DividendAssetToken which inherits from BasicAssetToken
+    */
+
     using SafeMath for uint256;
 
 ///////////////////
