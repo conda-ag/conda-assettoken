@@ -3,6 +3,7 @@ pragma solidity ^0.4.23;
 import "./token/DividendAssetToken.sol";
 import "./interfaces/ICRWDClearing.sol";
 
+/** @title CRWD AssetToken. */
 contract CRWDAssetToken is DividendAssetToken {
 
     address public clearingAddress;

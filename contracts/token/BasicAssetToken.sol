@@ -28,6 +28,7 @@ import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 /// ERROR onlyOwner has to be set!!!
 
+/** @title Basic AssetToken. */
 contract BasicAssetToken is Ownable {
 
     using SafeMath for uint256;

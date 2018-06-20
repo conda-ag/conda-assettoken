@@ -2,7 +2,7 @@ pragma solidity ^0.4.23;
 
 import "./token/BasicAssetToken.sol";
 
-
+/** @title AssetToken generator. */
 contract AssetTokenGenerator {
 
 ///////////////////
