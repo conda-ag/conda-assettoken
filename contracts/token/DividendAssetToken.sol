@@ -208,7 +208,6 @@ contract DividendAssetToken is BasicAssetToken {
     }
 
     /** @dev Dividends which have not been claimed
-      * @notice In case function call runs out of gas run single address calls against claimDividend function
       * @param _dividendIndex The index to be recycled
       */
     function recycleDividend(uint256 _dividendIndex) public onlyOwner validDividendIndex(_dividendIndex) {
