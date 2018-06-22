@@ -119,9 +119,10 @@ contract DividendAssetToken is BasicAssetToken {
 
         require(_amount > 0);
 
-        if (!ERC20(_dividendToken).transferFrom(msg.sender, this, _amount)) {
-            revert(); // it shouldn't return anything but according to ERC20 standard it could if badly implemented
-        }
+        require(_dividendToken == baseCurrency);
+
+        // it shouldn't return anything but according to ERC20 standard it could if badly implemented
+        require(ERC20(_dividendToken).transferFrom(msg.sender, this, _amount));
 
         // gets the current number of total token distributed
         uint256 currentSupply = totalSupplyAt(block.number);
@@ -182,9 +183,7 @@ contract DividendAssetToken is BasicAssetToken {
             } 
 
             if (dividend.dividendType == DividendType.ERC20) { 
-                if (!ERC20(dividend.dividendToken).transfer(msg.sender, claim)) {
-                    revert();
-                }
+                require(ERC20(dividend.dividendToken).transfer(msg.sender, claim));
 
                 emit DividendClaimed(msg.sender, _dividendIndex, claim);
             }     

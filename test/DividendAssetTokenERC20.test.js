@@ -7,7 +7,7 @@ const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 const DividendAssetToken = artifacts.require('DividendAssetToken.sol');
 const ERC20TestToken = artifacts.require('ERC20TestToken.sol');
-const ERC20TestTokenRetFalse = artifacts.require('ERC20TestTokenRetFalse.sol');
+const ERC20TestTokenRetFalse = artifacts.require('ERC20TestTokenRetValueSimulator.sol');
 
 require('chai')
   .use(require('chai-as-promised'))
@@ -27,18 +27,17 @@ contract('DividendAssetToken', function (accounts) {
     let buyerB = accounts[2];
     let buyerC = accounts[3];
     let buyerD = accounts[4];
-
     
-  
     before(async function () {
         token = await DividendAssetToken.new();
         erc20 = await ERC20TestToken.new();
         erc20RetFalse = await ERC20TestTokenRetFalse.new();
         
+        await token.setBaseCurrency(erc20.address);
+
         await token.mint(buyerA, 100);
         await token.mint(buyerB, 300);
         await token.mint(buyerD, 400);
-
     });
 
     describe('validating deposit ERC20Token', function () {
@@ -56,6 +55,12 @@ contract('DividendAssetToken', function (accounts) {
         });
 
         it('depositing dividend token returning false on transfer reverts', async function () {
+            await erc20RetFalse.setReturnValue(false);
+            await token.depositERC20Dividend(erc20RetFalse.address, ONEETHER, {from: accounts[0] }).should.be.rejectedWith(EVMRevert);
+        });
+
+        it('depositing other than baseCurrency reverts', async function () {
+            await erc20RetFalse.setReturnValue(true);
             await token.depositERC20Dividend(erc20RetFalse.address, ONEETHER, {from: accounts[0] }).should.be.rejectedWith(EVMRevert);
         });
     });
