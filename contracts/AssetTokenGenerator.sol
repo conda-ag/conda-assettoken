@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import "./token/BasicAssetToken.sol";
+import "./CRWDAssetToken.sol";
 
 /** @title AssetToken generator. */
 contract AssetTokenGenerator {
@@ -31,7 +31,7 @@ contract AssetTokenGenerator {
       */
     function generateToken() public returns (address tokenAddress) {
         // create the company Token
-        BasicAssetToken token = new BasicAssetToken();
+        BasicAssetToken token = new CRWDAssetToken();
         token.transferOwnership(msg.sender);
         assetToken[msg.sender].push(address(token));
         emit TokenCreated(token, msg.sender);
@@ -52,7 +52,7 @@ contract AssetTokenGenerator {
         public returns (address tokenAddress) 
     {
         // create the company Token
-        BasicAssetToken token = new BasicAssetToken();
+        CRWDAssetToken token = new CRWDAssetToken();
         token.setName(_name);
         token.setSymbol(_symbol);
         token.setShortDescription(_shortDescription);
