@@ -360,6 +360,17 @@ contract BasicAssetToken is Ownable {
     /// @param _blockNumber The block number when the balance is queried
     /// @return The balance at `_blockNumber`
     function balanceOfAt(address _owner, uint _blockNumber) public view returns (uint256) {
+        Checkpoint[] storage checkpoints = balances[_owner];
+        //  requested before a check point was ever created for this token
+        if (checkpoints.length == 0 || checkpoints[0].fromBlock > _blockNumber) {
+            return 0;
+        }
+
+        // Shortcut for the actual value
+        if (_blockNumber >= checkpoints[checkpoints.length-1].fromBlock) {
+            return checkpoints[checkpoints.length-1].value;
+        }
+
         return getValueAt(balances[_owner], _blockNumber);
     }
 
@@ -367,6 +378,16 @@ contract BasicAssetToken is Ownable {
     /// @param _blockNumber The block number when the totalSupply is queried
     /// @return The total amount of tokens at `_blockNumber`
     function totalSupplyAt(uint _blockNumber) public view returns(uint) {
+        //  requested before a check point was ever created for this token
+        if (totalSupplyHistory.length == 0 || totalSupplyHistory[0].fromBlock > _blockNumber) {
+            return 0;
+        }
+
+        // Shortcut for the actual value
+        if (_blockNumber >= totalSupplyHistory[totalSupplyHistory.length-1].fromBlock) {
+            return totalSupplyHistory[totalSupplyHistory.length-1].value;
+        }
+
         return getValueAt(totalSupplyHistory, _blockNumber);
     }
 
@@ -389,16 +410,6 @@ contract BasicAssetToken is Ownable {
     /// @param _block The block number to retrieve the value at
     /// @return The number of tokens being queried
     function getValueAt(Checkpoint[] storage checkpoints, uint _block) view private returns (uint) {
-        //  requested before a check point was ever created for this token
-        if (checkpoints.length == 0 || checkpoints[0].fromBlock > _block) {
-            return 0;
-        }
-
-        // Shortcut for the actual value
-        if (_block >= checkpoints[checkpoints.length-1].fromBlock) {
-            return checkpoints[checkpoints.length-1].value;
-        }
-
         // Binary search of the value in the array
         uint min = 0;
         uint max = checkpoints.length-1;
