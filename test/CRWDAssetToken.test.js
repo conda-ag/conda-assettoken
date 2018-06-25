@@ -27,7 +27,7 @@ contract('CRWDAssetToken', function (accounts) {
         await token.setClearingAddress(await clearing.address);
     });
 
-    describe('validating mint', function () {
+    contract('validating mint', function () {
         it('totalSupply should be 100', async function () {
             await token.mint(buyerA, 100);
 
@@ -50,8 +50,8 @@ contract('CRWDAssetToken', function (accounts) {
 
     });
 
-    describe('validating mint with company fee', function () {
-        before(async function () {
+    contract('validating mint with company fee', function () {
+        beforeEach(async function () {
             await clearing.setFee(crwdToken.address, 10, 0, condaAccount, companyAccount);
             await crwdToken.mint(companyAccount, 1);
             await crwdToken.approve(clearing.address, 1, { from: companyAccount });
@@ -79,7 +79,7 @@ contract('CRWDAssetToken', function (accounts) {
 
     });
 
-    describe('validating burn', function () {
+    contract('validating burn', function () {
 
         it('should return correct balances after burn ', async function () {
             await token.mint(buyerA, 100);
@@ -100,7 +100,7 @@ contract('CRWDAssetToken', function (accounts) {
 
     });
 
-    describe('validating transfer', function () {
+    contract('validating transfer', function () {
         it('should return correct balances after transfer', async function () {
             await token.mint(buyerA, 100);
 
@@ -127,7 +127,7 @@ contract('CRWDAssetToken', function (accounts) {
         });
     });
 
-    describe('validating transferFrom', function () {
+    contract('validating transferFrom', function () {
         it('should return the correct allowance amount after approval', async function () {
             await token.mint(buyerA, 100);
             await token.approve(buyerB, 100, { from: buyerA });

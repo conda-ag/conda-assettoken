@@ -9,7 +9,7 @@ contract('AssetTokenGenerator', function (accounts) {
         token = await AssetTokenGenerator.new();
     });
 
-    describe('validating token generation', function () {
+    contract('validating token generation', function () {
         it('no tokens in the beginning', async function () {
             let tokensOfUser = await token.getOwnTokens();
     

@@ -24,7 +24,7 @@ contract('BasicAssetToken', function (accounts) {
         assert.equal(await token.totalSupply(), 0);
     });
 
-    describe('validating setting of crowdsale address', function () {
+    contract('validating setting of crowdsale address', function () {
         it('address 0x0 is reverted', async function () {
             await token.setCrowdsaleAddress(ZERO_ADDRESS).should.be.rejectedWith(EVMRevert);
         });
@@ -39,7 +39,7 @@ contract('BasicAssetToken', function (accounts) {
         });
     });
 
-    describe('validating totalSupply', function () {
+    contract('validating totalSupply', function () {
         it('0 totalSupply in the beginning', async function () {
             let totalSupply = await token.totalSupply();
     
@@ -64,7 +64,7 @@ contract('BasicAssetToken', function (accounts) {
         });
     });
 
-    describe('validating mint', function () {
+    contract('validating mint', function () {
         it('instant call of balances ', async function () {      
             let firstAccountBalance = await token.balanceOf(buyerA);
             assert.equal(firstAccountBalance, 0);
@@ -85,7 +85,7 @@ contract('BasicAssetToken', function (accounts) {
 
     });
 
-    describe('validating burn', function () {
+    contract('validating burn', function () {
 
         it('should return correct balances after burn ', async function () {
             await token.mint(buyerA, 100);
@@ -110,7 +110,7 @@ contract('BasicAssetToken', function (accounts) {
         });
     });
 
-    describe('validating transfer', function () {
+    contract('validating transfer', function () {
         it('should return correct balances after transfer', async function () {
             await token.mint(buyerA, 100);
 
@@ -145,7 +145,7 @@ contract('BasicAssetToken', function (accounts) {
         });
     });
 
-    describe('validating approve and allowance', function () {
+    contract('validating approve and allowance', function () {
         it('should return the correct allowance amount after approval', async function () {
             await token.mint(buyerA, 100);
             await token.approve(buyerB, 100, { from: buyerA });
@@ -155,7 +155,7 @@ contract('BasicAssetToken', function (accounts) {
         });
     });
 
-    describe('validating transferFrom', function () {
+    contract('validating transferFrom', function () {
         it('should return correct balances after transfering from another account', async function () {
             await token.mint(buyerA, 100);
 
@@ -225,7 +225,7 @@ contract('BasicAssetToken', function (accounts) {
         });
     });
 
-    describe('validating allowance', function () {
+    contract('validating allowance', function () {
         it('should start with zero', async function () {
             await token.mint(buyerA, 100);
             
@@ -234,7 +234,7 @@ contract('BasicAssetToken', function (accounts) {
         });
     });
 
-    describe('validating increaseApproval', function () {
+    contract('validating increaseApproval', function () {
 
         it('should increase by 50', async function () {
             await token.mint(buyerA, 100);
@@ -245,7 +245,7 @@ contract('BasicAssetToken', function (accounts) {
         });
     });
 
-    describe('validating decreaseApproval', function () {
+    contract('validating decreaseApproval', function () {
         it('should increase by 50 then decrease by 10', async function () {
             await token.mint(buyerA, 100);
 
@@ -269,7 +269,7 @@ contract('BasicAssetToken', function (accounts) {
         });
     });
 
-    describe('validating setName', function () {
+    contract('validating setName', function () {
         it('owner can change name when canMint not finished', async function () {
             await token.setName("changed name");
             assert.equal(await token.name.call(), "changed name");
@@ -286,7 +286,7 @@ contract('BasicAssetToken', function (accounts) {
         });
     });
 
-    describe('validating setSymbol', function () {
+    contract('validating setSymbol', function () {
         it('owner can change symbol when canMint not finished', async function () {
             await token.setSymbol("SYM");
             assert.equal(await token.symbol.call(), "SYM");
@@ -303,7 +303,7 @@ contract('BasicAssetToken', function (accounts) {
         });
     });
 
-    describe('validating setShortDescription', function () {
+    contract('validating setShortDescription', function () {
         it('owner can change description when canMint not finished', async function () {
             await token.setShortDescription("My short description from test.");
             assert.equal(await token.shortDescription.call(), "My short description from test.");
@@ -320,7 +320,7 @@ contract('BasicAssetToken', function (accounts) {
         });
     });
 
-    describe('validating setBaseRate', function () {
+    contract('validating setBaseRate', function () {
         it('owner can change setBaseRate when canMint not finished', async function () {
             await token.setBaseRate(3, { from: owner });
             assert.equal(await token.baseRate.call(), 3);
@@ -337,7 +337,7 @@ contract('BasicAssetToken', function (accounts) {
         });
     });
 
-    describe('validating setBaseCurrency', function () {
+    contract('validating setBaseCurrency', function () {
         it('owner can change setBaseCurrency when canMint not finished', async function () {
             let erc20TestToken = await ERC20TestToken.new();
             
@@ -365,7 +365,7 @@ contract('BasicAssetToken', function (accounts) {
         });
     });
 
-    describe('validating balanceOfAt', function () {
+    contract('validating balanceOfAt', function () {
         it('buyerA has 100 after minting 100 ', async function () {
             await token.mint(buyerA, 100);
 
@@ -460,7 +460,7 @@ contract('BasicAssetToken', function (accounts) {
         });
     });*/
 
-    describe('validating totalSupplyAt', function () {
+    contract('validating totalSupplyAt', function () {
         it('totalSupplyAt after first mint block number 0 returns zero', async function () {
             await token.mint(buyerA, 100);
 
@@ -496,9 +496,5 @@ contract('BasicAssetToken', function (accounts) {
 
             assert.equal(await token.totalSupplyAt(blockNumberBeforeSend+1), 10);
         });
-    });
-
-    describe('validating ', function(){
-
     });
 });

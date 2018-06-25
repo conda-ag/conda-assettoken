@@ -64,7 +64,7 @@ contract('DividendAssetToken', function (accounts) {
         await token.claimDividendAll({from: buyerE, gasPrice: gasPrice});
     }
 
-    describe('validating claim', function () {
+    contract('validating claim', function () {
         it('buyer A should claim 0.1 of dividend', async function () {
             let beforeBalanceOne = await web3.eth.getBalance(buyerA);
             let txId1 = await claimDividendA();
@@ -100,7 +100,7 @@ contract('DividendAssetToken', function (accounts) {
         });
     });
 
-    describe('validating recycle', function () {
+    contract('validating recycle', function () {
         it('Add a new token balance for account C', async function () {
             await token.mint(buyerC, 800);
             const balance = await token.balanceOf(buyerC);
@@ -112,10 +112,6 @@ contract('DividendAssetToken', function (accounts) {
         });
 
         it('Recycle remainder of dividend distribution 0', async function () {
-            //let nowTime = latestTime();
-            //let startTime = latestTime() + time.duration.days(365);
-            //await time.increaseTimeTo(startTime);
-
             await timeTravel(SECONDS_IN_A_YEAR); //1 year time lock passes
 
             await token.recycleDividend(0, {from: owner});
@@ -165,7 +161,7 @@ contract('DividendAssetToken', function (accounts) {
             const gasCostTxIdD = 0; //txIdD.receipt.gasUsed * gasPrice;
             const gasCostTxIdE = txIdE.receipt.gasUsed * gasPrice;
 
-            //Balances for recycled dividend 1 are 100, 250, 500, 150, total = 1000, recycled dividend is 0.5 ETH
+            //Balances for recycled dividend 1 are 100, 250, 500, 150, total = 1000, recycled dividend is 50% of total
             assert.equal(beforeBalanceA.add((100 / 1000) * (ONEETHER / 2)).sub(gasCostTxIdA).toNumber(), afterBalanceA.toNumber(), "buyer A should claim dividend");
             assert.equal(beforeBalanceB.add((250 / 1000) * (ONEETHER / 2)).sub(gasCostTxIdB).toNumber(), afterBalanceB.toNumber(), "buyer B should claim dividend");
             assert.equal(beforeBalanceC.add(0).sub(gasCostTxIdC).toNumber(), afterBalanceC.toNumber(), "buyer C should claim dividend");
