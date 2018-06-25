@@ -11,11 +11,11 @@ contract ERC20TestTokenRetValueSimulator is MintableToken {
 
     bool returnValue = false;
 
-    function transfer(address _to, uint256 _value) public returns (bool) {
+    function transfer(address /*_to*/, uint256 /*_value*/) public returns (bool) {
         return returnValue;
     }
 
-    function transferFrom(address from, address to, uint256 value) public returns (bool) {
+    function transferFrom(address /*from*/, address /*to*/, uint256 /*value*/) public returns (bool) {
         return returnValue;
     }
 
