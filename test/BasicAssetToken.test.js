@@ -1,500 +1,500 @@
-let EVMRevert = require('zeppelin-solidity/test/helpers/assertRevert');
+let EVMRevert = require('zeppelin-solidity/test/helpers/assertRevert')
 
-const BasicAssetToken = artifacts.require('BasicAssetToken.sol');
-const ERC20TestToken = artifacts.require('ERC20TestToken.sol');
+const BasicAssetToken = artifacts.require('BasicAssetToken.sol')
+const ERC20TestToken = artifacts.require('ERC20TestToken.sol')
 
-const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 require('chai')
   .use(require('chai-as-promised'))
-  .should();
+  .should()
 
 contract('BasicAssetToken', function (accounts) {
-    let token = null;
-    let owner = null;
+    let token = null
+    let owner = null
 
-    const buyerA = accounts[1];
-    const buyerB = accounts[2];
-    const buyerC = accounts[3];
+    const buyerA = accounts[1]
+    const buyerB = accounts[2]
+    const buyerC = accounts[3]
   
     beforeEach(async function () {
-        token = await BasicAssetToken.new();
-        owner = await token.owner();
-        owner.should.not.eq(ZERO_ADDRESS);
-        assert.equal(await token.totalSupply(), 0);
-    });
+        token = await BasicAssetToken.new()
+        owner = await token.owner()
+        owner.should.not.eq(ZERO_ADDRESS)
+        assert.equal(await token.totalSupply(), 0)
+    })
 
     contract('validating setting of crowdsale address', function () {
         it('address 0x0 is reverted', async function () {
-            await token.setCrowdsaleAddress(ZERO_ADDRESS).should.be.rejectedWith(EVMRevert);
-        });
+            await token.setCrowdsaleAddress(ZERO_ADDRESS).should.be.rejectedWith(EVMRevert)
+        })
 
         it('can set erc20 address as crowdsale address', async function () {
-            let anyErc20Token = await ERC20TestToken.new();
+            let anyErc20Token = await ERC20TestToken.new()
 
-            await token.setCrowdsaleAddress(anyErc20Token.address);
+            await token.setCrowdsaleAddress(anyErc20Token.address)
 
-            assert.notEqual(anyErc20Token.address, ZERO_ADDRESS);
-            assert.equal(await token.crowdsale.call(), anyErc20Token.address);
-        });
-    });
+            assert.notEqual(anyErc20Token.address, ZERO_ADDRESS)
+            assert.equal(await token.crowdsale.call(), anyErc20Token.address)
+        })
+    })
 
     contract('validating totalSupply', function () {
         it('0 totalSupply in the beginning', async function () {
-            let totalSupply = await token.totalSupply();
+            let totalSupply = await token.totalSupply()
     
-            assert.equal(totalSupply, 0);
-        });
+            assert.equal(totalSupply, 0)
+        })
 
         it('when A mints 100 totalSupply should be 100', async function () {
-            await token.mint(buyerA, 100);
+            await token.mint(buyerA, 100)
 
-            let totalSupply = await token.totalSupply();
+            let totalSupply = await token.totalSupply()
     
-            assert.equal(totalSupply, 100);
-        });
+            assert.equal(totalSupply, 100)
+        })
 
         it('when A and B both mint 100 totalSupply should be 200', async function () {
-            await token.mint(buyerA, 100);
-            await token.mint(buyerB, 100);
+            await token.mint(buyerA, 100)
+            await token.mint(buyerB, 100)
 
-            let totalSupply = await token.totalSupply();
+            let totalSupply = await token.totalSupply()
     
-            assert.equal(totalSupply, 200);
-        });
-    });
+            assert.equal(totalSupply, 200)
+        })
+    })
 
     contract('validating mint', function () {
         it('instant call of balances ', async function () {      
-            let firstAccountBalance = await token.balanceOf(buyerA);
-            assert.equal(firstAccountBalance, 0);
-        });
+            let firstAccountBalance = await token.balanceOf(buyerA)
+            assert.equal(firstAccountBalance, 0)
+        })
 
         it('should return correct balances after mint ', async function () {
-            await token.mint(buyerA, 100);
-            await token.mint(buyerA, 100);
+            await token.mint(buyerA, 100)
+            await token.mint(buyerA, 100)
       
-            let firstAccountBalance = await token.balanceOf(buyerA);
-            assert.equal(firstAccountBalance, 200);
-        });
+            let firstAccountBalance = await token.balanceOf(buyerA)
+            assert.equal(firstAccountBalance, 200)
+        })
 
         it('should throw an error when trying to mint but finished minting', async function () {
-            await token.finishMinting();
-            await token.mint(buyerA, 100).should.be.rejectedWith(EVMRevert);
-        });
+            await token.finishMinting()
+            await token.mint(buyerA, 100).should.be.rejectedWith(EVMRevert)
+        })
 
-    });
+    })
 
     contract('validating burn', function () {
 
         it('should return correct balances after burn ', async function () {
-            await token.mint(buyerA, 100);
-            await token.burn(buyerA, 100);
+            await token.mint(buyerA, 100)
+            await token.burn(buyerA, 100)
       
-            let firstAccountBalance = await token.balanceOf(buyerA);
-            assert.equal(firstAccountBalance, 0);
+            let firstAccountBalance = await token.balanceOf(buyerA)
+            assert.equal(firstAccountBalance, 0)
 
-            let totalSupply = await token.totalSupply();
-            assert.equal(totalSupply, 0);
-        });
+            let totalSupply = await token.totalSupply()
+            assert.equal(totalSupply, 0)
+        })
 
         it('burn should throw an error after finishing mint', async function () {
-            await token.mint(buyerA, 100);
-            await token.finishMinting();
-            await token.burn(buyerA, 100).should.be.rejectedWith(EVMRevert);
-        });
+            await token.mint(buyerA, 100)
+            await token.finishMinting()
+            await token.burn(buyerA, 100).should.be.rejectedWith(EVMRevert)
+        })
 
         it('only owner can burn', async function () {
-            await token.mint(buyerA, 100);
-            await token.burn(buyerA, 100, {'from': buyerA}).should.be.rejectedWith(EVMRevert);
-        });
-    });
+            await token.mint(buyerA, 100)
+            await token.burn(buyerA, 100, {'from': buyerA}).should.be.rejectedWith(EVMRevert)
+        })
+    })
 
     contract('validating transfer', function () {
         it('should return correct balances after transfer', async function () {
-            await token.mint(buyerA, 100);
+            await token.mint(buyerA, 100)
 
-            let startAccountBalance = await token.balanceOf(buyerA);
-            assert.equal(startAccountBalance, 100);
+            let startAccountBalance = await token.balanceOf(buyerA)
+            assert.equal(startAccountBalance, 100)
 
-            await token.transfer(buyerB, 100, { from: buyerA });
+            await token.transfer(buyerB, 100, { from: buyerA })
 
-            let firstAccountBalance = await token.balanceOf(buyerA);
-            assert.equal(firstAccountBalance, 0);
+            let firstAccountBalance = await token.balanceOf(buyerA)
+            assert.equal(firstAccountBalance, 0)
 
-            let secondAccountBalance = await token.balanceOf(buyerB);
-            assert.equal(secondAccountBalance, 100);
-        });
+            let secondAccountBalance = await token.balanceOf(buyerB)
+            assert.equal(secondAccountBalance, 100)
+        })
 
         it('should throw an error when trying to transfer more than balance', async function () {
-            await token.mint(buyerA, 100);
-            await token.transfer(buyerB, 101).should.be.rejectedWith(EVMRevert);
-        });
+            await token.mint(buyerA, 100)
+            await token.transfer(buyerB, 101).should.be.rejectedWith(EVMRevert)
+        })
 
         it('should throw an error when trying to transfer to 0x0', async function () {
-            await token.mint(buyerA, 100);
-            await token.transfer(0x0, 100).should.be.rejectedWith(EVMRevert);
-        });
+            await token.mint(buyerA, 100)
+            await token.transfer(0x0, 100).should.be.rejectedWith(EVMRevert)
+        })
 
         it('should throw when trying to transfer but transfer is disabled', async function () {
-            await token.mint(buyerA, 100);
-            await token.enableTransfers(false);
-            assert.equal(await token.balanceOf(buyerA), 100);
+            await token.mint(buyerA, 100)
+            await token.enableTransfers(false)
+            assert.equal(await token.balanceOf(buyerA), 100)
 
-            await token.transfer(buyerB, 100, { from: buyerA }).should.be.rejectedWith(EVMRevert);
-        });
-    });
+            await token.transfer(buyerB, 100, { from: buyerA }).should.be.rejectedWith(EVMRevert)
+        })
+    })
 
     contract('validating approve and allowance', function () {
         it('should return the correct allowance amount after approval', async function () {
-            await token.mint(buyerA, 100);
-            await token.approve(buyerB, 100, { from: buyerA });
-            let allowance = await token.allowance(buyerA, buyerB);
+            await token.mint(buyerA, 100)
+            await token.approve(buyerB, 100, { from: buyerA })
+            let allowance = await token.allowance(buyerA, buyerB)
 
-            assert.equal(allowance, 100);
-        });
-    });
+            assert.equal(allowance, 100)
+        })
+    })
 
     contract('validating transferFrom', function () {
         it('should return correct balances after transfering from another account', async function () {
-            await token.mint(buyerA, 100);
+            await token.mint(buyerA, 100)
 
-            await token.approve(buyerB, 100, { from: buyerA });
-            await token.transferFrom(buyerA, buyerC, 100, { from: buyerB });
+            await token.approve(buyerB, 100, { from: buyerA })
+            await token.transferFrom(buyerA, buyerC, 100, { from: buyerB })
 
-            let balance0 = await token.balanceOf(buyerA);
-            assert.equal(balance0, 0);
+            let balance0 = await token.balanceOf(buyerA)
+            assert.equal(balance0, 0)
 
-            let balance1 = await token.balanceOf(buyerC);
-            assert.equal(balance1, 100);
+            let balance1 = await token.balanceOf(buyerC)
+            assert.equal(balance1, 100)
 
-            let balance2 = await token.balanceOf(buyerB);
-            assert.equal(balance2, 0);
-        });
+            let balance2 = await token.balanceOf(buyerB)
+            assert.equal(balance2, 0)
+        })
 
         it('should throw an error when trying to transfer more than allowed', async function () {
-            await token.mint(buyerA, 100);
+            await token.mint(buyerA, 100)
 
-            await token.approve(buyerB, 99 , { from: buyerA });
-            await token.transferFrom(buyerA, buyerB, 100, { from: buyerB }).should.be.rejectedWith(EVMRevert);
-        });
+            await token.approve(buyerB, 99 , { from: buyerA })
+            await token.transferFrom(buyerA, buyerB, 100, { from: buyerB }).should.be.rejectedWith(EVMRevert)
+        })
 
         it('should throw an error when trying to transferFrom more than _from has', async function () {
-            await token.mint(buyerA, 100);
+            await token.mint(buyerA, 100)
 
-            let balance0 = await token.balanceOf(buyerA);
-            await token.approve(buyerB, 99, { from: buyerA });
-            await token.transferFrom(buyerA, buyerC, balance0 + 1, { from: buyerB }).should.be.rejectedWith(EVMRevert);
-        });
+            let balance0 = await token.balanceOf(buyerA)
+            await token.approve(buyerB, 99, { from: buyerA })
+            await token.transferFrom(buyerA, buyerC, balance0 + 1, { from: buyerB }).should.be.rejectedWith(EVMRevert)
+        })
 
         it('should increase by 50 then set to 0 when decreasing by more than 50', async function () {
-            await token.mint(buyerA, 100);
+            await token.mint(buyerA, 100)
 
-            await token.approve(buyerB, 50, { from: buyerA });
-            await token.decreaseApproval(buyerB, 60 , { from: buyerA });
-            let postDecrease = await token.allowance(buyerA, buyerB);
-            assert.equal(postDecrease, 0);
-        });
+            await token.approve(buyerB, 50, { from: buyerA })
+            await token.decreaseApproval(buyerB, 60 , { from: buyerA })
+            let postDecrease = await token.allowance(buyerA, buyerB)
+            assert.equal(postDecrease, 0)
+        })
         
         it('should throw an error when trying to transferFrom to 0x0', async function () {
-            await token.mint(buyerA, 100);
+            await token.mint(buyerA, 100)
 
-            await token.approve(buyerB, 100, { from: buyerA });
-            await token.transferFrom(buyerA, 0x0, 100, { from: buyerB }).should.be.rejectedWith(EVMRevert);
-        });
+            await token.approve(buyerB, 100, { from: buyerA })
+            await token.transferFrom(buyerA, 0x0, 100, { from: buyerB }).should.be.rejectedWith(EVMRevert)
+        })
 
         it('should throw when trying to approve but transfer disabled', async function () {
-            await token.mint(buyerA, 100);
+            await token.mint(buyerA, 100)
 
-            await token.enableTransfers(false);
+            await token.enableTransfers(false)
 
-            assert.equal(await token.balanceOf(buyerA), 100);
-            await token.approve(buyerB, 100, { from: buyerA }).should.be.rejectedWith(EVMRevert);
-        });
+            assert.equal(await token.balanceOf(buyerA), 100)
+            await token.approve(buyerB, 100, { from: buyerA }).should.be.rejectedWith(EVMRevert)
+        })
 
         it('should throw when trying to transferFrom but transfer disabled', async function () {
-            await token.mint(buyerA, 100);
+            await token.mint(buyerA, 100)
 
-            assert.equal(await token.balanceOf(buyerA), 100);
-            await token.approve(buyerB, 100, { from: buyerA });
-            assert.equal(await token.allowance(buyerA, buyerB), 100);
+            assert.equal(await token.balanceOf(buyerA), 100)
+            await token.approve(buyerB, 100, { from: buyerA })
+            assert.equal(await token.allowance(buyerA, buyerB), 100)
 
-            await token.enableTransfers(false);
+            await token.enableTransfers(false)
 
-            await token.transferFrom(buyerA, buyerC, 100, { from: buyerB }).should.be.rejectedWith(EVMRevert);
-        });
-    });
+            await token.transferFrom(buyerA, buyerC, 100, { from: buyerB }).should.be.rejectedWith(EVMRevert)
+        })
+    })
 
     contract('validating allowance', function () {
         it('should start with zero', async function () {
-            await token.mint(buyerA, 100);
+            await token.mint(buyerA, 100)
             
-            let preApproved = await token.allowance(buyerA, buyerB);
-            assert.equal(preApproved, 0);
-        });
-    });
+            let preApproved = await token.allowance(buyerA, buyerB)
+            assert.equal(preApproved, 0)
+        })
+    })
 
     contract('validating increaseApproval', function () {
 
         it('should increase by 50', async function () {
-            await token.mint(buyerA, 100);
+            await token.mint(buyerA, 100)
 
-            await token.increaseApproval(buyerB, 50, { from: buyerA });
-            let postIncrease = await token.allowance(buyerA, buyerB);
-            assert.equal(postIncrease, 50);
-        });
-    });
+            await token.increaseApproval(buyerB, 50, { from: buyerA })
+            let postIncrease = await token.allowance(buyerA, buyerB)
+            assert.equal(postIncrease, 50)
+        })
+    })
 
     contract('validating decreaseApproval', function () {
         it('should increase by 50 then decrease by 10', async function () {
-            await token.mint(buyerA, 100);
+            await token.mint(buyerA, 100)
 
-            await token.increaseApproval(buyerB, 50, { from: buyerA });
-            let postIncrease = await token.allowance(buyerA, buyerB);
-            assert.equal(postIncrease, 50);
-            await token.decreaseApproval(buyerB, 10, { from: buyerA });
-            let postDecrease = await token.allowance(buyerA, buyerB);
-            assert.equal(postDecrease, 40);
-        });
+            await token.increaseApproval(buyerB, 50, { from: buyerA })
+            let postIncrease = await token.allowance(buyerA, buyerB)
+            assert.equal(postIncrease, 50)
+            await token.decreaseApproval(buyerB, 10, { from: buyerA })
+            let postDecrease = await token.allowance(buyerA, buyerB)
+            assert.equal(postDecrease, 40)
+        })
 
         it('should increase by 50 then decrease by 51', async function () {
-            await token.mint(buyerA, 100);
+            await token.mint(buyerA, 100)
 
-            await token.increaseApproval(buyerB, 50, { from: buyerA });
-            let postIncrease = await token.allowance(buyerA, buyerB);
-            assert.equal(postIncrease, 50);
-            await token.decreaseApproval(buyerB, 51, { from: buyerA });
-            let postDecrease = await token.allowance(buyerA, buyerB);
-            assert.equal(postDecrease, 0);
-        });
-    });
+            await token.increaseApproval(buyerB, 50, { from: buyerA })
+            let postIncrease = await token.allowance(buyerA, buyerB)
+            assert.equal(postIncrease, 50)
+            await token.decreaseApproval(buyerB, 51, { from: buyerA })
+            let postDecrease = await token.allowance(buyerA, buyerB)
+            assert.equal(postDecrease, 0)
+        })
+    })
 
     contract('validating setName', function () {
         it('owner can change name when canMint not finished', async function () {
-            await token.setName("changed name");
-            assert.equal(await token.name.call(), "changed name");
-        });
+            await token.setName("changed name")
+            assert.equal(await token.name.call(), "changed name")
+        })
 
         it('non owner cannot change name even if canMint not finished', async function () {
-            owner.should.not.eq(buyerA);
-            await token.setName("changed name", { 'from': buyerA }).should.be.rejectedWith(EVMRevert);
-        });
+            owner.should.not.eq(buyerA)
+            await token.setName("changed name", { 'from': buyerA }).should.be.rejectedWith(EVMRevert)
+        })
 
         it('owner can change name when canMint not finished', async function () {
-            await token.finishMinting();
-            await token.setName("changed name").should.be.rejectedWith(EVMRevert);
-        });
-    });
+            await token.finishMinting()
+            await token.setName("changed name").should.be.rejectedWith(EVMRevert)
+        })
+    })
 
     contract('validating setSymbol', function () {
         it('owner can change symbol when canMint not finished', async function () {
-            await token.setSymbol("SYM");
-            assert.equal(await token.symbol.call(), "SYM");
-        });
+            await token.setSymbol("SYM")
+            assert.equal(await token.symbol.call(), "SYM")
+        })
 
         it('non owner cannot change symbol even if canMint not finished', async function () {
-            owner.should.not.eq(buyerA);
-            await token.setSymbol("SYM", {'from': buyerA}).should.be.rejectedWith(EVMRevert);
-        });
+            owner.should.not.eq(buyerA)
+            await token.setSymbol("SYM", {'from': buyerA}).should.be.rejectedWith(EVMRevert)
+        })
 
         it('owner cannot change symbol when canMint has finished', async function () {
-            await token.finishMinting();
-            await token.setSymbol("SYM").should.be.rejectedWith(EVMRevert);
-        });
-    });
+            await token.finishMinting()
+            await token.setSymbol("SYM").should.be.rejectedWith(EVMRevert)
+        })
+    })
 
     contract('validating setShortDescription', function () {
         it('owner can change description when canMint not finished', async function () {
-            await token.setShortDescription("My short description from test.");
-            assert.equal(await token.shortDescription.call(), "My short description from test.");
-        });
+            await token.setShortDescription("My short description from test.")
+            assert.equal(await token.shortDescription.call(), "My short description from test.")
+        })
 
         it('non owner cannot change description even if canMint not finished', async function () {
-            owner.should.not.eq(buyerA);
-            await token.setShortDescription("My short description from test.", {'from': buyerA}).should.be.rejectedWith(EVMRevert);
-        });
+            owner.should.not.eq(buyerA)
+            await token.setShortDescription("My short description from test.", {'from': buyerA}).should.be.rejectedWith(EVMRevert)
+        })
 
         it('owner cannot change description when canMint has finished', async function () {
-            await token.finishMinting();
-            await token.setShortDescription("My short description from test.").should.be.rejectedWith(EVMRevert);
-        });
-    });
+            await token.finishMinting()
+            await token.setShortDescription("My short description from test.").should.be.rejectedWith(EVMRevert)
+        })
+    })
 
     contract('validating setBaseRate', function () {
         it('owner can change setBaseRate when canMint not finished', async function () {
-            await token.setBaseRate(3, { from: owner });
-            assert.equal(await token.baseRate.call(), 3);
-        });
+            await token.setBaseRate(3, { from: owner })
+            assert.equal(await token.baseRate.call(), 3)
+        })
 
         it('non owner cannot change setBaseRate even if canMint not finished', async function () {
-            owner.should.not.eq(buyerA);
-            await token.setBaseRate(3, { from: buyerA }).should.be.rejectedWith(EVMRevert);
-        });
+            owner.should.not.eq(buyerA)
+            await token.setBaseRate(3, { from: buyerA }).should.be.rejectedWith(EVMRevert)
+        })
 
         it('owner cannot change setBaseRate when canMint has finished', async function () {
-            await token.finishMinting();
-            await token.setBaseRate(3, { from: owner }).should.be.rejectedWith(EVMRevert);
-        });
-    });
+            await token.finishMinting()
+            await token.setBaseRate(3, { from: owner }).should.be.rejectedWith(EVMRevert)
+        })
+    })
 
     contract('validating setBaseCurrency', function () {
         it('owner can change setBaseCurrency when canMint not finished', async function () {
-            let erc20TestToken = await ERC20TestToken.new();
+            let erc20TestToken = await ERC20TestToken.new()
             
-            await token.setBaseCurrency(erc20TestToken.address, { from: owner });
-            assert.equal(await token.baseCurrency.call(), erc20TestToken.address);
-        });
+            await token.setBaseCurrency(erc20TestToken.address, { from: owner })
+            assert.equal(await token.baseCurrency.call(), erc20TestToken.address)
+        })
 
         it('non owner cannot change setBaseCurrency even if canMint not finished', async function () {
-            buyerA.should.not.eq(owner);
-            let erc20TestToken = await ERC20TestToken.new();
+            buyerA.should.not.eq(owner)
+            let erc20TestToken = await ERC20TestToken.new()
             
-            await token.setBaseCurrency(erc20TestToken.address, { from: buyerA }).should.be.rejectedWith(EVMRevert);
-        });
+            await token.setBaseCurrency(erc20TestToken.address, { from: buyerA }).should.be.rejectedWith(EVMRevert)
+        })
 
         it('owner cannot change setBaseCurrency when canMint has finished', async function () {
-            await token.finishMinting();
+            await token.finishMinting()
 
-            let erc20TestToken = await ERC20TestToken.new();
+            let erc20TestToken = await ERC20TestToken.new()
             
-            await token.setBaseCurrency(erc20TestToken.address, { from: owner }).should.be.rejectedWith(EVMRevert);
-        });
+            await token.setBaseCurrency(erc20TestToken.address, { from: owner }).should.be.rejectedWith(EVMRevert)
+        })
 
         it('owner cannot change setBaseCurrency to 0x0', async function () {
-            await token.setBaseCurrency(ZERO_ADDRESS, { from: owner }).should.be.rejectedWith(EVMRevert);
-        });
-    });
+            await token.setBaseCurrency(ZERO_ADDRESS, { from: owner }).should.be.rejectedWith(EVMRevert)
+        })
+    })
 
     contract('validating balanceOfAt', function () {
         it('buyerA has 100 after minting 100 ', async function () {
-            await token.mint(buyerA, 100);
+            await token.mint(buyerA, 100)
 
-            let blockNumber = await web3.eth.blockNumber;
+            let blockNumber = await web3.eth.blockNumber
 
-            assert.equal(await token.balanceOfAt(buyerA, blockNumber), 100);
-        });
+            assert.equal(await token.balanceOfAt(buyerA, blockNumber), 100)
+        })
 
         it('buyerA had 100 and has 50 after sending 50', async function () {
-            await token.mint(buyerA, 100);
+            await token.mint(buyerA, 100)
 
-            await token.transfer(buyerB, 50, {'from': buyerA});
+            await token.transfer(buyerB, 50, {'from': buyerA})
 
-            let blockNumber = await web3.eth.blockNumber;
-            assert.equal(await token.balanceOfAt(buyerA, blockNumber), 50);
-        });
+            let blockNumber = await web3.eth.blockNumber
+            assert.equal(await token.balanceOfAt(buyerA, blockNumber), 50)
+        })
 
         it('buyerA had 100 then sends 50 verify that he had 100 before', async function () {
-            await token.mint(buyerA, 100);
+            await token.mint(buyerA, 100)
 
-            let blockNumberBeforeSend = await web3.eth.blockNumber;
+            let blockNumberBeforeSend = await web3.eth.blockNumber
 
-            await token.transfer(buyerB, 50, {'from': buyerA});
+            await token.transfer(buyerB, 50, {'from': buyerA})
 
-            assert.equal(await token.balanceOfAt(buyerA, blockNumberBeforeSend), 100);
-        });
+            assert.equal(await token.balanceOfAt(buyerA, blockNumberBeforeSend), 100)
+        })
 
         it('buyerA had 100 then sends 50 then 20', async function () {
-            await token.mint(buyerA, 100);
+            await token.mint(buyerA, 100)
 
-            await token.transfer(buyerB, 50, {'from': buyerA});
-            await token.transfer(buyerB, 20, {'from': buyerA});
+            await token.transfer(buyerB, 50, {'from': buyerA})
+            await token.transfer(buyerB, 20, {'from': buyerA})
 
-            let blockNumberAfterSend20 = await web3.eth.blockNumber;
+            let blockNumberAfterSend20 = await web3.eth.blockNumber
 
-            assert.equal(await token.balanceOfAt(buyerA, blockNumberAfterSend20), 30);
-        });
+            assert.equal(await token.balanceOfAt(buyerA, blockNumberAfterSend20), 30)
+        })
 
         it('instant balanceOfAt', async function () {
-            let blockNumber = await web3.eth.blockNumber;
-            assert.equal(await token.balanceOfAt(buyerA, blockNumber), 0);
-        });
+            let blockNumber = await web3.eth.blockNumber
+            assert.equal(await token.balanceOfAt(buyerA, blockNumber), 0)
+        })
 
         it('buyerA had 100 then quickly sends 50 20 10 validate different blocks', async function () {
-            await token.mint(buyerA, 100);
+            await token.mint(buyerA, 100)
 
-            let blockNumberBeforeSend = await web3.eth.blockNumber;
-            let res1 = await token.transfer(buyerB, 50, {'from': buyerA});
-            let res2 = await token.transfer(buyerB, 20, {'from': buyerA});
-            let res3 = await token.transfer(buyerB, 10, {'from': buyerA});
+            let blockNumberBeforeSend = await web3.eth.blockNumber
+            let res1 = await token.transfer(buyerB, 50, {'from': buyerA})
+            let res2 = await token.transfer(buyerB, 20, {'from': buyerA})
+            let res3 = await token.transfer(buyerB, 10, {'from': buyerA})
 
-            let res4 = await token.transfer(buyerB, 10, {'from': buyerA}); //delayed transfer
+            let res4 = await token.transfer(buyerB, 10, {'from': buyerA}) //delayed transfer
 
-            let blockNumberAfterSend = await web3.eth.blockNumber;
+            let blockNumberAfterSend = await web3.eth.blockNumber
 
-            assert.equal(blockNumberAfterSend, blockNumberBeforeSend+4);
-            assert.notEqual(blockNumberBeforeSend, blockNumberAfterSend);
+            assert.equal(blockNumberAfterSend, blockNumberBeforeSend+4)
+            assert.notEqual(blockNumberBeforeSend, blockNumberAfterSend)
 
-            assert.equal(await token.balanceOfAt(buyerA, blockNumberAfterSend-0), 10);
-            assert.equal(await token.balanceOfAt(buyerA, blockNumberAfterSend-1), 20);
-            assert.equal(await token.balanceOfAt(buyerA, blockNumberAfterSend-2), 30);
-            assert.equal(await token.balanceOfAt(buyerA, blockNumberAfterSend-3), 50);
-            assert.equal(await token.balanceOfAt(buyerA, blockNumberAfterSend-4), 100);
-        });
-    });
+            assert.equal(await token.balanceOfAt(buyerA, blockNumberAfterSend-0), 10)
+            assert.equal(await token.balanceOfAt(buyerA, blockNumberAfterSend-1), 20)
+            assert.equal(await token.balanceOfAt(buyerA, blockNumberAfterSend-2), 30)
+            assert.equal(await token.balanceOfAt(buyerA, blockNumberAfterSend-3), 50)
+            assert.equal(await token.balanceOfAt(buyerA, blockNumberAfterSend-4), 100)
+        })
+    })
 
         /*it('buyerA had 100 then QUICKLY sends 50 20 10 validate different blocks', async function () {
-            await token.mint(buyerA, 100);
+            await token.mint(buyerA, 100)
 
-            let blockNumberBeforeSend = await web3.eth.blockNumber;
-            let res1 = token.transfer(buyerB, 50, {'from': buyerA}); //no await
-            let res2 = token.transfer(buyerB, 20, {'from': buyerA}); //no await
-            let res3 = token.transfer(buyerB, 10, {'from': buyerA}); //no await
+            let blockNumberBeforeSend = await web3.eth.blockNumber
+            let res1 = token.transfer(buyerB, 50, {'from': buyerA}) //no await
+            let res2 = token.transfer(buyerB, 20, {'from': buyerA}) //no await
+            let res3 = token.transfer(buyerB, 10, {'from': buyerA}) //no await
 
              //now await all
-            await res1;
-            await res2;
-            await res3;
+            await res1
+            await res2
+            await res3
 
-            let res4 = await token.transfer(buyerB, 10, {'from': buyerA}); //delayed transfer
+            let res4 = await token.transfer(buyerB, 10, {'from': buyerA}) //delayed transfer
 
-            let blockNumberAfterSend = await web3.eth.blockNumber;
+            let blockNumberAfterSend = await web3.eth.blockNumber
 
-            assert.equal(blockNumberAfterSend, blockNumberBeforeSend+4);
-            assert.notEqual(blockNumberBeforeSend, blockNumberAfterSend);
+            assert.equal(blockNumberAfterSend, blockNumberBeforeSend+4)
+            assert.notEqual(blockNumberBeforeSend, blockNumberAfterSend)
 
-            assert.equal(await token.balanceOfAt(buyerA, blockNumberAfterSend-0), 10);
-            assert.equal(await token.balanceOfAt(buyerA, blockNumberAfterSend-1), 20);
-            assert.equal(await token.balanceOfAt(buyerA, blockNumberAfterSend-2), 30);
-            assert.equal(await token.balanceOfAt(buyerA, blockNumberAfterSend-3), 50);
-            assert.equal(await token.balanceOfAt(buyerA, blockNumberAfterSend-4), 100);
-        });
-    });*/
+            assert.equal(await token.balanceOfAt(buyerA, blockNumberAfterSend-0), 10)
+            assert.equal(await token.balanceOfAt(buyerA, blockNumberAfterSend-1), 20)
+            assert.equal(await token.balanceOfAt(buyerA, blockNumberAfterSend-2), 30)
+            assert.equal(await token.balanceOfAt(buyerA, blockNumberAfterSend-3), 50)
+            assert.equal(await token.balanceOfAt(buyerA, blockNumberAfterSend-4), 100)
+        })
+    })*/
 
     contract('validating totalSupplyAt', function () {
         it('totalSupplyAt after first mint block number 0 returns zero', async function () {
-            await token.mint(buyerA, 100);
+            await token.mint(buyerA, 100)
 
-            assert.equal(await token.totalSupplyAt(0), 0);
-        });
+            assert.equal(await token.totalSupplyAt(0), 0)
+        })
 
         it('buyerA gets 5x10 minted then requesting totalSupplyAt upper half', async function () {
-            let blockNumberBeforeSend = await web3.eth.blockNumber;
-            await token.mint(buyerA, 10);
-            await token.mint(buyerA, 10);
-            await token.mint(buyerA, 10);
-            await token.mint(buyerA, 10);
-            await token.mint(buyerA, 10);
-            let blockNumberAfterSend = await web3.eth.blockNumber;
+            let blockNumberBeforeSend = await web3.eth.blockNumber
+            await token.mint(buyerA, 10)
+            await token.mint(buyerA, 10)
+            await token.mint(buyerA, 10)
+            await token.mint(buyerA, 10)
+            await token.mint(buyerA, 10)
+            let blockNumberAfterSend = await web3.eth.blockNumber
 
-            assert.equal(blockNumberAfterSend, blockNumberBeforeSend+5);
-            assert.notEqual(blockNumberBeforeSend, blockNumberAfterSend);
+            assert.equal(blockNumberAfterSend, blockNumberBeforeSend+5)
+            assert.notEqual(blockNumberBeforeSend, blockNumberAfterSend)
 
-            assert.equal(await token.totalSupplyAt(blockNumberBeforeSend+4), 40);
-        });
+            assert.equal(await token.totalSupplyAt(blockNumberBeforeSend+4), 40)
+        })
 
         it('buyerA gets 5x10 minted then requesting totalSupplyAt lower half', async function () {
-            let blockNumberBeforeSend = await web3.eth.blockNumber;
-            await token.mint(buyerA, 10);
-            await token.mint(buyerA, 10);
-            await token.mint(buyerA, 10);
-            await token.mint(buyerA, 10);
-            await token.mint(buyerA, 10);
-            let blockNumberAfterSend = await web3.eth.blockNumber;
+            let blockNumberBeforeSend = await web3.eth.blockNumber
+            await token.mint(buyerA, 10)
+            await token.mint(buyerA, 10)
+            await token.mint(buyerA, 10)
+            await token.mint(buyerA, 10)
+            await token.mint(buyerA, 10)
+            let blockNumberAfterSend = await web3.eth.blockNumber
 
-            assert.equal(blockNumberAfterSend, blockNumberBeforeSend+5);
-            assert.notEqual(blockNumberBeforeSend, blockNumberAfterSend);
+            assert.equal(blockNumberAfterSend, blockNumberBeforeSend+5)
+            assert.notEqual(blockNumberBeforeSend, blockNumberAfterSend)
 
-            assert.equal(await token.totalSupplyAt(blockNumberBeforeSend+1), 10);
-        });
-    });
-});
+            assert.equal(await token.totalSupplyAt(blockNumberBeforeSend+1), 10)
+        })
+    })
+})
