@@ -11,7 +11,7 @@ require('chai')
   .use(require('chai-as-promised'))
   .should()
 
-contract('DividendAssetToken', function (accounts) {
+contract('DividendAssetToken', (accounts) => {
 
     let token = null
     let erc20 = null
@@ -29,7 +29,7 @@ contract('DividendAssetToken', function (accounts) {
     let buyerD = accounts[4]
     let buyerE = accounts[5]
     
-    beforeEach(async function () {
+    beforeEach(async () => {
         token = await DividendAssetToken.new()
         erc20 = await ERC20TestToken.new()
         erc20RetFalse = await ERC20TestTokenRetFalse.new()
@@ -61,24 +61,24 @@ contract('DividendAssetToken', function (accounts) {
         return await token.claimDividend(0, {from: buyerB, gasPrice: gasPrice})
     }
 
-    contract('validating deposit ERC20Token', function () {
-        it('depositing dividend token 0x0 reverts', async function () {
+    contract('validating deposit ERC20Token', () => {
+        it('depositing dividend token 0x0 reverts', async () => {
             await token.depositERC20Dividend(ZERO_ADDRESS, ONETHOUSANDTOKEN, {from: owner }).should.be.rejectedWith(EVMRevert)
         })
 
-        it('depositing dividend token returning false on transfer reverts', async function () {
+        it('depositing dividend token returning false on transfer reverts', async () => {
             await erc20RetFalse.setReturnValue(false)
             await token.depositERC20Dividend(erc20RetFalse.address, ONETHOUSANDTOKEN, {from: owner }).should.be.rejectedWith(EVMRevert)
         })
 
-        it('depositing other than baseCurrency reverts', async function () {
+        it('depositing other than baseCurrency reverts', async () => {
             await erc20RetFalse.setReturnValue(true)
             await token.depositERC20Dividend(erc20RetFalse.address, ONETHOUSANDTOKEN, {from: owner }).should.be.rejectedWith(EVMRevert)
         })
     })
 
-    contract('validating claim', function () {
-        it('buyer A should claim 0.1 of dividend', async function () {
+    contract('validating claim', () => {
+        it('buyer A should claim 0.1 of dividend', async () => {
             let beforeBalanceOne = await erc20.balanceOf(buyerA)
             let txId1 = await claimDividendA()
             let afterBalanceOne = await erc20.balanceOf(buyerA)
@@ -86,7 +86,7 @@ contract('DividendAssetToken', function (accounts) {
             assert.equal(beforeBalanceOne.add(0.1 * ONETHOUSANDTOKEN).toNumber(), afterBalanceOne.toNumber(), "buyer A should claim 0.1 of dividend")
         })
 
-        it('buyer B should claim 0.25 of dividend', async function () {
+        it('buyer B should claim 0.25 of dividend', async () => {
             let beforeBalanceTwo = await erc20.balanceOf(buyerB)
             let txId2 = await token.claimDividend(0, {from: buyerB, gasPrice: gasPrice})
             let afterBalanceTwo = await erc20.balanceOf(buyerB)
@@ -94,17 +94,17 @@ contract('DividendAssetToken', function (accounts) {
             assert.equal(beforeBalanceTwo.add(0.25 * ONETHOUSANDTOKEN).toNumber(), afterBalanceTwo.toNumber(), "buyer B should claim 0.25 of dividend")        
         })
 
-        it('Make sure further claims on this dividend fail for buyer A', async function () {
+        it('Make sure further claims on this dividend fail for buyer A', async () => {
             await claimDividendA()
             await token.claimDividend(0, {from: buyerA, gasPrice: gasPrice}).should.be.rejectedWith(EVMRevert)
         })
 
-        it('Make sure further claims on this dividend fail for buyer B', async function () {
+        it('Make sure further claims on this dividend fail for buyer B', async () => {
             await claimDividendB()
             await token.claimDividend(0, {from: buyerB, gasPrice: gasPrice}).should.be.rejectedWith(EVMRevert)
         })
 
-        it('Make sure zero balances give no value', async function () {
+        it('Make sure zero balances give no value', async () => {
             let beforeBalanceThree = await erc20.balanceOf(buyerC)
             let txId3 = await token.claimDividend(0, {from: buyerC, gasPrice: gasPrice})
             let afterBalanceThree = await erc20.balanceOf(buyerC)
@@ -113,24 +113,24 @@ contract('DividendAssetToken', function (accounts) {
         })
     })
 
-    contract('validating recycle', function () {
-        it('Add a new token balance for account C', async function () {
+    contract('validating recycle', () => {
+        it('Add a new token balance for account C', async () => {
             await token.mint(buyerC, 800)
             const balance = await token.balanceOf(buyerC)
             assert.equal(balance, 800)
         })
 
-        it('Recycle remainder of dividend distribution 0 should fail within one year ', async function () {
+        it('Recycle remainder of dividend distribution 0 should fail within one year ', async () => {
             await token.recycleDividend(0, {from: owner}).should.be.rejectedWith(EVMRevert)
         })
 
-        it('Recycle remainder of dividend distribution 0', async function () {
+        it('Recycle remainder of dividend distribution 0', async () => {
             await timeTravel(SECONDS_IN_A_YEAR) //1 year time lock passes
 
             await token.recycleDividend(0, {from: owner})
         })
 
-        it('Check everyone can claim recycled dividend', async function () {
+        it('Check everyone can claim recycled dividend', async () => {
             //claim all but buyerD
             const txIdA = await claimDividendA()
             const txIdB = await claimDividendB()

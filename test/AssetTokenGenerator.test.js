@@ -1,29 +1,29 @@
 const AssetTokenGenerator = artifacts.require('AssetTokenGenerator.sol');
 const BasicAssetToken = artifacts.require('BasicAssetToken.sol');
 
-contract('AssetTokenGenerator', function (accounts) {
+contract('AssetTokenGenerator', (accounts) => {
 
     let token = null
   
-    beforeEach(async function () {
+    beforeEach(async () => {
         token = await AssetTokenGenerator.new()
     })
 
-    contract('validating token generation', function () {
-        it('no tokens in the beginning', async function () {
+    contract('validating token generation', () => {
+        it('no tokens in the beginning', async () => {
             let tokensOfUser = await token.getOwnTokens()
     
             assert.equal(tokensOfUser.length, 0)
         })
 
-        it('generateToken without arguments creates a token and assigns it to user', async function () {
+        it('generateToken without arguments creates a token and assigns it to user', async () => {
             await token.generateToken()
             let tokensOfUser = await token.getOwnTokens()
     
             assert.equal(tokensOfUser.length, 1)
         })
 
-        it('generateToken with arguments creates a token and assigns it to user', async function () {
+        it('generateToken with arguments creates a token and assigns it to user', async () => {
             const name ="MyName"
             const symbol ="SYM"
             const shortDescription ="My token description."

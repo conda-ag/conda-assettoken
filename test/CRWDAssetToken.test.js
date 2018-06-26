@@ -8,7 +8,7 @@ require('chai')
   .use(require('chai-as-promised'))
   .should()
 
-contract('CRWDAssetToken', function (accounts) {
+contract('CRWDAssetToken', (accounts) => {
 
     let token = null
     let crwdToken = null
@@ -20,15 +20,15 @@ contract('CRWDAssetToken', function (accounts) {
     let companyAccount = accounts[4]
     let condaAccount = accounts[5]
   
-    beforeEach(async function () {
+    beforeEach(async () => {
         token = await CRWDAssetToken.new()
         crwdToken = await ERC20TestToken.new()
         clearing = await MOCKCRWDClearing.new()
         await token.setClearingAddress(await clearing.address)
     })
 
-    contract('validating mint', function () {
-        it('totalSupply should be 100', async function () {
+    contract('validating mint', () => {
+        it('totalSupply should be 100', async () => {
             await token.mint(buyerA, 100)
 
             let totalSupply = await token.totalSupply()
@@ -36,28 +36,28 @@ contract('CRWDAssetToken', function (accounts) {
             assert.equal(totalSupply, 100)
         })
 
-        it('should return correct balances after mint ', async function () {
+        it('should return correct balances after mint ', async () => {
             await token.mint(buyerA, 100)
       
             let firstAccountBalance = await token.balanceOf(buyerA)
             assert.equal(firstAccountBalance, 100)
         })
 
-        it('should throw an error after finishing mint', async function () {
+        it('should throw an error after finishing mint', async () => {
             await token.finishMinting()
             await token.mint(buyerA, 100).should.be.rejectedWith(EVMRevert)
         })
 
     })
 
-    contract('validating mint with company fee', function () {
-        beforeEach(async function () {
+    contract('validating mint with company fee', () => {
+        beforeEach(async () => {
             await clearing.setFee(crwdToken.address, 10, 0, condaAccount, companyAccount)
             await crwdToken.mint(companyAccount, 1)
             await crwdToken.approve(clearing.address, 1, { from: companyAccount })
         })
 
-        it('totalSupply should be 100', async function () {
+        it('totalSupply should be 100', async () => {
             await token.mint(buyerA, 100)
 
             let totalSupply = await token.totalSupply()
@@ -65,23 +65,23 @@ contract('CRWDAssetToken', function (accounts) {
             assert.equal(totalSupply, 100)
         })
 
-        it('should return correct balances after mint ', async function () {
+        it('should return correct balances after mint ', async () => {
             await token.mint(buyerA, 100)
       
             let firstAccountBalance = await token.balanceOf(buyerA)
             assert.equal(firstAccountBalance, 100)
         })
 
-        it('should throw an error after finishing mint', async function () {
+        it('should throw an error after finishing mint', async () => {
             await token.finishMinting()
             await token.mint(buyerA, 100).should.be.rejectedWith(EVMRevert)
         })
 
     })
 
-    contract('validating burn', function () {
+    contract('validating burn', () => {
 
-        it('should return correct balances after burn ', async function () {
+        it('should return correct balances after burn ', async () => {
             await token.mint(buyerA, 100)
             await token.burn(buyerA, 100)
       
@@ -92,7 +92,7 @@ contract('CRWDAssetToken', function (accounts) {
             assert.equal(totalSupply, 0)
         })
 
-        it('burn should throw an error after finishing mint', async function () {
+        it('burn should throw an error after finishing mint', async () => {
             await token.mint(buyerA, 100)
             await token.finishMinting()
             await token.burn(buyerA, 100).should.be.rejectedWith(EVMRevert)
@@ -100,8 +100,8 @@ contract('CRWDAssetToken', function (accounts) {
 
     })
 
-    contract('validating transfer', function () {
-        it('should return correct balances after transfer', async function () {
+    contract('validating transfer', () => {
+        it('should return correct balances after transfer', async () => {
             await token.mint(buyerA, 100)
 
             let startAccountBalance = await token.balanceOf(buyerA)
@@ -116,19 +116,19 @@ contract('CRWDAssetToken', function (accounts) {
             assert.equal(secondAccountBalance, 100)
         })
 
-        it('should throw an error when trying to transfer more than balance', async function () {
+        it('should throw an error when trying to transfer more than balance', async () => {
             await token.mint(buyerA, 100)
             await token.transfer(buyerB, 101).should.be.rejectedWith(EVMRevert)
         })
 
-        it('should throw an error when trying to transfer to 0x0', async function () {
+        it('should throw an error when trying to transfer to 0x0', async () => {
             await token.mint(buyerA, 100)
             await token.transfer(0x0, 100).should.be.rejectedWith(EVMRevert)
         })
     })
 
-    contract('validating transferFrom', function () {
-        it('should return the correct allowance amount after approval', async function () {
+    contract('validating transferFrom', () => {
+        it('should return the correct allowance amount after approval', async () => {
             await token.mint(buyerA, 100)
             await token.approve(buyerB, 100, { from: buyerA })
             let allowance = await token.allowance(buyerA, buyerB)
@@ -136,7 +136,7 @@ contract('CRWDAssetToken', function (accounts) {
             assert.equal(allowance, 100)
         })
 
-        it('should return correct balances after transfering from another account', async function () {
+        it('should return correct balances after transfering from another account', async () => {
             await token.mint(buyerA, 100)
             await token.approve(buyerB, 100, { from: buyerA })
             await token.transferFrom(buyerA, buyerC, 100, { from: buyerB })
@@ -151,20 +151,20 @@ contract('CRWDAssetToken', function (accounts) {
             assert.equal(balance2, 0)
         })
 
-        it('should throw an error when trying to transfer more than allowed', async function () {
+        it('should throw an error when trying to transfer more than allowed', async () => {
             await token.mint(buyerA, 100)
             await token.approve(buyerB, 99 , { from: buyerA })
             await token.transferFrom(buyerA, buyerB, 100, { from: buyerB }).should.be.rejectedWith(EVMRevert)
         })
 
-        it('should throw an error when trying to transferFrom more than _from has', async function () {
+        it('should throw an error when trying to transferFrom more than _from has', async () => {
             await token.mint(buyerA, 100)
             let balance0 = await token.balanceOf(buyerA)
             await token.approve(buyerB, 99, { from: buyerA })
             await token.transferFrom(buyerA, buyerC, balance0 + 1, { from: buyerB }).should.be.rejectedWith(EVMRevert)
         })
 
-        it('should increase by 50 then set to 0 when decreasing by more than 50', async function () {
+        it('should increase by 50 then set to 0 when decreasing by more than 50', async () => {
             await token.mint(buyerA, 100)
             await token.approve(buyerB, 50, { from: buyerA })
             await token.decreaseApproval(buyerB, 60 , { from: buyerA })
@@ -172,7 +172,7 @@ contract('CRWDAssetToken', function (accounts) {
             assert.equal(postDecrease, 0)
         })
 
-        it('should throw an error when trying to transferFrom to 0x0', async function () {
+        it('should throw an error when trying to transferFrom to 0x0', async () => {
             await token.mint(buyerA, 100)
             await token.approve(buyerB, 100, { from: buyerA })
             await token.transferFrom(buyerA, 0x0, 100, { from: buyerB }).should.be.rejectedWith(EVMRevert)

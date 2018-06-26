@@ -10,7 +10,7 @@ require('chai')
   .use(require('chai-as-promised'))
   .should()
 
-contract('DividendAssetToken', function (accounts) {
+contract('DividendAssetToken', (accounts) => {
     let token = null
     let owner = null
     
@@ -24,7 +24,7 @@ contract('DividendAssetToken', function (accounts) {
     let buyerD = accounts[4]
     let buyerE = accounts[5]
 
-    beforeEach(async function () {
+    beforeEach(async () => {
         token = await DividendAssetToken.new()
         owner = await token.owner()
         
@@ -64,8 +64,8 @@ contract('DividendAssetToken', function (accounts) {
         await token.claimDividendAll({from: buyerE, gasPrice: gasPrice})
     }
 
-    contract('validating claim', function () {
-        it('buyer A should claim 0.1 of dividend', async function () {
+    contract('validating claim', () => {
+        it('buyer A should claim 0.1 of dividend', async () => {
             let beforeBalanceOne = await web3.eth.getBalance(buyerA)
             let txId1 = await claimDividendA()
             let afterBalanceOne = await web3.eth.getBalance(buyerA)
@@ -73,7 +73,7 @@ contract('DividendAssetToken', function (accounts) {
             assert.equal(beforeBalanceOne.add(0.1 * ONEETHER).sub(gasCostTxId1).toNumber(), afterBalanceOne.toNumber(), "buyer A should claim 0.1 of dividend")
         })
 
-        it('buyer B should claim 0.25 of dividend', async function () {
+        it('buyer B should claim 0.25 of dividend', async () => {
             let beforeBalanceTwo = await web3.eth.getBalance(buyerB)
             let txId2 = await claimDividendB()
             let afterBalanceTwo = await web3.eth.getBalance(buyerB)
@@ -81,17 +81,17 @@ contract('DividendAssetToken', function (accounts) {
             assert.equal(beforeBalanceTwo.add(0.25 * ONEETHER).sub(gasCostTxId2).toNumber(), afterBalanceTwo.toNumber(), "buyer B should claim 0.25 of dividend")
         })
 
-        it('Make sure further claims on this dividend fail for buyer A', async function () {
+        it('Make sure further claims on this dividend fail for buyer A', async () => {
             await claimDividendA()
             await token.claimDividend(0, {from: buyerA, gasPrice: gasPrice}).should.be.rejectedWith(EVMRevert)
         })
 
-        it('Make sure further claims on this dividend fail for buyer B', async function () {
+        it('Make sure further claims on this dividend fail for buyer B', async () => {
             await claimDividendB()
             await token.claimDividend(0, {from: buyerB, gasPrice: gasPrice}).should.be.rejectedWith(EVMRevert)
         })
 
-        it('Make sure zero balances give no value', async function () {
+        it('Make sure zero balances give no value', async () => {
             let beforeBalanceThree = await web3.eth.getBalance(buyerC)
             let txId3 = await token.claimDividend(0, {from: buyerC, gasPrice: gasPrice})
             let afterBalanceThree = await web3.eth.getBalance(buyerC)
@@ -100,24 +100,24 @@ contract('DividendAssetToken', function (accounts) {
         })
     })
 
-    contract('validating recycle', function () {
-        it('Add a new token balance for account C', async function () {
+    contract('validating recycle', () => {
+        it('Add a new token balance for account C', async () => {
             await token.mint(buyerC, 800)
             const balance = await token.balanceOf(buyerC)
             assert.equal(balance, 800)
         })
 
-        it('Recycle remainder of dividend distribution 0 should fail within one year ', async function () {
+        it('Recycle remainder of dividend distribution 0 should fail within one year ', async () => {
             await token.recycleDividend(0, {from: owner}).should.be.rejectedWith(EVMRevert)
         })
 
-        it('Recycle remainder of dividend distribution 0', async function () {
+        it('Recycle remainder of dividend distribution 0', async () => {
             await timeTravel(SECONDS_IN_A_YEAR) //1 year time lock passes
 
             await token.recycleDividend(0, {from: owner})
         })
 
-        it('Check everyone can claim recycled dividend', async function () {
+        it('Check everyone can claim recycled dividend', async () => {
             //claim all but buyerD
             const txIdA = await claimDividendA()
             const txIdB = await claimDividendB()

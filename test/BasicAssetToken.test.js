@@ -9,7 +9,7 @@ require('chai')
   .use(require('chai-as-promised'))
   .should()
 
-contract('BasicAssetToken', function (accounts) {
+contract('BasicAssetToken', (accounts) => {
     let token = null
     let owner = null
 
@@ -17,19 +17,19 @@ contract('BasicAssetToken', function (accounts) {
     const buyerB = accounts[2]
     const buyerC = accounts[3]
   
-    beforeEach(async function () {
+    beforeEach(async () => {
         token = await BasicAssetToken.new()
         owner = await token.owner()
         owner.should.not.eq(ZERO_ADDRESS)
         assert.equal(await token.totalSupply(), 0)
     })
 
-    contract('validating setting of crowdsale address', function () {
-        it('address 0x0 is reverted', async function () {
+    contract('validating setting of crowdsale address', () => {
+        it('address 0x0 is reverted', async () => {
             await token.setCrowdsaleAddress(ZERO_ADDRESS).should.be.rejectedWith(EVMRevert)
         })
 
-        it('can set erc20 address as crowdsale address', async function () {
+        it('can set erc20 address as crowdsale address', async () => {
             let anyErc20Token = await ERC20TestToken.new()
 
             await token.setCrowdsaleAddress(anyErc20Token.address)
@@ -39,14 +39,14 @@ contract('BasicAssetToken', function (accounts) {
         })
     })
 
-    contract('validating totalSupply', function () {
-        it('0 totalSupply in the beginning', async function () {
+    contract('validating totalSupply', () => {
+        it('0 totalSupply in the beginning', async () => {
             let totalSupply = await token.totalSupply()
     
             assert.equal(totalSupply, 0)
         })
 
-        it('when A mints 100 totalSupply should be 100', async function () {
+        it('when A mints 100 totalSupply should be 100', async () => {
             await token.mint(buyerA, 100)
 
             let totalSupply = await token.totalSupply()
@@ -54,7 +54,7 @@ contract('BasicAssetToken', function (accounts) {
             assert.equal(totalSupply, 100)
         })
 
-        it('when A and B both mint 100 totalSupply should be 200', async function () {
+        it('when A and B both mint 100 totalSupply should be 200', async () => {
             await token.mint(buyerA, 100)
             await token.mint(buyerB, 100)
 
@@ -64,13 +64,13 @@ contract('BasicAssetToken', function (accounts) {
         })
     })
 
-    contract('validating mint', function () {
-        it('instant call of balances ', async function () {      
+    contract('validating mint', () => {
+        it('instant call of balances ', async () => {
             let firstAccountBalance = await token.balanceOf(buyerA)
             assert.equal(firstAccountBalance, 0)
         })
 
-        it('should return correct balances after mint ', async function () {
+        it('should return correct balances after mint ', async () => {
             await token.mint(buyerA, 100)
             await token.mint(buyerA, 100)
       
@@ -78,16 +78,16 @@ contract('BasicAssetToken', function (accounts) {
             assert.equal(firstAccountBalance, 200)
         })
 
-        it('should throw an error when trying to mint but finished minting', async function () {
+        it('should throw an error when trying to mint but finished minting', async () => {
             await token.finishMinting()
             await token.mint(buyerA, 100).should.be.rejectedWith(EVMRevert)
         })
 
     })
 
-    contract('validating burn', function () {
+    contract('validating burn', () => {
 
-        it('should return correct balances after burn ', async function () {
+        it('should return correct balances after burn ', async () => {
             await token.mint(buyerA, 100)
             await token.burn(buyerA, 100)
       
@@ -98,20 +98,20 @@ contract('BasicAssetToken', function (accounts) {
             assert.equal(totalSupply, 0)
         })
 
-        it('burn should throw an error after finishing mint', async function () {
+        it('burn should throw an error after finishing mint', async () => {
             await token.mint(buyerA, 100)
             await token.finishMinting()
             await token.burn(buyerA, 100).should.be.rejectedWith(EVMRevert)
         })
 
-        it('only owner can burn', async function () {
+        it('only owner can burn', async () => {
             await token.mint(buyerA, 100)
             await token.burn(buyerA, 100, {'from': buyerA}).should.be.rejectedWith(EVMRevert)
         })
     })
 
-    contract('validating transfer', function () {
-        it('should return correct balances after transfer', async function () {
+    contract('validating transfer', () => {
+        it('should return correct balances after transfer', async () => {
             await token.mint(buyerA, 100)
 
             let startAccountBalance = await token.balanceOf(buyerA)
@@ -126,17 +126,17 @@ contract('BasicAssetToken', function (accounts) {
             assert.equal(secondAccountBalance, 100)
         })
 
-        it('should throw an error when trying to transfer more than balance', async function () {
+        it('should throw an error when trying to transfer more than balance', async () => {
             await token.mint(buyerA, 100)
             await token.transfer(buyerB, 101).should.be.rejectedWith(EVMRevert)
         })
 
-        it('should throw an error when trying to transfer to 0x0', async function () {
+        it('should throw an error when trying to transfer to 0x0', async () => {
             await token.mint(buyerA, 100)
             await token.transfer(0x0, 100).should.be.rejectedWith(EVMRevert)
         })
 
-        it('should throw when trying to transfer but transfer is disabled', async function () {
+        it('should throw when trying to transfer but transfer is disabled', async () => {
             await token.mint(buyerA, 100)
             await token.enableTransfers(false)
             assert.equal(await token.balanceOf(buyerA), 100)
@@ -145,8 +145,8 @@ contract('BasicAssetToken', function (accounts) {
         })
     })
 
-    contract('validating approve and allowance', function () {
-        it('should return the correct allowance amount after approval', async function () {
+    contract('validating approve and allowance', () => {
+        it('should return the correct allowance amount after approval', async () => {
             await token.mint(buyerA, 100)
             await token.approve(buyerB, 100, { from: buyerA })
             let allowance = await token.allowance(buyerA, buyerB)
@@ -155,8 +155,8 @@ contract('BasicAssetToken', function (accounts) {
         })
     })
 
-    contract('validating transferFrom', function () {
-        it('should return correct balances after transfering from another account', async function () {
+    contract('validating transferFrom', () => {
+        it('should return correct balances after transfering from another account', async () => {
             await token.mint(buyerA, 100)
 
             await token.approve(buyerB, 100, { from: buyerA })
@@ -172,14 +172,14 @@ contract('BasicAssetToken', function (accounts) {
             assert.equal(balance2, 0)
         })
 
-        it('should throw an error when trying to transfer more than allowed', async function () {
+        it('should throw an error when trying to transfer more than allowed', async () => {
             await token.mint(buyerA, 100)
 
             await token.approve(buyerB, 99 , { from: buyerA })
             await token.transferFrom(buyerA, buyerB, 100, { from: buyerB }).should.be.rejectedWith(EVMRevert)
         })
 
-        it('should throw an error when trying to transferFrom more than _from has', async function () {
+        it('should throw an error when trying to transferFrom more than _from has', async () => {
             await token.mint(buyerA, 100)
 
             let balance0 = await token.balanceOf(buyerA)
@@ -187,7 +187,7 @@ contract('BasicAssetToken', function (accounts) {
             await token.transferFrom(buyerA, buyerC, balance0 + 1, { from: buyerB }).should.be.rejectedWith(EVMRevert)
         })
 
-        it('should increase by 50 then set to 0 when decreasing by more than 50', async function () {
+        it('should increase by 50 then set to 0 when decreasing by more than 50', async () => {
             await token.mint(buyerA, 100)
 
             await token.approve(buyerB, 50, { from: buyerA })
@@ -196,14 +196,14 @@ contract('BasicAssetToken', function (accounts) {
             assert.equal(postDecrease, 0)
         })
         
-        it('should throw an error when trying to transferFrom to 0x0', async function () {
+        it('should throw an error when trying to transferFrom to 0x0', async () => {
             await token.mint(buyerA, 100)
 
             await token.approve(buyerB, 100, { from: buyerA })
             await token.transferFrom(buyerA, 0x0, 100, { from: buyerB }).should.be.rejectedWith(EVMRevert)
         })
 
-        it('should throw when trying to approve but transfer disabled', async function () {
+        it('should throw when trying to approve but transfer disabled', async () => {
             await token.mint(buyerA, 100)
 
             await token.enableTransfers(false)
@@ -212,7 +212,7 @@ contract('BasicAssetToken', function (accounts) {
             await token.approve(buyerB, 100, { from: buyerA }).should.be.rejectedWith(EVMRevert)
         })
 
-        it('should throw when trying to transferFrom but transfer disabled', async function () {
+        it('should throw when trying to transferFrom but transfer disabled', async () => {
             await token.mint(buyerA, 100)
 
             assert.equal(await token.balanceOf(buyerA), 100)
@@ -225,8 +225,8 @@ contract('BasicAssetToken', function (accounts) {
         })
     })
 
-    contract('validating allowance', function () {
-        it('should start with zero', async function () {
+    contract('validating allowance', () => {
+        it('should start with zero', async () => {
             await token.mint(buyerA, 100)
             
             let preApproved = await token.allowance(buyerA, buyerB)
@@ -234,9 +234,9 @@ contract('BasicAssetToken', function (accounts) {
         })
     })
 
-    contract('validating increaseApproval', function () {
+    contract('validating increaseApproval', () => {
 
-        it('should increase by 50', async function () {
+        it('should increase by 50', async () => {
             await token.mint(buyerA, 100)
 
             await token.increaseApproval(buyerB, 50, { from: buyerA })
@@ -245,8 +245,8 @@ contract('BasicAssetToken', function (accounts) {
         })
     })
 
-    contract('validating decreaseApproval', function () {
-        it('should increase by 50 then decrease by 10', async function () {
+    contract('validating decreaseApproval', () => {
+        it('should increase by 50 then decrease by 10', async () => {
             await token.mint(buyerA, 100)
 
             await token.increaseApproval(buyerB, 50, { from: buyerA })
@@ -257,7 +257,7 @@ contract('BasicAssetToken', function (accounts) {
             assert.equal(postDecrease, 40)
         })
 
-        it('should increase by 50 then decrease by 51', async function () {
+        it('should increase by 50 then decrease by 51', async () => {
             await token.mint(buyerA, 100)
 
             await token.increaseApproval(buyerB, 50, { from: buyerA })
@@ -269,90 +269,90 @@ contract('BasicAssetToken', function (accounts) {
         })
     })
 
-    contract('validating setName', function () {
-        it('owner can change name when canMint not finished', async function () {
+    contract('validating setName', () => {
+        it('owner can change name when canMint not finished', async () => {
             await token.setName("changed name")
             assert.equal(await token.name.call(), "changed name")
         })
 
-        it('non owner cannot change name even if canMint not finished', async function () {
+        it('non owner cannot change name even if canMint not finished', async () => {
             owner.should.not.eq(buyerA)
             await token.setName("changed name", { 'from': buyerA }).should.be.rejectedWith(EVMRevert)
         })
 
-        it('owner can change name when canMint not finished', async function () {
+        it('owner can change name when canMint not finished', async () => {
             await token.finishMinting()
             await token.setName("changed name").should.be.rejectedWith(EVMRevert)
         })
     })
 
-    contract('validating setSymbol', function () {
-        it('owner can change symbol when canMint not finished', async function () {
+    contract('validating setSymbol', () => {
+        it('owner can change symbol when canMint not finished', async () => {
             await token.setSymbol("SYM")
             assert.equal(await token.symbol.call(), "SYM")
         })
 
-        it('non owner cannot change symbol even if canMint not finished', async function () {
+        it('non owner cannot change symbol even if canMint not finished', async () => {
             owner.should.not.eq(buyerA)
             await token.setSymbol("SYM", {'from': buyerA}).should.be.rejectedWith(EVMRevert)
         })
 
-        it('owner cannot change symbol when canMint has finished', async function () {
+        it('owner cannot change symbol when canMint has finished', async () => {
             await token.finishMinting()
             await token.setSymbol("SYM").should.be.rejectedWith(EVMRevert)
         })
     })
 
-    contract('validating setShortDescription', function () {
-        it('owner can change description when canMint not finished', async function () {
+    contract('validating setShortDescription', () => {
+        it('owner can change description when canMint not finished', async () => {
             await token.setShortDescription("My short description from test.")
             assert.equal(await token.shortDescription.call(), "My short description from test.")
         })
 
-        it('non owner cannot change description even if canMint not finished', async function () {
+        it('non owner cannot change description even if canMint not finished', async () => {
             owner.should.not.eq(buyerA)
             await token.setShortDescription("My short description from test.", {'from': buyerA}).should.be.rejectedWith(EVMRevert)
         })
 
-        it('owner cannot change description when canMint has finished', async function () {
+        it('owner cannot change description when canMint has finished', async () => {
             await token.finishMinting()
             await token.setShortDescription("My short description from test.").should.be.rejectedWith(EVMRevert)
         })
     })
 
-    contract('validating setBaseRate', function () {
-        it('owner can change setBaseRate when canMint not finished', async function () {
+    contract('validating setBaseRate', () => {
+        it('owner can change setBaseRate when canMint not finished', async () => {
             await token.setBaseRate(3, { from: owner })
             assert.equal(await token.baseRate.call(), 3)
         })
 
-        it('non owner cannot change setBaseRate even if canMint not finished', async function () {
+        it('non owner cannot change setBaseRate even if canMint not finished', async () => {
             owner.should.not.eq(buyerA)
             await token.setBaseRate(3, { from: buyerA }).should.be.rejectedWith(EVMRevert)
         })
 
-        it('owner cannot change setBaseRate when canMint has finished', async function () {
+        it('owner cannot change setBaseRate when canMint has finished', async () => {
             await token.finishMinting()
             await token.setBaseRate(3, { from: owner }).should.be.rejectedWith(EVMRevert)
         })
     })
 
-    contract('validating setBaseCurrency', function () {
-        it('owner can change setBaseCurrency when canMint not finished', async function () {
+    contract('validating setBaseCurrency', () => {
+        it('owner can change setBaseCurrency when canMint not finished', async () => {
             let erc20TestToken = await ERC20TestToken.new()
             
             await token.setBaseCurrency(erc20TestToken.address, { from: owner })
             assert.equal(await token.baseCurrency.call(), erc20TestToken.address)
         })
 
-        it('non owner cannot change setBaseCurrency even if canMint not finished', async function () {
+        it('non owner cannot change setBaseCurrency even if canMint not finished', async () => {
             buyerA.should.not.eq(owner)
             let erc20TestToken = await ERC20TestToken.new()
             
             await token.setBaseCurrency(erc20TestToken.address, { from: buyerA }).should.be.rejectedWith(EVMRevert)
         })
 
-        it('owner cannot change setBaseCurrency when canMint has finished', async function () {
+        it('owner cannot change setBaseCurrency when canMint has finished', async () => {
             await token.finishMinting()
 
             let erc20TestToken = await ERC20TestToken.new()
@@ -360,13 +360,13 @@ contract('BasicAssetToken', function (accounts) {
             await token.setBaseCurrency(erc20TestToken.address, { from: owner }).should.be.rejectedWith(EVMRevert)
         })
 
-        it('owner cannot change setBaseCurrency to 0x0', async function () {
+        it('owner cannot change setBaseCurrency to 0x0', async () => {
             await token.setBaseCurrency(ZERO_ADDRESS, { from: owner }).should.be.rejectedWith(EVMRevert)
         })
     })
 
-    contract('validating balanceOfAt', function () {
-        it('buyerA has 100 after minting 100 ', async function () {
+    contract('validating balanceOfAt', () => {
+        it('buyerA has 100 after minting 100 ', async () => {
             await token.mint(buyerA, 100)
 
             let blockNumber = await web3.eth.blockNumber
@@ -374,7 +374,7 @@ contract('BasicAssetToken', function (accounts) {
             assert.equal(await token.balanceOfAt(buyerA, blockNumber), 100)
         })
 
-        it('buyerA had 100 and has 50 after sending 50', async function () {
+        it('buyerA had 100 and has 50 after sending 50', async () => {
             await token.mint(buyerA, 100)
 
             await token.transfer(buyerB, 50, {'from': buyerA})
@@ -383,7 +383,7 @@ contract('BasicAssetToken', function (accounts) {
             assert.equal(await token.balanceOfAt(buyerA, blockNumber), 50)
         })
 
-        it('buyerA had 100 then sends 50 verify that he had 100 before', async function () {
+        it('buyerA had 100 then sends 50 verify that he had 100 before', async () => {
             await token.mint(buyerA, 100)
 
             let blockNumberBeforeSend = await web3.eth.blockNumber
@@ -393,7 +393,7 @@ contract('BasicAssetToken', function (accounts) {
             assert.equal(await token.balanceOfAt(buyerA, blockNumberBeforeSend), 100)
         })
 
-        it('buyerA had 100 then sends 50 then 20', async function () {
+        it('buyerA had 100 then sends 50 then 20', async () => {
             await token.mint(buyerA, 100)
 
             await token.transfer(buyerB, 50, {'from': buyerA})
@@ -404,12 +404,12 @@ contract('BasicAssetToken', function (accounts) {
             assert.equal(await token.balanceOfAt(buyerA, blockNumberAfterSend20), 30)
         })
 
-        it('instant balanceOfAt', async function () {
+        it('instant balanceOfAt', async () => {
             let blockNumber = await web3.eth.blockNumber
             assert.equal(await token.balanceOfAt(buyerA, blockNumber), 0)
         })
 
-        it('buyerA had 100 then quickly sends 50 20 10 validate different blocks', async function () {
+        it('buyerA had 100 then quickly sends 50 20 10 validate different blocks', async () => {
             await token.mint(buyerA, 100)
 
             let blockNumberBeforeSend = await web3.eth.blockNumber
@@ -432,7 +432,7 @@ contract('BasicAssetToken', function (accounts) {
         })
     })
 
-        /*it('buyerA had 100 then QUICKLY sends 50 20 10 validate different blocks', async function () {
+        /*it('buyerA had 100 then QUICKLY sends 50 20 10 validate different blocks', async () => {
             await token.mint(buyerA, 100)
 
             let blockNumberBeforeSend = await web3.eth.blockNumber
@@ -460,14 +460,14 @@ contract('BasicAssetToken', function (accounts) {
         })
     })*/
 
-    contract('validating totalSupplyAt', function () {
-        it('totalSupplyAt after first mint block number 0 returns zero', async function () {
+    contract('validating totalSupplyAt', () => {
+        it('totalSupplyAt after first mint block number 0 returns zero', async () => {
             await token.mint(buyerA, 100)
 
             assert.equal(await token.totalSupplyAt(0), 0)
         })
 
-        it('buyerA gets 5x10 minted then requesting totalSupplyAt upper half', async function () {
+        it('buyerA gets 5x10 minted then requesting totalSupplyAt upper half', async () => {
             let blockNumberBeforeSend = await web3.eth.blockNumber
             await token.mint(buyerA, 10)
             await token.mint(buyerA, 10)
@@ -482,7 +482,7 @@ contract('BasicAssetToken', function (accounts) {
             assert.equal(await token.totalSupplyAt(blockNumberBeforeSend+4), 40)
         })
 
-        it('buyerA gets 5x10 minted then requesting totalSupplyAt lower half', async function () {
+        it('buyerA gets 5x10 minted then requesting totalSupplyAt lower half', async () => {
             let blockNumberBeforeSend = await web3.eth.blockNumber
             await token.mint(buyerA, 10)
             await token.mint(buyerA, 10)
