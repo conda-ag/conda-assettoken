@@ -105,6 +105,82 @@ contract('DividendAssetToken', (accounts) => {
         })
     })
 
+    contract('validating claim when transfered', () => {
+        it('buyer A claimed, then transfered to buyer B -> buyer B should claim original 0.25 of dividend', async () => {
+            //buyer A claims
+            let beforeBalanceOne = await web3.eth.getBalance(buyerA)
+            let txId1 = await claimDividendA()
+            let afterBalanceOne = await web3.eth.getBalance(buyerA)
+            let gasCostTxId1 = txId1.receipt.gasUsed * gasPrice
+            assert.equal(beforeBalanceOne.add(0.1 * ONEETHER).sub(gasCostTxId1).toNumber(), afterBalanceOne.toNumber(), "buyer A should claim 0.1 of dividend")
+
+            //buyer A transfers all his share to buyer B (after claiming)
+            await token.transfer(buyerB, 100, {from: buyerA, gasPrice: gasPrice})
+
+            //buyer B claims
+            let beforeBalanceTwo = await web3.eth.getBalance(buyerB)
+            let txId2 = await claimDividendB()
+            let afterBalanceTwo = await web3.eth.getBalance(buyerB)
+            let gasCostTxId2 = txId2.receipt.gasUsed * gasPrice
+            assert.equal(beforeBalanceTwo.add(0.25 * ONEETHER).sub(gasCostTxId2).toNumber(), afterBalanceTwo.toNumber(), "buyer B should claim 0.25 of dividend")
+        })
+
+        it('buyer A unclaimed, then transfered to buyer B. buyer A claims, buyer B claims -> unchainged: buyer A gets 0.1 buyer B gets 0.25', async () => {
+            let beforeBalanceOne = await web3.eth.getBalance(buyerA)
+
+            //buyer A transfers all his share to buyer B (before claiming)
+            await token.transfer(buyerB, 100, {from: buyerA, gasPrice: gasPrice})
+
+            //buyer A can still claim first deposit
+            let txId1 = await claimDividendA()
+            let afterBalanceOne = await web3.eth.getBalance(buyerA)
+            let gasCostTxId1 = txId1.receipt.gasUsed * gasPrice
+            assert.equal(beforeBalanceOne.add(0.1 * ONEETHER).sub(gasCostTxId1).toNumber(), afterBalanceOne.toNumber(), "buyer A should claim 0.1 of dividend")
+
+            //buyer B claims (gets original share of first deposit)
+            let beforeBalanceTwo = await web3.eth.getBalance(buyerB)
+            let txId2 = await claimDividendB()
+            let afterBalanceTwo = await web3.eth.getBalance(buyerB)
+            let gasCostTxId2 = txId2.receipt.gasUsed * gasPrice
+            assert.equal(beforeBalanceTwo.add(0.25 * ONEETHER).sub(gasCostTxId2).toNumber(), afterBalanceTwo.toNumber(), "buyer B should claim 0.25 of dividend")
+        })
+
+        it('buyer A claimed, then transfered to buyer B. then new deposit -> buyer B should claim 0.25 then 0.25+0.1', async () => {
+            //buyer A claims
+            let beforeBalanceOne = await web3.eth.getBalance(buyerA)
+            let txId1 = await claimDividendA()
+            let afterBalanceOne = await web3.eth.getBalance(buyerA)
+            let gasCostTxId1 = txId1.receipt.gasUsed * gasPrice
+            assert.equal(beforeBalanceOne.add(0.1 * ONEETHER).sub(gasCostTxId1).toNumber(), afterBalanceOne.toNumber(), "buyer A should claim 0.1 of dividend")
+
+            //buyer A transfers
+            await token.transfer(buyerB, 100, {from: buyerA, gasPrice: gasPrice})
+
+            let beforeBalanceTwo = await web3.eth.getBalance(buyerB)
+            let txId2 = await token.claimDividend(0, {from: buyerB, gasPrice: gasPrice})
+            let afterBalanceTwo = await web3.eth.getBalance(buyerB)
+            let gasCostTxId2 = txId2.receipt.gasUsed * gasPrice
+            assert.equal(beforeBalanceTwo.add(0.25 * ONEETHER).sub(gasCostTxId2).toNumber(), afterBalanceTwo.toNumber(), "buyer B should claim 0.25 of first dividend")
+
+            //second deposit after token transfer
+            await token.depositDividend({from: owner, value: ONEETHER})
+
+            //byuer B claims second deposit
+            let beforeBalanceThree = await web3.eth.getBalance(buyerB)
+            let txId3 = await token.claimDividend(1, {from: buyerB, gasPrice: gasPrice})
+            let afterBalanceThree = await web3.eth.getBalance(buyerB)
+            let gasCostTxId3 = txId3.receipt.gasUsed * gasPrice
+            assert.equal(beforeBalanceThree.add((0.25+0.1) * ONEETHER).sub(gasCostTxId3).toNumber(), afterBalanceThree.toNumber(), "buyer B should claim 0.25+0.1 of second dividend")
+
+            //byuer A claims second deposit (without luck)
+            let beforeBalanceFour = await web3.eth.getBalance(buyerA)
+            let txId4 = await token.claimDividend(1, {from: buyerA, gasPrice: gasPrice})
+            let afterBalanceFour = await web3.eth.getBalance(buyerA)
+            let gasCostTxId4 = txId4.receipt.gasUsed * gasPrice
+            assert.equal(beforeBalanceFour.sub(gasCostTxId4).toNumber(), afterBalanceFour.toNumber(), "buyer A has nothing to claim")
+        })
+    })
+
     contract('validating claimAll (can take a bit longer)', () => {
         it('claimAll does not run out of gas: 5 years, monthly dividends', async () => {
             let beforeBalanceA = await web3.eth.getBalance(buyerA)
