@@ -193,14 +193,32 @@ contract DividendAssetToken is BasicAssetToken {
     /** @dev Claim all dividiends
       * @notice In case function call runs out of gas run single address calls against claimDividend function
       */
-    function claimDividendAll() public { //todo: claimMultiple(address[]) instead of claimAll
-        // The claim all function should only be executed once
+    function claimDividendAll() public {
+        //early exit if all claimed
         require(dividendsClaimed[msg.sender] < dividends.length);
 
         // Cycle through all dividend distributions and make the payout
-        for (uint i = dividendsClaimed[msg.sender]; i < dividends.length; i++) {        
+        for (uint i = dividendsClaimed[msg.sender]; i < dividends.length; i++) {
             if ((dividends[i].claimed[msg.sender] == false) && (dividends[i].recycled == false)) {
                 dividendsClaimed[msg.sender] = SafeMath.add(i, 1);
+                claimDividend(i);
+            }
+        }
+    }
+
+    /** @dev Claim dividends in batches
+      * @notice In case claimDividendAll runs out of gas
+      */
+    function claimInBatches(uint256 startIndex, uint256 endIndex) public {
+        require(startIndex < endIndex);
+
+        //early exit if already claimed
+        require(dividendsClaimed[msg.sender] < dividends.length);
+
+        // Cycle through all dividend distributions and make the payout
+        for (uint i = startIndex; i <= endIndex; i++) {
+            if ((dividends[i].claimed[msg.sender] == false) && (dividends[i].recycled == false)) {
+                dividendsClaimed[msg.sender] = SafeMath.add(dividendsClaimed[msg.sender], 1);
                 claimDividend(i);
             }
         }

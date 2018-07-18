@@ -15,6 +15,8 @@ contract('DividendAssetToken', (accounts) => {
     let owner = null
     
     const ONEETHER  = 1000000000000000000
+    const HALFETHER = ONEETHER / 2
+    const QUARTERETHER = HALFETHER / 2
     const SECONDS_IN_A_YEAR = 86400 * 366
     const SECONDS_IN_A_MONTH = 86400 * 30
     const gasPrice = 0
@@ -59,6 +61,19 @@ contract('DividendAssetToken', (accounts) => {
         await token.claimDividendAll({from: buyerC, gasPrice: gasPrice})
         await token.claimDividendAll({from: buyerD, gasPrice: gasPrice})
         await token.claimDividendAll({from: buyerE, gasPrice: gasPrice})
+    }
+
+    let claimInBatch = async (years) => {
+        let gasCostTxs = 0
+        for(let yearCount = 0; yearCount < years; yearCount++) {
+            const fromIdx = 1 + yearCount*12
+            const tillIdx = 12 + yearCount*12
+
+            let txId = await token.claimInBatches(fromIdx, tillIdx, {from: buyerA, gasPrice: gasPrice})
+            gasCostTxs = gasCostTxs + txId.receipt.gasUsed * gasPrice
+        }
+
+        return gasCostTxs
     }
 
     let claimAllButD = async () => {
@@ -111,7 +126,7 @@ contract('DividendAssetToken', (accounts) => {
 
             const dividendPaymentCount = 5*12
             for(let i=0; i<dividendPaymentCount; i++) {
-                await token.depositDividend({from: owner, value: ONEETHER})
+                await token.depositDividend({from: owner, value: QUARTERETHER})
                 await timeTravel(SECONDS_IN_A_MONTH) //1 month passes
             }
             
@@ -120,8 +135,36 @@ contract('DividendAssetToken', (accounts) => {
 
             let afterBalanceA = await web3.eth.getBalance(buyerA)
 
-            const expectedTotalEther = ONEETHER + (ONEETHER*dividendPaymentCount)
+            const expectedTotalEther = ONEETHER + (QUARTERETHER*dividendPaymentCount)
             assert.equal(beforeBalanceA.add(0.1 * expectedTotalEther).sub(gasCostTxId1).toNumber(), afterBalanceA.toNumber(), "buyer A should claim 0.1 of dividend")
+        })
+    })
+
+    contract('validating claimInBatches (can take a bit longer)', () => {
+        it('claimInBatches does not run out of gas: 11 years, monthly dividends, yearly batches', async () => {
+            let beforeBalanceA = await web3.eth.getBalance(buyerA)
+
+            const years = 11
+
+            const dividendPaymentCount = years*12
+            let gasCostTxs = 0
+            for(let i=0; i<dividendPaymentCount; i++) {
+                await token.depositDividend({from: owner, value: QUARTERETHER})
+                await timeTravel(SECONDS_IN_A_MONTH) //1 month passes
+            }
+
+            gasCostTxs = gasCostTxs + await claimInBatch(years)
+
+            //trying to claim again before claimed all shouldn't affect the expected result
+            gasCostTxs = gasCostTxs + await claimInBatch(years)
+
+            let txId1 = await token.claimDividend(0, {from: buyerA, gasPrice: gasPrice}) //from beforeEach
+            gasCostTxs = gasCostTxs + txId1.receipt.gasUsed * gasPrice
+
+            let afterBalanceA = await web3.eth.getBalance(buyerA)
+
+            const expectedTotalEther = ONEETHER + (QUARTERETHER*dividendPaymentCount)
+            assert.equal(beforeBalanceA.add(0.1 * expectedTotalEther).sub(gasCostTxs).toNumber(), afterBalanceA.toNumber(), "buyer A should claim 0.1 of dividend")
         })
     })
 
