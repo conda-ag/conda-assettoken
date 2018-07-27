@@ -1,8 +1,8 @@
-let EVMRevert = require('zeppelin-solidity/test/helpers/assertRevert')
+let EVMRevert = require('openzeppelin-solidity/test/helpers/assertRevert')
 let timeTravel = require('./helper/timeTravel.js')
 
-const time = require('zeppelin-solidity/test/helpers/increaseTime')
-import latestTime from 'zeppelin-solidity/test/helpers/latestTime'
+const time = require('openzeppelin-solidity/test/helpers/increaseTime')
+import latestTime from 'openzeppelin-solidity/test/helpers/latestTime'
 
 const DividendAssetToken = artifacts.require('DividendAssetToken.sol')
 
