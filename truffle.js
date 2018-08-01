@@ -1,6 +1,6 @@
 
 require('babel-register')({
-  ignore: /node_modules\/(?!zeppelin-solidity\/test\/helpers)/
+  ignore: /node_modules\/(?!openzeppelin-solidity\/test\/helpers)/
 });
 require('babel-polyfill');
 

@@ -1,4 +1,4 @@
 module.exports = { 
     skipFiles: ['contracts/Migrations.sol'],
-    copyPackages: ['zeppelin-solidity']
+    copyPackages: ['openzeppelin-solidity']
 }

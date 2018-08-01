@@ -20,9 +20,9 @@ pragma solidity ^0.4.24;
 */
 
 import "./BasicAssetToken.sol";
-import "zeppelin-solidity/contracts/math/SafeMath.sol";
-import "zeppelin-solidity/contracts/ownership/Ownable.sol";
-import "zeppelin-solidity/contracts/token/ERC20/ERC20.sol";
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 
 /** @title Dividend AssetToken. */
 contract DividendAssetToken is BasicAssetToken {

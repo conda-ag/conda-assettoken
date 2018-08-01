@@ -1,4 +1,4 @@
-let EVMRevert = require('zeppelin-solidity/test/helpers/assertRevert')
+let EVMRevert = require('openzeppelin-solidity/test/helpers/assertRevert')
 let timeTravel = require('./helper/timeTravel.js')
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'

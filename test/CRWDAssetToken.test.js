@@ -1,4 +1,4 @@
-let EVMRevert = require('zeppelin-solidity/test/helpers/assertRevert')
+let EVMRevert = require('openzeppelin-solidity/test/helpers/assertRevert')
 
 const CRWDAssetToken = artifacts.require('CRWDAssetToken.sol')
 const MOCKCRWDClearing = artifacts.require('MOCKCRWDClearing.sol')

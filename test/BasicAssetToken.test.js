@@ -1,4 +1,4 @@
-let EVMRevert = require('zeppelin-solidity/test/helpers/assertRevert')
+let EVMRevert = require('openzeppelin-solidity/test/helpers/assertRevert')
 
 const BasicAssetToken = artifacts.require('BasicAssetToken.sol')
 const ERC20TestToken = artifacts.require('ERC20TestToken.sol')

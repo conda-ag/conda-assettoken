@@ -19,8 +19,8 @@ pragma solidity ^0.4.24;
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import "zeppelin-solidity/contracts/math/SafeMath.sol";
-import "zeppelin-solidity/contracts/ownership/Ownable.sol";
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 /** @title Basic AssetToken. */
 contract BasicAssetToken is Ownable {
