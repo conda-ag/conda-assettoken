@@ -5,7 +5,7 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "../interfaces/ICRWDClearing.sol";
 
 /** @title mocked clearing for tests. */
-contract MockCrwdClearing {
+contract MockCrwdClearing is ICRWDClearing {
     using SafeMath for uint256;
 
     uint256 companyFee;
@@ -14,8 +14,8 @@ contract MockCrwdClearing {
     address condaAddress;
     address companyAddress;
 
-    function clearFunds(address /*_underlyingCurrency*/, address _from, address /*_to*/, uint256 _amount) public returns (bool) {
-        
+    //function clearFunds(address /*_underlyingCurrency*/, address _from, address /*_to*/, uint256 _amount, string /*_purpose*/) public returns (bool) {
+    function clearFunds(address /*_underlyingCurrency*/, address _from, address /*_to*/, uint256 _amount, string /*_purpose*/) external returns (bool) {
 
         if (companyFee > 0) {
             uint256 feeCompanyToPay = _amount.mul(companyFee).div(1000);

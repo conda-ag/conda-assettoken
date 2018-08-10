@@ -20,7 +20,7 @@ contract CRWDAssetToken is DividendAssetToken {
       */
     function transfer(address _to, uint256 _amount) public returns (bool success) {
         uint256 transferValue = _amount.mul(baseRate).div(1000);
-        ICRWDClearing(clearingAddress).clearFunds(baseCurrency, msg.sender, _to, transferValue);
+        ICRWDClearing(clearingAddress).clearFunds(baseCurrency, msg.sender, _to, transferValue, "transfer");
         return super.transfer(_to, _amount);
     }
 
@@ -32,7 +32,7 @@ contract CRWDAssetToken is DividendAssetToken {
       */
     function transferFrom(address _from, address _to, uint256 _amount) public returns (bool success) {
         uint256 transferValue = _amount.mul(baseRate).div(1000);
-        ICRWDClearing(clearingAddress).clearFunds(baseCurrency, _from, _to, transferValue);
+        ICRWDClearing(clearingAddress).clearFunds(baseCurrency, _from, _to, transferValue, "transfer");
         return super.transferFrom(_from, _to, _amount);
     }
 
@@ -43,7 +43,7 @@ contract CRWDAssetToken is DividendAssetToken {
       */
     function mint(address _to, uint256 _amount) public onlyOwner canMint returns (bool) {
         uint256 transferValue = _amount.mul(baseRate).div(1000);
-        ICRWDClearing(clearingAddress).clearFunds(baseCurrency, _to, _to, transferValue);
+        ICRWDClearing(clearingAddress).clearFunds(baseCurrency, _to, _to, transferValue, "mint");
         return super.mint(_to,_amount);
     }
 
