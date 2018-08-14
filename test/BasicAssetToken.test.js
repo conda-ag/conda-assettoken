@@ -16,6 +16,10 @@ contract('BasicAssetToken', (accounts) => {
     const buyerA = accounts[1]
     const buyerB = accounts[2]
     const buyerC = accounts[3]
+
+    const pauseControl = accounts[4]
+
+    const unknown = accounts[9]
   
     beforeEach(async () => {
         token = await BasicAssetToken.new()
@@ -495,6 +499,52 @@ contract('BasicAssetToken', (accounts) => {
             assert.notEqual(blockNumberBeforeSend, blockNumberAfterSend)
 
             assert.equal(await token.totalSupplyAt(blockNumberBeforeSend+1), 10)
+        })
+    })
+
+    contract('validating setPauseControl()', () => {
+        it('setPauseControl() can set pauseControl address as owner', async () => {
+            assert.equal(await token.pauseControl(), ZERO_ADDRESS) //precondition
+
+            await token.setPauseControl(pauseControl, {from: owner})
+
+            assert.equal(await token.pauseControl(), pauseControl)
+        })
+
+        it('setPauseControl() cannot set pauseControl address as not-owner', async () => {
+            assert.equal(await token.pauseControl(), ZERO_ADDRESS) //precondition
+
+            await token.setPauseControl(pauseControl, {from: unknown}).should.be.rejectedWith(EVMRevert)
+
+            assert.equal(await token.pauseControl(), ZERO_ADDRESS)
+        })
+    })
+
+    contract('validating pauseTransfer()', () => {
+        it('pauseTransfer() can pause as pauseControl', async () => {
+            await token.setPauseControl(pauseControl, {from: owner})
+
+            await token.pauseTransfer(false, {from: pauseControl})
+
+            assert.equal(await token.transfersEnabled(), false)
+        })
+
+        it('pauseTransfer() can resume as pauseControl', async () => {
+            await token.setPauseControl(pauseControl, {from: owner})
+            await token.pauseTransfer(false, {from: pauseControl})
+            assert.equal(await token.transfersEnabled(), false)
+
+            await token.pauseTransfer(true, {from: pauseControl})
+
+            assert.equal(await token.transfersEnabled(), true)
+        })
+
+        it('pauseTransfer() cannot be set as not-pauseControl', async () => {
+            await token.setPauseControl(pauseControl, {from: unknown}).should.be.rejectedWith(EVMRevert)
+
+            await token.pauseTransfer(false).should.be.rejectedWith(EVMRevert)
+
+            assert.equal(await token.transfersEnabled(), true)
         })
     })
 })

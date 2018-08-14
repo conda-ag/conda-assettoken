@@ -85,6 +85,8 @@ contract BasicAssetToken is Ownable {
     // Crowdsale Contract
     address public crowdsale;
 
+    // role that can pause/resume
+    address public pauseControl;
 
 ///////////////////
 // Events
@@ -95,6 +97,14 @@ contract BasicAssetToken is Ownable {
     event Mint(address indexed to, uint256 amount);
     event MintFinished();
     event Burn(address indexed burner, uint256 value);
+
+///////////////////
+// Modifiers
+///////////////////
+    modifier onlyPauseControl() {
+        require(msg.sender == pauseControl);
+        _;
+    }
 
 ///////////////////
 // Set / Get Metadata
@@ -146,6 +156,11 @@ contract BasicAssetToken is Ownable {
         crowdsale = _crowdsale;
     }
 
+    function setPauseControl(address _pauseControl) public onlyOwner {
+        require(_pauseControl != address(0));
+        
+        pauseControl = _pauseControl;
+    }
 
 ///////////////////
 // ERC20 Methods
@@ -398,6 +413,18 @@ contract BasicAssetToken is Ownable {
     /// @notice Enables token holders to transfer their tokens freely if true
     /// @param _transfersEnabled True if transfers are allowed in the clone
     function enableTransfers(bool _transfersEnabled) public onlyOwner {
+        transfersEnabled = _transfersEnabled;
+    }
+
+////////////////
+// Pausing token for unforeseen reasons
+////////////////
+
+    /// @dev `pauseTransfer` is an alias for `enableTransfers` using the pauseControl modifier
+    /// @param _transfersEnabled True if transfers are allowed in the clone
+    function pauseTransfer(bool _transfersEnabled) public
+    onlyPauseControl
+    {
         transfersEnabled = _transfersEnabled;
     }
 
