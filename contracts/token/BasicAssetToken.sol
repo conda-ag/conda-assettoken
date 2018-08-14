@@ -79,10 +79,10 @@ contract BasicAssetToken is Ownable {
     // Flag that determines if the token is transferable or not.
     bool public transfersEnabled = true;
 
-    // Flag that minting is finished
+    // Flag that minting and burning is finished
     bool public capitalIncreaseDecreasePhaseFinished = false;
 
-    // Flag that minting is paused
+    // Flag that minting and burning is paused
     bool public mintingAndBurningPaused = false;
 
     // Crowdsale Contract
