@@ -342,9 +342,9 @@ contract BasicAssetToken is Ownable {
         return true;
     }
 
-    ///  @dev Function to stop minting new tokens.
+    ///  @dev Function to stop minting new tokens and also disables burning.
     ///  @return True if the operation was successful.
-    function finishMinting() public onlyOwner canMintOrBurn returns (bool) {
+    function finishCapitalIncreaseDecreasePhase() public onlyOwner canMintOrBurn returns (bool) {
         if(capitalIncreaseDecreasePhaseFinished) {
             return false;
         }

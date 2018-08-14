@@ -83,7 +83,7 @@ contract('BasicAssetToken', (accounts) => {
         })
 
         it('should throw an error when trying to mint but finished minting', async () => {
-            await token.finishMinting()
+            await token.finishCapitalIncreaseDecreasePhase()
             await token.mint(buyerA, 100).should.be.rejectedWith(EVMRevert)
         })
 
@@ -114,7 +114,7 @@ contract('BasicAssetToken', (accounts) => {
 
         it('burn should throw an error after finishing mint', async () => {
             await token.mint(buyerA, 100)
-            await token.finishMinting()
+            await token.finishCapitalIncreaseDecreasePhase()
             await token.burn(buyerA, 100).should.be.rejectedWith(EVMRevert)
         })
 
@@ -306,7 +306,7 @@ contract('BasicAssetToken', (accounts) => {
         })
 
         it('owner can change name when canMintOrBurn not finished', async () => {
-            await token.finishMinting()
+            await token.finishCapitalIncreaseDecreasePhase()
             await token.setName("changed name").should.be.rejectedWith(EVMRevert)
         })
     })
@@ -323,7 +323,7 @@ contract('BasicAssetToken', (accounts) => {
         })
 
         it('owner cannot change symbol when canMintOrBurn has finished', async () => {
-            await token.finishMinting()
+            await token.finishCapitalIncreaseDecreasePhase()
             await token.setSymbol("SYM").should.be.rejectedWith(EVMRevert)
         })
     })
@@ -340,7 +340,7 @@ contract('BasicAssetToken', (accounts) => {
         })
 
         it('owner cannot change description when canMintOrBurn has finished', async () => {
-            await token.finishMinting()
+            await token.finishCapitalIncreaseDecreasePhase()
             await token.setShortDescription("My short description from test.").should.be.rejectedWith(EVMRevert)
         })
     })
@@ -357,7 +357,7 @@ contract('BasicAssetToken', (accounts) => {
         })
 
         it('owner cannot change setBaseRate when canMintOrBurn has finished', async () => {
-            await token.finishMinting()
+            await token.finishCapitalIncreaseDecreasePhase()
             await token.setBaseRate(3, { from: owner }).should.be.rejectedWith(EVMRevert)
         })
     })
@@ -378,7 +378,7 @@ contract('BasicAssetToken', (accounts) => {
         })
 
         it('owner cannot change setBaseCurrency when canMintOrBurn has finished', async () => {
-            await token.finishMinting()
+            await token.finishCapitalIncreaseDecreasePhase()
 
             let erc20TestToken = await ERC20TestToken.new()
             

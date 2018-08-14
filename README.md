@@ -74,7 +74,7 @@ To manage this funding/investment process on the Blockchain so called *Smart Con
 Disclaimer: Keep in mind that the figure above is a simplified representation where many details are left out. The truth lies in the code :)
 
 ### BasicAssetToken
-Does conceptionally but not in practice inherit from [ERC20](https://github.com/ethereum/eips/issues/20) but has all it's method signatures and is therefore an ERC20 token and has similar functionality. It also conceptionally inherits from Mintable and entitled contract controllers like the creator may mint until finishMinting is called
+Does conceptionally but not in practice inherit from [ERC20](https://github.com/ethereum/eips/issues/20) but has all it's method signatures and is therefore an ERC20 token and has similar functionality. It also conceptionally inherits from Mintable and entitled contract controllers like the creator may mint until finishCapitalIncreaseDecreasePhase is called
 
 ### DividendAssetToken
 Inherits from BasicAssetToken and adds functionality to pay dividends. Dividends can be deposited and claimed. Unclaimed dividends get recycled and are evenly distributed (this is to avoid sending to dead addresses)
