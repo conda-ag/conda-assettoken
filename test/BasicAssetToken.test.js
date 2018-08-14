@@ -542,7 +542,7 @@ contract('BasicAssetToken', (accounts) => {
         it('pauseTransfer() cannot be set as not-pauseControl', async () => {
             await token.setPauseControl(pauseControl, {from: unknown}).should.be.rejectedWith(EVMRevert)
 
-            await token.pauseTransfer(false).should.be.rejectedWith(EVMRevert)
+            await token.pauseTransfer(false, { from: unknown }).should.be.rejectedWith(EVMRevert)
 
             assert.equal(await token.transfersEnabled(), true)
         })

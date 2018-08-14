@@ -415,7 +415,7 @@ contract BasicAssetToken is Ownable {
 ////////////////
 
     /// @notice Enables token holders to transfer their tokens freely if true
-    /// @param _transfersEnabled True if transfers are allowed in the clone
+    /// @param _transfersEnabled True if transfers are allowed
     function enableTransfers(bool _transfersEnabled) public onlyOwner {
         transfersEnabled = _transfersEnabled;
     }
@@ -425,7 +425,7 @@ contract BasicAssetToken is Ownable {
 ////////////////
 
     /// @dev `pauseTransfer` is an alias for `enableTransfers` using the pauseControl modifier
-    /// @param _transfersEnabled True if transfers are allowed in the clone
+    /// @param _transfersEnabled False if transfers are allowed
     function pauseTransfer(bool _transfersEnabled) public
     onlyPauseControl
     {
