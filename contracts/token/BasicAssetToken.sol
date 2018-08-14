@@ -80,7 +80,7 @@ contract BasicAssetToken is Ownable {
     bool public transfersEnabled = true;
 
     // Flag that minting is finished
-    bool public mintingFinished = false;
+    bool public capitalIncreaseDecreasePhaseFinished = false;
 
     // Flag that minting is paused
     bool public mintingAndBurningPaused = false;
@@ -111,12 +111,12 @@ contract BasicAssetToken is Ownable {
 
     modifier canMintOrBurn() {
         require(!mintingAndBurningPaused);
-        require(!mintingFinished);
+        require(!capitalIncreaseDecreasePhaseFinished);
         _;
     }
 
     modifier canSetMetadataEarly() {
-        require(!mintingFinished);
+        require(!capitalIncreaseDecreasePhaseFinished);
         _;
     }
 
@@ -345,11 +345,11 @@ contract BasicAssetToken is Ownable {
     ///  @dev Function to stop minting new tokens.
     ///  @return True if the operation was successful.
     function finishMinting() public onlyOwner canMintOrBurn returns (bool) {
-        if(mintingFinished) {
+        if(capitalIncreaseDecreasePhaseFinished) {
             return false;
         }
 
-        mintingFinished = true;
+        capitalIncreaseDecreasePhaseFinished = true;
         emit MintFinished();
         return true;
     }
