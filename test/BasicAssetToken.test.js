@@ -87,6 +87,16 @@ contract('BasicAssetToken', (accounts) => {
             await token.mint(buyerA, 100).should.be.rejectedWith(EVMRevert)
         })
 
+        contract('validating mint when paused', () => {
+            it('trying to mint when minting is paused should fail', async () => {
+                await token.mint(buyerA, 10) //works
+                await token.setPauseControl(pauseControl, {from: owner})
+                await token.pauseMinting(false, {from: pauseControl}) //now disabled
+                assert.equal(await token.mintingPaused(), true, "as precondition minting must be paused")
+
+                await token.mint(buyerA, 10).should.be.rejectedWith(EVMRevert)
+            })
+        })
     })
 
     contract('validating burn', () => {
@@ -111,6 +121,17 @@ contract('BasicAssetToken', (accounts) => {
         it('only owner can burn', async () => {
             await token.mint(buyerA, 100)
             await token.burn(buyerA, 100, {'from': buyerA}).should.be.rejectedWith(EVMRevert)
+        })
+
+        contract('validating burn when paused', () => {
+            it('trying to burn when minting is paused should fail', async () => {
+                await token.mint(buyerA, 100)
+                await token.setPauseControl(pauseControl, {from: owner})
+                await token.pauseMinting(false, {from: pauseControl}) //now disabled
+                assert.equal(await token.mintingPaused(), true, "as precondition burning must be paused")
+
+                await token.burn(buyerA, 1).should.be.rejectedWith(EVMRevert)
+            })
         })
     })
 
@@ -545,6 +566,34 @@ contract('BasicAssetToken', (accounts) => {
             await token.pauseTransfer(false, { from: unknown }).should.be.rejectedWith(EVMRevert)
 
             assert.equal(await token.transfersEnabled(), true)
+        })
+    })
+
+    contract('validating pauseMinting()', () => {
+        it('pauseMinting() can pause as pauseControl', async () => {
+            await token.setPauseControl(pauseControl, {from: owner})
+
+            await token.pauseMinting(false, {from: pauseControl})
+
+            assert.equal(await token.mintingPaused(), true)
+        })
+
+        it('pauseMinting() can resume as pauseControl', async () => {
+            await token.setPauseControl(pauseControl, {from: owner})
+            await token.pauseMinting(false, {from: pauseControl})
+            assert.equal(await token.mintingPaused(), true)
+
+            await token.pauseMinting(true, {from: pauseControl})
+
+            assert.equal(await token.mintingPaused(), false)
+        })
+
+        it('pauseMinting() cannot be set as not-pauseControl', async () => {
+            await token.setPauseControl(pauseControl, {from: unknown}).should.be.rejectedWith(EVMRevert)
+
+            await token.pauseMinting(false, { from: unknown }).should.be.rejectedWith(EVMRevert)
+
+            assert.equal(await token.mintingPaused(), false)
         })
     })
 })

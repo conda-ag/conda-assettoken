@@ -82,6 +82,9 @@ contract BasicAssetToken is Ownable {
     // Flag that minting is finished
     bool public mintingFinished = false;
 
+    // Flag that minting is paused
+    bool public mintingPaused = false;
+
     // Crowdsale Contract
     address public crowdsale;
 
@@ -106,6 +109,17 @@ contract BasicAssetToken is Ownable {
         _;
     }
 
+    modifier canMint() {
+        require(!mintingPaused);
+        require(!mintingFinished);
+        _;
+    }
+
+    modifier canSetMetadataEarly() {
+        require(!mintingFinished);
+        _;
+    }
+
 ///////////////////
 // Set / Get Metadata
 ///////////////////
@@ -113,7 +127,7 @@ contract BasicAssetToken is Ownable {
     /** @dev Change the underlying base currency.
       * @param _token Address of the token used as underlying base currency.
       */
-    function setBaseCurrency(address _token) public onlyOwner canMint {
+    function setBaseCurrency(address _token) public onlyOwner canSetMetadataEarly {
         require(_token != address(0));
         
         baseCurrency = _token;
@@ -122,35 +136,35 @@ contract BasicAssetToken is Ownable {
     /** @dev Defines the base conversion of number of tokens to the initial rate. For regulatory checks. 
       * @param _baseRate Base conversion of number of tokens to the initial rate.
       */
-    function setBaseRate(uint256 _baseRate) public onlyOwner canMint {
+    function setBaseRate(uint256 _baseRate) public onlyOwner canSetMetadataEarly {
         baseRate = _baseRate;
     }
 
     /** @dev Set the name of the token.
       * @param _name The name of the token.
       */
-    function setName(string _name) public onlyOwner canMint {
+    function setName(string _name) public onlyOwner canSetMetadataEarly {
         name = _name;
     }
 
     /** @dev Set the symbol of the token.
       * @param _symbol The symbol of the token.
       */
-    function setSymbol(string _symbol) public onlyOwner canMint {
+    function setSymbol(string _symbol) public onlyOwner canSetMetadataEarly {
         symbol = _symbol;
     }
 
     /** @dev Set the description of the token.
       * @param _shortDescription The description of the token.
       */
-    function setShortDescription(string _shortDescription) public onlyOwner canMint {
+    function setShortDescription(string _shortDescription) public onlyOwner canSetMetadataEarly {
         shortDescription = _shortDescription;
     }
 
     /** @dev Set the address of the crowdsale contract.
       * @param _crowdsale The address of the crowdsale.
       */
-    function setCrowdsaleAddress(address _crowdsale) public onlyOwner canMint {
+    function setCrowdsaleAddress(address _crowdsale) public onlyOwner canSetMetadataEarly {
         require(_crowdsale != address(0));
 
         crowdsale = _crowdsale;
@@ -305,11 +319,6 @@ contract BasicAssetToken is Ownable {
 // Miniting 
 ////////////////
 
-    modifier canMint() {
-        require(!mintingFinished);
-        _;
-    }
-
     /// @dev Function to mint tokens
     /// @param _to The address that will receive the minted tokens.
     /// @param _amount The amount of tokens to mint.
@@ -430,6 +439,14 @@ contract BasicAssetToken is Ownable {
     onlyPauseControl
     {
         transfersEnabled = _transfersEnabled;
+    }
+
+    /// @dev `pauseMinting` can pause mint/burn
+    /// @param _mintingEnabled False if minting/burning is allowed
+    function pauseMinting(bool _mintingEnabled) public
+    onlyPauseControl
+    {
+        mintingPaused = (_mintingEnabled == false);
     }
 
 ////////////////
