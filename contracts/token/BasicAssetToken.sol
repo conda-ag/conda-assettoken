@@ -83,7 +83,7 @@ contract BasicAssetToken is Ownable {
     bool public mintingFinished = false;
 
     // Flag that minting is paused
-    bool public mintingPaused = false;
+    bool public mintingAndBurningPaused = false;
 
     // Crowdsale Contract
     address public crowdsale;
@@ -109,8 +109,8 @@ contract BasicAssetToken is Ownable {
         _;
     }
 
-    modifier canMint() {
-        require(!mintingPaused);
+    modifier canMintOrBurn() {
+        require(!mintingAndBurningPaused);
         require(!mintingFinished);
         _;
     }
@@ -323,7 +323,7 @@ contract BasicAssetToken is Ownable {
     /// @param _to The address that will receive the minted tokens.
     /// @param _amount The amount of tokens to mint.
     /// @return A boolean that indicates if the operation was successful.
-    function mint(address _to, uint256 _amount) public onlyOwner canMint returns (bool) {
+    function mint(address _to, uint256 _amount) public onlyOwner canMintOrBurn returns (bool) {
         uint256 curTotalSupply = totalSupply();
 
         // Check for overflow
@@ -344,7 +344,7 @@ contract BasicAssetToken is Ownable {
 
     ///  @dev Function to stop minting new tokens.
     ///  @return True if the operation was successful.
-    function finishMinting() public onlyOwner canMint returns (bool) {
+    function finishMinting() public onlyOwner canMintOrBurn returns (bool) {
         if(mintingFinished) {
             return false;
         }
@@ -361,7 +361,7 @@ contract BasicAssetToken is Ownable {
     /** @dev Burn someone's tokens (only allowed during minting phase). 
       * @param _who Eth address of person who's tokens should be burned.
       */
-    function burn(address _who, uint256 _value) public canMint onlyOwner {
+    function burn(address _who, uint256 _value) public canMintOrBurn onlyOwner {
         uint256 curTotalSupply = totalSupply();
 
         // Check for overflow
@@ -442,11 +442,11 @@ contract BasicAssetToken is Ownable {
     }
 
     /// @dev `pauseMinting` can pause mint/burn
-    /// @param _mintingEnabled False if minting/burning is allowed
-    function pauseMinting(bool _mintingEnabled) public
+    /// @param _mintingAndBurningEnabled False if minting/burning is allowed
+    function pauseCapitalIncreaseOrDecrease(bool _mintingAndBurningEnabled) public
     onlyPauseControl
     {
-        mintingPaused = (_mintingEnabled == false);
+        mintingAndBurningPaused = (_mintingAndBurningEnabled == false);
     }
 
 ////////////////

@@ -41,7 +41,7 @@ contract CRWDAssetToken is DividendAssetToken {
       * @param _amount The amount of tokens to mint.
       * @return A boolean that indicates if the operation was successful.
       */
-    function mint(address _to, uint256 _amount) public onlyOwner canMint returns (bool) {
+    function mint(address _to, uint256 _amount) public onlyOwner canMintOrBurn returns (bool) {
         uint256 transferValue = _amount.mul(baseRate).div(1000);
         ICRWDClearing(clearingAddress).clearFunds(baseCurrency, _to, _to, transferValue);
         return super.mint(_to,_amount);

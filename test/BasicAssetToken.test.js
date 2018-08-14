@@ -91,8 +91,8 @@ contract('BasicAssetToken', (accounts) => {
             it('trying to mint when minting is paused should fail', async () => {
                 await token.mint(buyerA, 10) //works
                 await token.setPauseControl(pauseControl, {from: owner})
-                await token.pauseMinting(false, {from: pauseControl}) //now disabled
-                assert.equal(await token.mintingPaused(), true, "as precondition minting must be paused")
+                await token.pauseCapitalIncreaseOrDecrease(false, {from: pauseControl}) //now disabled
+                assert.equal(await token.mintingAndBurningPaused(), true, "as precondition minting must be paused")
 
                 await token.mint(buyerA, 10).should.be.rejectedWith(EVMRevert)
             })
@@ -127,8 +127,8 @@ contract('BasicAssetToken', (accounts) => {
             it('trying to burn when minting is paused should fail', async () => {
                 await token.mint(buyerA, 100)
                 await token.setPauseControl(pauseControl, {from: owner})
-                await token.pauseMinting(false, {from: pauseControl}) //now disabled
-                assert.equal(await token.mintingPaused(), true, "as precondition burning must be paused")
+                await token.pauseCapitalIncreaseOrDecrease(false, {from: pauseControl}) //now disabled
+                assert.equal(await token.mintingAndBurningPaused(), true, "as precondition burning must be paused")
 
                 await token.burn(buyerA, 1).should.be.rejectedWith(EVMRevert)
             })
@@ -295,89 +295,89 @@ contract('BasicAssetToken', (accounts) => {
     })
 
     contract('validating setName', () => {
-        it('owner can change name when canMint not finished', async () => {
+        it('owner can change name when canMintOrBurn not finished', async () => {
             await token.setName("changed name")
             assert.equal(await token.name.call(), "changed name")
         })
 
-        it('non owner cannot change name even if canMint not finished', async () => {
+        it('non owner cannot change name even if canMintOrBurn not finished', async () => {
             owner.should.not.eq(buyerA)
             await token.setName("changed name", { 'from': buyerA }).should.be.rejectedWith(EVMRevert)
         })
 
-        it('owner can change name when canMint not finished', async () => {
+        it('owner can change name when canMintOrBurn not finished', async () => {
             await token.finishMinting()
             await token.setName("changed name").should.be.rejectedWith(EVMRevert)
         })
     })
 
     contract('validating setSymbol', () => {
-        it('owner can change symbol when canMint not finished', async () => {
+        it('owner can change symbol when canMintOrBurn not finished', async () => {
             await token.setSymbol("SYM")
             assert.equal(await token.symbol.call(), "SYM")
         })
 
-        it('non owner cannot change symbol even if canMint not finished', async () => {
+        it('non owner cannot change symbol even if canMintOrBurn not finished', async () => {
             owner.should.not.eq(buyerA)
             await token.setSymbol("SYM", {'from': buyerA}).should.be.rejectedWith(EVMRevert)
         })
 
-        it('owner cannot change symbol when canMint has finished', async () => {
+        it('owner cannot change symbol when canMintOrBurn has finished', async () => {
             await token.finishMinting()
             await token.setSymbol("SYM").should.be.rejectedWith(EVMRevert)
         })
     })
 
     contract('validating setShortDescription', () => {
-        it('owner can change description when canMint not finished', async () => {
+        it('owner can change description when canMintOrBurn not finished', async () => {
             await token.setShortDescription("My short description from test.")
             assert.equal(await token.shortDescription.call(), "My short description from test.")
         })
 
-        it('non owner cannot change description even if canMint not finished', async () => {
+        it('non owner cannot change description even if canMintOrBurn not finished', async () => {
             owner.should.not.eq(buyerA)
             await token.setShortDescription("My short description from test.", {'from': buyerA}).should.be.rejectedWith(EVMRevert)
         })
 
-        it('owner cannot change description when canMint has finished', async () => {
+        it('owner cannot change description when canMintOrBurn has finished', async () => {
             await token.finishMinting()
             await token.setShortDescription("My short description from test.").should.be.rejectedWith(EVMRevert)
         })
     })
 
     contract('validating setBaseRate', () => {
-        it('owner can change setBaseRate when canMint not finished', async () => {
+        it('owner can change setBaseRate when canMintOrBurn not finished', async () => {
             await token.setBaseRate(3, { from: owner })
             assert.equal(await token.baseRate.call(), 3)
         })
 
-        it('non owner cannot change setBaseRate even if canMint not finished', async () => {
+        it('non owner cannot change setBaseRate even if canMintOrBurn not finished', async () => {
             owner.should.not.eq(buyerA)
             await token.setBaseRate(3, { from: buyerA }).should.be.rejectedWith(EVMRevert)
         })
 
-        it('owner cannot change setBaseRate when canMint has finished', async () => {
+        it('owner cannot change setBaseRate when canMintOrBurn has finished', async () => {
             await token.finishMinting()
             await token.setBaseRate(3, { from: owner }).should.be.rejectedWith(EVMRevert)
         })
     })
 
     contract('validating setBaseCurrency', () => {
-        it('owner can change setBaseCurrency when canMint not finished', async () => {
+        it('owner can change setBaseCurrency when canMintOrBurn not finished', async () => {
             let erc20TestToken = await ERC20TestToken.new()
             
             await token.setBaseCurrency(erc20TestToken.address, { from: owner })
             assert.equal(await token.baseCurrency.call(), erc20TestToken.address)
         })
 
-        it('non owner cannot change setBaseCurrency even if canMint not finished', async () => {
+        it('non owner cannot change setBaseCurrency even if canMintOrBurn not finished', async () => {
             buyerA.should.not.eq(owner)
             let erc20TestToken = await ERC20TestToken.new()
             
             await token.setBaseCurrency(erc20TestToken.address, { from: buyerA }).should.be.rejectedWith(EVMRevert)
         })
 
-        it('owner cannot change setBaseCurrency when canMint has finished', async () => {
+        it('owner cannot change setBaseCurrency when canMintOrBurn has finished', async () => {
             await token.finishMinting()
 
             let erc20TestToken = await ERC20TestToken.new()
@@ -569,31 +569,31 @@ contract('BasicAssetToken', (accounts) => {
         })
     })
 
-    contract('validating pauseMinting()', () => {
-        it('pauseMinting() can pause as pauseControl', async () => {
+    contract('validating pauseCapitalIncreaseOrDecrease()', () => {
+        it('pauseCapitalIncreaseOrDecrease() can pause as pauseControl', async () => {
             await token.setPauseControl(pauseControl, {from: owner})
 
-            await token.pauseMinting(false, {from: pauseControl})
+            await token.pauseCapitalIncreaseOrDecrease(false, {from: pauseControl})
 
-            assert.equal(await token.mintingPaused(), true)
+            assert.equal(await token.mintingAndBurningPaused(), true)
         })
 
-        it('pauseMinting() can resume as pauseControl', async () => {
+        it('pauseCapitalIncreaseOrDecrease() can resume as pauseControl', async () => {
             await token.setPauseControl(pauseControl, {from: owner})
-            await token.pauseMinting(false, {from: pauseControl})
-            assert.equal(await token.mintingPaused(), true)
+            await token.pauseCapitalIncreaseOrDecrease(false, {from: pauseControl})
+            assert.equal(await token.mintingAndBurningPaused(), true)
 
-            await token.pauseMinting(true, {from: pauseControl})
+            await token.pauseCapitalIncreaseOrDecrease(true, {from: pauseControl})
 
-            assert.equal(await token.mintingPaused(), false)
+            assert.equal(await token.mintingAndBurningPaused(), false)
         })
 
-        it('pauseMinting() cannot be set as not-pauseControl', async () => {
+        it('pauseCapitalIncreaseOrDecrease() cannot be set as not-pauseControl', async () => {
             await token.setPauseControl(pauseControl, {from: unknown}).should.be.rejectedWith(EVMRevert)
 
-            await token.pauseMinting(false, { from: unknown }).should.be.rejectedWith(EVMRevert)
+            await token.pauseCapitalIncreaseOrDecrease(false, { from: unknown }).should.be.rejectedWith(EVMRevert)
 
-            assert.equal(await token.mintingPaused(), false)
+            assert.equal(await token.mintingAndBurningPaused(), false)
         })
     })
 })
