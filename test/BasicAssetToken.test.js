@@ -141,7 +141,7 @@ contract('BasicAssetToken', (accounts) => {
         })
     })
 
-    contract('validating mint', () => {
+    contract('validating mint()', () => {
         it('instant call of balances ', async () => {
             let firstAccountBalance = await token.balanceOf(buyerA)
             assert.equal(firstAccountBalance, 0)
@@ -173,6 +173,15 @@ contract('BasicAssetToken', (accounts) => {
                 await token.mint(buyerA, 10).should.be.rejectedWith(EVMRevert)
             })
         })
+
+        contract('validating mint when finished', () => {
+            it('can mint as capitalControl even when finished capital increase/decrease phase', async () => {
+                await token.setCapitalControl(capitalControl, {from: owner})
+                await token.setTokenAlive({from: owner})
+                await token.finishCapitalIncreaseDecreasePhase()
+                await token.mint(buyerA, 10, {from: capitalControl}) //works because capitalControl
+            })
+        })
     })
 
     contract('validating burn', () => {
@@ -187,6 +196,23 @@ contract('BasicAssetToken', (accounts) => {
 
             let totalSupply = await token.totalSupply()
             assert.equal(totalSupply, 0)
+        })
+
+        it('should return correct balances after complex burn ', async () => {
+            await token.setTokenAlive()
+            await token.mint(buyerA, 100)
+            await token.mint(buyerB, 100)
+            await token.burn(buyerA, 75)
+            await token.burn(buyerB, 25)
+      
+            let buyerABalance = await token.balanceOf(buyerA)
+            assert.equal(buyerABalance, 25)
+
+            let buyerBBalance = await token.balanceOf(buyerB)
+            assert.equal(buyerBBalance, 75)
+
+            let totalSupply = await token.totalSupply()
+            assert.equal(totalSupply, 100)
         })
 
         it('burn should throw an error after finishing mint', async () => {
@@ -211,6 +237,23 @@ contract('BasicAssetToken', (accounts) => {
                 assert.equal(await token.mintingAndBurningPaused(), true, "as precondition burning must be paused")
 
                 await token.burn(buyerA, 1).should.be.rejectedWith(EVMRevert)
+            })
+        })
+
+        contract('validating burn when finished', () => {
+            it('can mint as capitalControl even when finished capital increase/decrease phase', async () => {
+                await token.setCapitalControl(capitalControl, {from: owner})
+                await token.setTokenAlive({from: owner})
+                await token.mint(buyerA, 100)
+
+                await token.finishCapitalIncreaseDecreasePhase()
+                await token.burn(buyerA, 10, {from: capitalControl}) //works because capitalControl
+
+                let firstAccountBalance = await token.balanceOf(buyerA)
+                assert.equal(firstAccountBalance, 90)
+
+                let totalSupply = await token.totalSupply()
+                assert.equal(totalSupply, 90)
             })
         })
     })
