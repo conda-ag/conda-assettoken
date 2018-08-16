@@ -36,7 +36,9 @@ contract('DividendAssetToken', (accounts) => {
         owner = await token.owner()
         
         //set basecurrency
-        await token.setBaseCurrency(erc20.address)
+        await token.setCurrencyMetaData(erc20.address, 1)
+
+        await token.setTokenAlive()
 
         //split
         await token.mint(buyerA, 100) //10%

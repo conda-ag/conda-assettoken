@@ -53,9 +53,7 @@ contract AssetTokenGenerator {
     {
         // create the company Token
         CRWDAssetToken token = new CRWDAssetToken();
-        token.setName(_name);
-        token.setSymbol(_symbol);
-        token.setShortDescription(_shortDescription);
+        token.setMetaData(_name, _symbol, _shortDescription);
         token.transferOwnership(msg.sender);
         assetToken[msg.sender].push(address(token));
         emit TokenCreated(token, msg.sender);

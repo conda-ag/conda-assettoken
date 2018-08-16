@@ -117,6 +117,8 @@ contract BasicAssetToken is Ownable {
     }
 
     modifier canMintOrBurn() {
+        require(availability.tokenAlive);
+
         if (availability.capitalIncreaseDecreasePhaseFinished == false) {
             require(msg.sender == owner);
             require(!availability.mintingAndBurningPaused);
@@ -129,6 +131,7 @@ contract BasicAssetToken is Ownable {
     }
 
     modifier canSetMetadataEarly() {
+        require(!availability.tokenAlive);
         require(!availability.capitalIncreaseDecreasePhaseFinished);
         _;
     }
@@ -138,45 +141,43 @@ contract BasicAssetToken is Ownable {
         _;
     }
 
+    modifier onlyAlive() {
+        require(availability.tokenAlive);
+        _;
+    }
+
 ///////////////////
 // Set / Get Metadata
 ///////////////////
 
-    /** @dev Change the underlying base currency.
-      * @param _token Address of the token used as underlying base currency.
-      */
-    function setBaseCurrency(address _token) public onlyOwner canSetMetadataEarly {
-        require(_token != address(0));
-        
-        baseCurrency = _token;
-    }
-
-    /** @dev Defines the base conversion of number of tokens to the initial rate. For regulatory checks. 
-      * @param _baseRate Base conversion of number of tokens to the initial rate.
-      */
-    function setBaseRate(uint256 _baseRate) public onlyOwner canSetMetadataEarly {
-        baseRate = _baseRate;
-    }
-
-    /** @dev Set the name of the token.
+    /** @dev Change the token's metadata.
       * @param _name The name of the token.
-      */
-    function setName(string _name) public onlyOwner canSetMetadataEarly {
-        name = _name;
-    }
-
-    /** @dev Set the symbol of the token.
       * @param _symbol The symbol of the token.
-      */
-    function setSymbol(string _symbol) public onlyOwner canSetMetadataEarly {
-        symbol = _symbol;
-    }
-
-    /** @dev Set the description of the token.
       * @param _shortDescription The description of the token.
       */
-    function setShortDescription(string _shortDescription) public onlyOwner canSetMetadataEarly {
+    function setMetaData(string _name, string _symbol, string _shortDescription) public 
+    onlyOwner
+    canSetMetadataEarly 
+    {
+        name = _name;
+        symbol = _symbol;
         shortDescription = _shortDescription;
+    }
+
+    /** @dev Change the token's currency metadata.
+      * @param _tokenBaseCurrency Address of the token used as underlying base currency.
+      * @param _baseRate Base conversion of number of tokens to the initial rate.
+      */
+    function setCurrencyMetaData(address _tokenBaseCurrency, uint256 _baseRate) public 
+    onlyOwner
+    canSetMetadataEarly
+    {
+        require(_tokenBaseCurrency != address(0));
+        require(_tokenBaseCurrency != address(this));
+        require(_baseRate != 0);
+
+        baseCurrency = _tokenBaseCurrency;
+        baseRate = _baseRate;
     }
 
     /** @dev Set the address of the crowdsale contract.
@@ -198,6 +199,12 @@ contract BasicAssetToken is Ownable {
 
     function setPauseControl(address _pauseControl) public onlyOwner {
         availability.setPauseControl(_pauseControl);
+    }
+
+    function setTokenAlive() public onlyOwner {
+        require(msg.sender == owner || msg.sender == address(crowdsale));
+
+        availability.setTokenAlive();
     }
 
 ///////////////////

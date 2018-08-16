@@ -82,7 +82,7 @@ contract DividendAssetToken is BasicAssetToken {
 ///////////////////
 
     /** @dev Receives ether to be distriubted to all token owners*/
-    function depositDividend() public payable onlyOwner {
+    function depositDividend() public payable onlyOwner onlyAlive {
 
         // gets the current number of total token distributed
         uint256 currentSupply = totalSupplyAt(block.number);
@@ -115,7 +115,7 @@ contract DividendAssetToken is BasicAssetToken {
       * @param _dividendToken Token address
       * @param _amount The amount of tokens for deposit
       */
-    function depositERC20Dividend(address _dividendToken, uint256 _amount) public onlyOwner {
+    function depositERC20Dividend(address _dividendToken, uint256 _amount) public onlyOwner onlyAlive {
 
         require(_amount > 0);
 

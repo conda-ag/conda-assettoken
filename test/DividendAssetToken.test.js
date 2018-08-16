@@ -29,6 +29,7 @@ contract('DividendAssetToken', (accounts) => {
 
     beforeEach(async () => {
         token = await DividendAssetToken.new()
+        await token.setTokenAlive()
         owner = await token.owner()
         
         //split
