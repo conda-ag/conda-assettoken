@@ -198,6 +198,8 @@ contract BasicAssetToken is Ownable {
     }
 
     function setPauseControl(address _pauseControl) public {
+        require(msg.sender == owner || msg.sender == address(crowdsale));
+
         availability.setPauseControl(_pauseControl);
     }
 
