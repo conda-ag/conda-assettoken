@@ -202,7 +202,7 @@ contract BasicAssetToken is Ownable {
     }
 
     function setTokenAlive() public {
-        require(msg.sender == owner || msg.sender == address(crowdsale));
+        require(msg.sender == owner || msg.sender == crowdsale);
 
         availability.setTokenAlive();
     }
