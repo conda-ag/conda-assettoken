@@ -197,11 +197,11 @@ contract BasicAssetToken is Ownable {
         capitalControl = _capitalControl;
     }
 
-    function setPauseControl(address _pauseControl) public onlyOwner {
+    function setPauseControl(address _pauseControl) public {
         availability.setPauseControl(_pauseControl);
     }
 
-    function setTokenAlive() public onlyOwner {
+    function setTokenAlive() public {
         require(msg.sender == owner || msg.sender == address(crowdsale));
 
         availability.setTokenAlive();
