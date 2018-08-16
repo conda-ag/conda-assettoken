@@ -20,6 +20,7 @@ contract('BasicAssetToken', (accounts) => {
     const buyerC = accounts[3]
 
     const pauseControl = accounts[4]
+    const capitalControl = accounts[5]
 
     const unknown = accounts[9]
   
@@ -31,6 +32,30 @@ contract('BasicAssetToken', (accounts) => {
         
         owner.should.not.eq(ZERO_ADDRESS)
         assert.equal(await token.totalSupply(), 0)
+    })
+
+    contract('validating setTokenAlive()', () => {
+        it('setTokenAlive() can be set by owner', async () => {
+            await token.setTokenAlive({from: owner})
+        })
+
+        it('setTokenAlive() cannot be set by investor', async () => {
+            await token.setTokenAlive({from: buyerA}).should.be.rejectedWith(EVMRevert)
+        })
+
+        it('setCapitalControl() cannot be set when alive', async () => {
+            await token.setTokenAlive()
+            await token.setCapitalControl(capitalControl, {from: owner}).should.be.rejectedWith(EVMRevert)
+        })
+
+        it('cannot mint when token is not alive', async () => {
+            await token.mint(buyerA, 100, {from: owner}).should.be.rejectedWith(EVMRevert)
+        })
+
+        it('can mint when alive', async () => {
+            await token.setTokenAlive()
+            await token.mint(buyerA, 100, {from: owner})
+        })
     })
 
     contract('validating setting of crowdsale address', () => {
