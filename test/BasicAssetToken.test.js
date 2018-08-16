@@ -34,7 +34,52 @@ contract('BasicAssetToken', (accounts) => {
         assert.equal(await token.totalSupply(), 0)
     })
 
+    contract('validating updateCapitalControl()', () => {
+        it('updateCapitalControl() cannot be set by owner when not yet alive', async () => {
+            await token.updateCapitalControl({from: owner}).should.be.rejectedWith(EVMRevert)
+        })
+
+        it('updateCapitalControl() cannot be set by unknown', async () => {
+            await token.updateCapitalControl({from: unknown}).should.be.rejectedWith(EVMRevert)
+        })
+
+        it('updateCapitalControl() can be set by capitalControl when alive', async () => {
+            await token.setCapitalControl(capitalControl, {from: owner})
+            await token.setTokenAlive({from: owner})
+            await token.updateCapitalControl({from: owner}).should.be.rejectedWith(EVMRevert)
+        })
+
+        it('updateCapitalControl() cannot be set by owner even when alive', async () => {
+            await token.setTokenAlive({from: owner})
+            await token.updateCapitalControl({from: owner}).should.be.rejectedWith(EVMRevert)
+        })
+
+        it('updateCapitalControl() cannot be set by unknown when alive', async () => {
+            await token.setTokenAlive({from: owner})
+            await token.updateCapitalControl({from: unknown}).should.be.rejectedWith(EVMRevert)
+        })
+    })
+
+    contract('validating setCapitalControl()', () => {
+        it('setCapitalControl() can be set by owner when not alive', async () => {
+            await token.setCapitalControl(capitalControl, {from: owner})
+        })
+
+        it('setCapitalControl() cannot be set by unknown', async () => {
+            await token.setCapitalControl(capitalControl, {from: unknown}).should.be.rejectedWith(EVMRevert)
+        })
+
+        it('setCapitalControl() cannot be set when alive', async () => {
+            await token.setTokenAlive({from: owner})
+            await token.setCapitalControl(capitalControl, {from: owner}).should.be.rejectedWith(EVMRevert)
+        })
+    })
+
     contract('validating setTokenAlive()', () => {
+        it('cannot mint when token is not alive', async () => {
+            await token.mint(buyerA, 100, {from: owner}).should.be.rejectedWith(EVMRevert)
+        })
+
         it('setTokenAlive() can be set by owner', async () => {
             await token.setTokenAlive({from: owner})
         })
@@ -46,10 +91,6 @@ contract('BasicAssetToken', (accounts) => {
         it('setCapitalControl() cannot be set when alive', async () => {
             await token.setTokenAlive()
             await token.setCapitalControl(capitalControl, {from: owner}).should.be.rejectedWith(EVMRevert)
-        })
-
-        it('cannot mint when token is not alive', async () => {
-            await token.mint(buyerA, 100, {from: owner}).should.be.rejectedWith(EVMRevert)
         })
 
         it('can mint when alive', async () => {
