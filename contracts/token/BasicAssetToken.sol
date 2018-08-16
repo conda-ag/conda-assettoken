@@ -21,6 +21,7 @@ pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "./library/AssetTokenPauseL.sol";
 
 /** @title Basic AssetToken. */
 contract BasicAssetToken is Ownable {
@@ -31,6 +32,7 @@ contract BasicAssetToken is Ownable {
     */
 
     using SafeMath for uint256;
+    using AssetTokenPauseL for AssetTokenPauseL.Availability;
 
 ///////////////////
 // Variables
@@ -75,21 +77,22 @@ contract BasicAssetToken is Ownable {
 
     // Tracks the history of the `totalSupply` of the token
     Checkpoint[] totalSupplyHistory;
-
-    // Flag that determines if the token is transferable or not.
-    bool public transfersEnabled = true;
-
-    // Flag that minting and burning is finished
-    bool public capitalIncreaseDecreasePhaseFinished = false;
-
-    // Flag that minting and burning is paused
-    bool public mintingAndBurningPaused = false;
-
+    
     // Crowdsale Contract
     address public crowdsale;
 
-    // role that can pause/resume
-    address public pauseControl;
+
+    //availability: what's paused
+    AssetTokenPauseL.Availability availability;
+    bool public constant mintingAndBurningPaused = availability.mintingAndBurningPaused;
+
+    function pauseControl() public view returns (address pauseControl) {
+        return availability.pauseControl;
+    }
+
+    function transfersPaused() public view returns (bool transfersPaused) {
+        return availability.transfersPaused;
+    }
 
 ///////////////////
 // Events
@@ -105,18 +108,18 @@ contract BasicAssetToken is Ownable {
 // Modifiers
 ///////////////////
     modifier onlyPauseControl() {
-        require(msg.sender == pauseControl);
+        require(msg.sender == availability.pauseControl);
         _;
     }
 
     modifier canMintOrBurn() {
-        require(!mintingAndBurningPaused);
-        require(!capitalIncreaseDecreasePhaseFinished);
+        require(!availability.mintingAndBurningPaused);
+        require(!availability.capitalIncreaseDecreasePhaseFinished);
         _;
     }
 
     modifier canSetMetadataEarly() {
-        require(!capitalIncreaseDecreasePhaseFinished);
+        require(!availability.capitalIncreaseDecreasePhaseFinished);
         _;
     }
 
@@ -171,9 +174,7 @@ contract BasicAssetToken is Ownable {
     }
 
     function setPauseControl(address _pauseControl) public onlyOwner {
-        require(_pauseControl != address(0));
-        
-        pauseControl = _pauseControl;
+        availability.setPauseControl(_pauseControl);
     }
 
 ///////////////////
@@ -185,7 +186,7 @@ contract BasicAssetToken is Ownable {
     /// @param _amount The amount of tokens to be transferred
     /// @return Whether the transfer was successful or not
     function transfer(address _to, uint256 _amount) public returns (bool success) {
-        require(transfersEnabled);
+        require(!availability.transfersPaused);
         doTransfer(msg.sender, _to, _amount);
         return true;
     }
@@ -197,7 +198,7 @@ contract BasicAssetToken is Ownable {
     /// @param _amount The amount of tokens to be transferred
     /// @return True if the transfer was successful
     function transferFrom(address _from, address _to, uint256 _amount) public returns (bool success) {
-        require(transfersEnabled);
+        require(!availability.transfersPaused);
 
         // The standard ERC 20 transferFrom functionality
         require(allowed[_from][msg.sender] >= _amount);
@@ -253,7 +254,7 @@ contract BasicAssetToken is Ownable {
     /// @param _amount The amount of tokens to be approved for transfer
     /// @return True if the approval was successful
     function approve(address _spender, uint256 _amount) public returns (bool success) {
-        require(transfersEnabled);
+        require(!availability.transfersPaused);
 
         // To change the approve amount you first have to reduce the addresses`
         //  allowance to zero by calling `approve(_spender,0)` if it is not
@@ -345,13 +346,7 @@ contract BasicAssetToken is Ownable {
     ///  @dev Function to stop minting new tokens and also disables burning.
     ///  @return True if the operation was successful.
     function finishCapitalIncreaseDecreasePhase() public onlyOwner canMintOrBurn returns (bool) {
-        if(capitalIncreaseDecreasePhaseFinished) {
-            return false;
-        }
-
-        capitalIncreaseDecreasePhaseFinished = true;
-        emit MintFinished();
-        return true;
+        return availability.finishCapitalIncreaseDecreasePhase();
     }
 
 ////////////////
@@ -426,7 +421,7 @@ contract BasicAssetToken is Ownable {
     /// @notice Enables token holders to transfer their tokens freely if true
     /// @param _transfersEnabled True if transfers are allowed
     function enableTransfers(bool _transfersEnabled) public onlyOwner {
-        transfersEnabled = _transfersEnabled;
+        availability.transfersPaused = (_transfersEnabled == false);
     }
 
 ////////////////
@@ -438,7 +433,7 @@ contract BasicAssetToken is Ownable {
     function pauseTransfer(bool _transfersEnabled) public
     onlyPauseControl
     {
-        transfersEnabled = _transfersEnabled;
+        availability.transfersPaused = (_transfersEnabled == false);
     }
 
     /// @dev `pauseMinting` can pause mint/burn
@@ -446,7 +441,7 @@ contract BasicAssetToken is Ownable {
     function pauseCapitalIncreaseOrDecrease(bool _mintingAndBurningEnabled) public
     onlyPauseControl
     {
-        mintingAndBurningPaused = (_mintingAndBurningEnabled == false);
+        availability.pauseCapitalIncreaseOrDecrease(_mintingAndBurningEnabled);
     }
 
 ////////////////
