@@ -356,7 +356,7 @@ contract BasicAssetToken is Ownable {
     /// @param _to The address that will receive the minted tokens.
     /// @param _amount The amount of tokens to mint.
     /// @return A boolean that indicates if the operation was successful.
-    function mint(address _to, uint256 _amount) public onlyOwner canMintOrBurn returns (bool) {
+    function mint(address _to, uint256 _amount) public canMintOrBurn returns (bool) {
         uint256 curTotalSupply = totalSupply();
 
         // Check for overflow
@@ -388,7 +388,7 @@ contract BasicAssetToken is Ownable {
     /** @dev Burn someone's tokens (only allowed during minting phase). 
       * @param _who Eth address of person who's tokens should be burned.
       */
-    function burn(address _who, uint256 _value) public canMintOrBurn onlyOwner {
+    function burn(address _who, uint256 _value) public canMintOrBurn {
         uint256 curTotalSupply = totalSupply();
 
         // Check for overflow
