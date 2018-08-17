@@ -3,6 +3,9 @@ pragma solidity ^0.4.24;
 library AssetTokenPauseL {
 
     struct Availability {
+        // Flag that determines if the token is yet alive.
+        bool tokenAlive;
+
         // Flag that determines if the token is transferable or not.
         bool transfersPaused;
 
@@ -32,6 +35,10 @@ library AssetTokenPauseL {
         require(_pauseControl != address(0));
         
         _self.pauseControl = _pauseControl;
+    }
+
+    function setTokenAlive(Availability storage _self) public {
+        _self.tokenAlive = true;
     }
 
 ////////////////

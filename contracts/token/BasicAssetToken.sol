@@ -28,7 +28,7 @@ contract BasicAssetToken is Ownable {
     /*
     * @title This contract includes the basic AssetToken features
     * @author Paul Pöltner / Conda
-    * @dev CRWDAssetToken inherits from DividendAssetToken which inherits from BasicAssetToken
+    * @dev DividendAssetToken inherits from CRWDAssetToken which inherits from BasicAssetToken
     */
 
     using SafeMath for uint256;
@@ -81,6 +81,8 @@ contract BasicAssetToken is Ownable {
     // Crowdsale Contract
     address public crowdsale;
 
+    //if set can mint/burn after finished. E.g. a notary.
+    address public capitalControl;
 
     //availability: what's paused
     AssetTokenPauseL.Availability availability;
@@ -102,9 +104,9 @@ contract BasicAssetToken is Ownable {
 
     event Approval(address indexed owner, address indexed spender, uint256 value);
     event Transfer(address indexed from, address indexed to, uint256 value);
-    event Mint(address indexed to, uint256 amount);
+    event Mint(address indexed initiator, address indexed to, uint256 amount);
     event MintFinished();
-    event Burn(address indexed burner, uint256 value);
+    event Burn(address indexed initiator, address indexed burner, uint256 value);
 
 ///////////////////
 // Modifiers
@@ -115,13 +117,32 @@ contract BasicAssetToken is Ownable {
     }
 
     modifier canMintOrBurn() {
-        require(!availability.mintingAndBurningPaused);
-        require(!availability.capitalIncreaseDecreasePhaseFinished);
+        require(availability.tokenAlive);
+
+        if (availability.capitalIncreaseDecreasePhaseFinished == false) {
+            require(msg.sender == owner);
+            require(!availability.mintingAndBurningPaused);
+            require(!availability.capitalIncreaseDecreasePhaseFinished);
+        }
+        else {
+            require(msg.sender == capitalControl);
+        }
         _;
     }
 
     modifier canSetMetadataEarly() {
+        require(!availability.tokenAlive);
         require(!availability.capitalIncreaseDecreasePhaseFinished);
+        _;
+    }
+
+    modifier onlyCapitalControl() {
+        require(msg.sender == capitalControl);
+        _;
+    }
+
+    modifier onlyAlive() {
+        require(availability.tokenAlive);
         _;
     }
 
@@ -129,41 +150,34 @@ contract BasicAssetToken is Ownable {
 // Set / Get Metadata
 ///////////////////
 
-    /** @dev Change the underlying base currency.
-      * @param _token Address of the token used as underlying base currency.
-      */
-    function setBaseCurrency(address _token) public onlyOwner canSetMetadataEarly {
-        require(_token != address(0));
-        
-        baseCurrency = _token;
-    }
-
-    /** @dev Defines the base conversion of number of tokens to the initial rate. For regulatory checks. 
-      * @param _baseRate Base conversion of number of tokens to the initial rate.
-      */
-    function setBaseRate(uint256 _baseRate) public onlyOwner canSetMetadataEarly {
-        baseRate = _baseRate;
-    }
-
-    /** @dev Set the name of the token.
+    /** @dev Change the token's metadata.
       * @param _name The name of the token.
-      */
-    function setName(string _name) public onlyOwner canSetMetadataEarly {
-        name = _name;
-    }
-
-    /** @dev Set the symbol of the token.
       * @param _symbol The symbol of the token.
-      */
-    function setSymbol(string _symbol) public onlyOwner canSetMetadataEarly {
-        symbol = _symbol;
-    }
-
-    /** @dev Set the description of the token.
       * @param _shortDescription The description of the token.
       */
-    function setShortDescription(string _shortDescription) public onlyOwner canSetMetadataEarly {
+    function setMetaData(string _name, string _symbol, string _shortDescription) public 
+    onlyOwner
+    canSetMetadataEarly 
+    {
+        name = _name;
+        symbol = _symbol;
         shortDescription = _shortDescription;
+    }
+
+    /** @dev Change the token's currency metadata.
+      * @param _tokenBaseCurrency Address of the token used as underlying base currency.
+      * @param _baseRate Base conversion of number of tokens to the initial rate.
+      */
+    function setCurrencyMetaData(address _tokenBaseCurrency, uint256 _baseRate) public 
+    onlyOwner
+    canSetMetadataEarly
+    {
+        require(_tokenBaseCurrency != address(0));
+        require(_tokenBaseCurrency != address(this));
+        require(_baseRate != 0);
+
+        baseCurrency = _tokenBaseCurrency;
+        baseRate = _baseRate;
     }
 
     /** @dev Set the address of the crowdsale contract.
@@ -175,8 +189,24 @@ contract BasicAssetToken is Ownable {
         crowdsale = _crowdsale;
     }
 
-    function setPauseControl(address _pauseControl) public onlyOwner {
+    function setCapitalControl(address _capitalControl) public onlyOwner canSetMetadataEarly {
+        capitalControl = _capitalControl;
+    }
+
+    function updateCapitalControl(address _capitalControl) public onlyCapitalControl {
+        capitalControl = _capitalControl;
+    }
+
+    function setPauseControl(address _pauseControl) public {
+        require(msg.sender == owner || msg.sender == address(crowdsale));
+
         availability.setPauseControl(_pauseControl);
+    }
+
+    function setTokenAlive() public {
+        require(msg.sender == owner || msg.sender == crowdsale);
+
+        availability.setTokenAlive();
     }
 
 ///////////////////
@@ -326,7 +356,7 @@ contract BasicAssetToken is Ownable {
     /// @param _to The address that will receive the minted tokens.
     /// @param _amount The amount of tokens to mint.
     /// @return A boolean that indicates if the operation was successful.
-    function mint(address _to, uint256 _amount) public onlyOwner canMintOrBurn returns (bool) {
+    function mint(address _to, uint256 _amount) public canMintOrBurn returns (bool) {
         uint256 curTotalSupply = totalSupply();
 
         // Check for overflow
@@ -339,7 +369,7 @@ contract BasicAssetToken is Ownable {
         updateValueAtNow(totalSupplyHistory, curTotalSupply.add(_amount));
         updateValueAtNow(balances[_to], previousBalanceTo.add(_amount));
 
-        emit Mint(_to, _amount);
+        emit Mint(msg.sender, _to, _amount);
         emit Transfer(address(0), _to, _amount);
 
         return true;
@@ -358,7 +388,7 @@ contract BasicAssetToken is Ownable {
     /** @dev Burn someone's tokens (only allowed during minting phase). 
       * @param _who Eth address of person who's tokens should be burned.
       */
-    function burn(address _who, uint256 _value) public canMintOrBurn onlyOwner {
+    function burn(address _who, uint256 _value) public canMintOrBurn {
         uint256 curTotalSupply = totalSupply();
 
         // Check for overflow
@@ -371,7 +401,7 @@ contract BasicAssetToken is Ownable {
         updateValueAtNow(totalSupplyHistory, curTotalSupply.sub(_value));
         updateValueAtNow(balances[_who], previousBalanceWho.sub(_value));
 
-        emit Burn(_who, _value);
+        emit Burn(msg.sender, _who, _value);
         emit Transfer(_who, address(0), _value);
     }
 

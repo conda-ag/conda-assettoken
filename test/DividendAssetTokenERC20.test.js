@@ -6,6 +6,7 @@ const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 const DividendAssetToken = artifacts.require('DividendAssetToken.sol')
 const ERC20TestToken = artifacts.require('ERC20TestToken.sol')
 const ERC20TestTokenRetFalse = artifacts.require('ERC20TestTokenRetValueSimulator.sol')
+const MOCKCRWDClearing = artifacts.require('MOCKCRWDClearing.sol')
 
 require('chai')
   .use(require('chai-as-promised'))
@@ -18,6 +19,8 @@ contract('DividendAssetToken', (accounts) => {
     let erc20RetFalse = null
     let owner = null
 
+    let clearing = null
+
     const ONETOKEN  = 1
     const ONETHOUSANDTOKEN  = ONETOKEN * 1000
     const SECONDS_IN_A_YEAR = 86400 * 366
@@ -28,6 +31,9 @@ contract('DividendAssetToken', (accounts) => {
     let buyerC = accounts[3]
     let buyerD = accounts[4]
     let buyerE = accounts[5]
+
+    let condaAccount = accounts[6]
+    let companyAccount = accounts[7]
     
     beforeEach(async () => {
         token = await DividendAssetToken.new()
@@ -35,8 +41,15 @@ contract('DividendAssetToken', (accounts) => {
         erc20RetFalse = await ERC20TestTokenRetFalse.new()
         owner = await token.owner()
         
+        //mock clearing so it doesn't cost money
+        clearing = await MOCKCRWDClearing.new()
+        await clearing.setFee((await ERC20TestToken.new()).address, 0, 0, condaAccount, companyAccount)
+        await token.setClearingAddress(clearing.address)
+
         //set basecurrency
-        await token.setBaseCurrency(erc20.address)
+        await token.setCurrencyMetaData(erc20.address, 1)
+
+        await token.setTokenAlive()
 
         //split
         await token.mint(buyerA, 100) //10%

@@ -1,13 +1,13 @@
 pragma solidity ^0.4.24;
 
-import "./CRWDAssetToken.sol";
+import "./token/DividendAssetToken.sol";
 
 /** @title AssetToken generator. */
 contract AssetTokenGenerator {
     /*
     * @title This contract can create project specific Crwd AssetToken
     * @author Paul Pöltner / Conda
-    * @dev CRWDAssetToken inherits from DividendAssetToken which inherits from BasicAssetToken
+    * @dev DividendAssetToken inherits from CRWDAssetToken which inherits from BasicAssetToken
     */
     
 ///////////////////
@@ -31,7 +31,7 @@ contract AssetTokenGenerator {
       */
     function generateToken() public returns (address tokenAddress) {
         // create the company Token
-        BasicAssetToken token = new CRWDAssetToken();
+        DividendAssetToken token = new DividendAssetToken();
         token.transferOwnership(msg.sender);
         assetToken[msg.sender].push(address(token));
         emit TokenCreated(token, msg.sender);
@@ -52,10 +52,8 @@ contract AssetTokenGenerator {
         public returns (address tokenAddress) 
     {
         // create the company Token
-        CRWDAssetToken token = new CRWDAssetToken();
-        token.setName(_name);
-        token.setSymbol(_symbol);
-        token.setShortDescription(_shortDescription);
+        DividendAssetToken token = new DividendAssetToken();
+        token.setMetaData(_name, _symbol, _shortDescription);
         token.transferOwnership(msg.sender);
         assetToken[msg.sender].push(address(token));
         emit TokenCreated(token, msg.sender);

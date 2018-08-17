@@ -19,17 +19,17 @@ pragma solidity ^0.4.24;
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import "./BasicAssetToken.sol";
+import "./CRWDAssetToken.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 
 /** @title Dividend AssetToken. */
-contract DividendAssetToken is BasicAssetToken {
+contract DividendAssetToken is CRWDAssetToken {
     /*
     * @title This contract includes the dividend AssetToken features
     * @author Paul Pöltner / Conda
-    * @dev CRWDAssetToken inherits from DividendAssetToken which inherits from BasicAssetToken
+    * @dev DividendAssetToken inherits from CRWDAssetToken which inherits from BasicAssetToken
     */
 
     using SafeMath for uint256;
@@ -82,7 +82,7 @@ contract DividendAssetToken is BasicAssetToken {
 ///////////////////
 
     /** @dev Receives ether to be distriubted to all token owners*/
-    function depositDividend() public payable onlyOwner {
+    function depositDividend() public payable onlyOwner onlyAlive {
 
         // gets the current number of total token distributed
         uint256 currentSupply = totalSupplyAt(block.number);
@@ -115,7 +115,7 @@ contract DividendAssetToken is BasicAssetToken {
       * @param _dividendToken Token address
       * @param _amount The amount of tokens for deposit
       */
-    function depositERC20Dividend(address _dividendToken, uint256 _amount) public onlyOwner {
+    function depositERC20Dividend(address _dividendToken, uint256 _amount) public onlyOwner onlyAlive {
 
         require(_amount > 0);
 
