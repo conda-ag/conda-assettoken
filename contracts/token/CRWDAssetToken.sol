@@ -1,14 +1,14 @@
 pragma solidity ^0.4.24;
 
-import "./token/DividendAssetToken.sol";
-import "./interfaces/ICRWDClearing.sol";
+import "./BasicAssetToken.sol";
+import "../interfaces/ICRWDClearing.sol";
 
 /** @title CRWD AssetToken. */
-contract CRWDAssetToken is DividendAssetToken {
+contract CRWDAssetToken is BasicAssetToken {
     /*
     * @title This contract is the Crwd AssetToken created for each project via the AssetTokenGenerator
     * @author Paul Pöltner / Conda
-    * @dev CRWDAssetToken inherits from DividendAssetToken which inherits from BasicAssetToken
+    * @dev DividendAssetToken inherits from CRWDAssetToken which inherits from BasicAssetToken
     */
 
     address public clearingAddress;
@@ -41,7 +41,7 @@ contract CRWDAssetToken is DividendAssetToken {
       * @param _amount The amount of tokens to mint.
       * @return A boolean that indicates if the operation was successful.
       */
-    function mint(address _to, uint256 _amount) public onlyOwner canMint returns (bool) {
+    function mint(address _to, uint256 _amount) public onlyOwner canMintOrBurn returns (bool) {
         uint256 transferValue = _amount.mul(baseRate).div(1000);
         ICRWDClearing(clearingAddress).clearFunds(baseCurrency, _to, _to, transferValue);
         return super.mint(_to,_amount);
