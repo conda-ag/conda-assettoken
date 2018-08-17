@@ -19,12 +19,34 @@ contract('CRWDAssetToken', (accounts) => {
     let buyerC = accounts[3]
     let companyAccount = accounts[4]
     let condaAccount = accounts[5]
+
+    let unknown = accounts[6]
   
     beforeEach(async () => {
         token = await CRWDAssetToken.new()
         crwdToken = await ERC20TestToken.new()
         clearing = await MOCKCRWDClearing.new()
         await token.setClearingAddress(await clearing.address)
+    })
+
+    contract('validating setClearingAddress()', () => {
+        it('can be set by owner', async () => {
+            token = await CRWDAssetToken.new()
+            crwdToken = await ERC20TestToken.new()
+            const goodClearing = await MOCKCRWDClearing.new()
+            await token.setClearingAddress(goodClearing.address)
+
+            assert.equal(await token.clearingAddress(), goodClearing.address)
+        })
+
+        it('cannot be set by unknown', async () => {
+            token = await CRWDAssetToken.new()
+            crwdToken = await ERC20TestToken.new()
+            const badClearing = await MOCKCRWDClearing.new()
+            await token.setClearingAddress(badClearing.address, { from: unknown }).should.be.rejectedWith(EVMRevert)
+
+            assert.notEqual(await token.clearingAddress(), badClearing.address)
+        })
     })
 
     contract('validating mint', () => {
