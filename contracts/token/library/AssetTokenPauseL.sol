@@ -10,7 +10,7 @@ library AssetTokenPauseL {
         bool transfersPaused;
 
         // Flag that minting and burning is finished
-        bool capitalIncreaseDecreasePhaseFinished;
+        bool crowdsalePhaseFinished;
 
         // Flag that minting and burning is paused
         bool mintingAndBurningPaused;
@@ -21,12 +21,12 @@ library AssetTokenPauseL {
 
     ///  @dev Function to stop minting new tokens and also disables burning.
     ///  @return True if the operation was successful.
-    function finishCapitalIncreaseDecreasePhase(Availability storage _self) public returns (bool) {
-        if(_self.capitalIncreaseDecreasePhaseFinished) {
+    function finishCrowdsalePhase(Availability storage _self) public returns (bool) {
+        if(_self.crowdsalePhaseFinished) {
             return false;
         }
 
-        _self.capitalIncreaseDecreasePhaseFinished = true;
+        _self.crowdsalePhaseFinished = true;
         emit MintFinished();
         return true;
     }

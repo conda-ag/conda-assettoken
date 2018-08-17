@@ -74,7 +74,7 @@ To manage this funding/investment process on the Blockchain so called *Smart Con
 Disclaimer: Keep in mind that the figure above is a simplified representation where many details are left out. The truth lies in the code :)
 
 ### BasicAssetToken
-Does conceptionally but not in practice inherit from [ERC20](https://github.com/ethereum/eips/issues/20) but has all it's method signatures and is therefore an ERC20 token and has similar functionality. It also conceptionally inherits from Mintable and entitled contract controllers like the creator may mint until finishCapitalIncreaseDecreasePhase is called
+Does conceptionally but not in practice inherit from [ERC20](https://github.com/ethereum/eips/issues/20) but has all it's method signatures and is therefore an ERC20 token and has similar functionality. It also conceptionally inherits from Mintable and entitled contract controllers like the creator may mint until finishCrowdsalePhase is called
 
 ### CRWDAssetToken
  Inherits from BasicAssetToken. The CRWDAssetToken is responsible for clearing which means paying e.g. platform providers to ensure a good crowdinvesting ecosystem. Crowdsales can be certified in clearing which gives them a higher value.

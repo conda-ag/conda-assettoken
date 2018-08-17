@@ -119,10 +119,10 @@ contract BasicAssetToken is Ownable {
     modifier canMintOrBurn() {
         require(availability.tokenAlive);
 
-        if (availability.capitalIncreaseDecreasePhaseFinished == false) {
+        if (availability.crowdsalePhaseFinished == false) {
             require(msg.sender == owner);
             require(!availability.mintingAndBurningPaused);
-            require(!availability.capitalIncreaseDecreasePhaseFinished);
+            require(!availability.crowdsalePhaseFinished);
         }
         else {
             require(msg.sender == capitalControl);
@@ -132,7 +132,7 @@ contract BasicAssetToken is Ownable {
 
     modifier canSetMetadataEarly() {
         require(!availability.tokenAlive);
-        require(!availability.capitalIncreaseDecreasePhaseFinished);
+        require(!availability.crowdsalePhaseFinished);
         _;
     }
 
@@ -377,8 +377,8 @@ contract BasicAssetToken is Ownable {
 
     ///  @dev Function to stop minting new tokens and also disables burning.
     ///  @return True if the operation was successful.
-    function finishCapitalIncreaseDecreasePhase() public onlyOwner canMintOrBurn returns (bool) {
-        return availability.finishCapitalIncreaseDecreasePhase();
+    function finishCrowdsalePhase() public onlyOwner canMintOrBurn returns (bool) {
+        return availability.finishCrowdsalePhase();
     }
 
 ////////////////
