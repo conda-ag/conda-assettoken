@@ -1,14 +1,14 @@
 pragma solidity ^0.4.24;
 
-import "./token/DividendAssetToken.sol";
-import "./interfaces/ICRWDClearing.sol";
+import "./BasicAssetToken.sol";
+import "../interfaces/ICRWDClearing.sol";
 
 /** @title CRWD AssetToken. */
-contract CRWDAssetToken is DividendAssetToken {
+contract CRWDAssetToken is BasicAssetToken {
     /*
     * @title This contract is the Crwd AssetToken created for each project via the AssetTokenGenerator
     * @author Paul Pöltner / Conda
-    * @dev CRWDAssetToken inherits from DividendAssetToken which inherits from BasicAssetToken
+    * @dev DividendAssetToken inherits from CRWDAssetToken which inherits from BasicAssetToken
     */
 
     address public clearingAddress;

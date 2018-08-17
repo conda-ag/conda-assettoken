@@ -76,11 +76,11 @@ Disclaimer: Keep in mind that the figure above is a simplified representation wh
 ### BasicAssetToken
 Does conceptionally but not in practice inherit from [ERC20](https://github.com/ethereum/eips/issues/20) but has all it's method signatures and is therefore an ERC20 token and has similar functionality. It also conceptionally inherits from Mintable and entitled contract controllers like the creator may mint until finishCapitalIncreaseDecreasePhase is called
 
-### DividendAssetToken
-Inherits from BasicAssetToken and adds functionality to pay dividends. Dividends can be deposited and claimed. Unclaimed dividends get recycled and are evenly distributed (this is to avoid sending to dead addresses)
-
 ### CRWDAssetToken
-Inherits from DividendAssetToken and therefore also from BasicAssetToken. The inheritance is mainly for separation of concerns the CRWDAssetToken is the one that is really used. The CRWDAssetToken is responsible for clearing which means paying e.g. platform providers to ensure a good crowdinvesting ecosystem.
+ Inherits from BasicAssetToken. The CRWDAssetToken is responsible for clearing which means paying e.g. platform providers to ensure a good crowdinvesting ecosystem. Crowdsales can be certified in clearing which gives them a higher value.
+
+### DividendAssetToken
+Inherits from CRWDAssetToken and therefore also from BasicAssetToken and adds functionality to pay dividends. The inheritance is mainly for separation of concerns the DividendAssetToken is the one that is really used. Dividends can be deposited and claimed. Unclaimed dividends get recycled and are evenly distributed (this is to avoid sending to dead addresses)
 
 ### AssetTokenGenerator
 The AssetTokenGenerator contract has the main responsibility of generating tokens and remembering them

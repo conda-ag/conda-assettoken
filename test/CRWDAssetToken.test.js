@@ -25,7 +25,7 @@ contract('CRWDAssetToken', (accounts) => {
         crwdToken = await ERC20TestToken.new()
         clearing = await MOCKCRWDClearing.new()
         await token.setTokenAlive()
-        await token.setClearingAddress(await clearing.address)
+        await token.setClearingAddress(clearing.address)
     })
 
     contract('validating mint', () => {

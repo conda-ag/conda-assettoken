@@ -1,10 +1,10 @@
-const CRWDAssetToken = artifacts.require("./token/CRWDAssetToken.sol")
-const BasicAssetToken = artifacts.require("./token/BasicAssetToken.sol")
-const DividendAssetToken = artifacts.require("./token/DividendAssetToken.sol")
+const CRWDAssetToken = artifacts.require("CRWDAssetToken.sol")
+const BasicAssetToken = artifacts.require("BasicAssetToken.sol")
+const DividendAssetToken = artifacts.require("DividendAssetToken.sol")
 
-const AssetTokenPauseL = artifacts.require("./token/library/AssetTokenPauseL.sol")
+const AssetTokenPauseL = artifacts.require("AssetTokenPauseL.sol")
 
-const AssetTokenGenerator = artifacts.require("./AssetTokenGenerator.sol")
+const AssetTokenGenerator = artifacts.require("AssetTokenGenerator.sol")
 
 module.exports = (deployer, network, accounts) => {
     //deploy libraries

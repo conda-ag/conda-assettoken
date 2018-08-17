@@ -5,6 +5,8 @@ const time = require('openzeppelin-solidity/test/helpers/increaseTime')
 import latestTime from 'openzeppelin-solidity/test/helpers/latestTime'
 
 const DividendAssetToken = artifacts.require('DividendAssetToken.sol')
+const MOCKCRWDClearing = artifacts.require('MOCKCRWDClearing.sol')
+const StandardToken = artifacts.require('StandardToken.sol')
 
 require('chai')
   .use(require('chai-as-promised'))
@@ -13,6 +15,8 @@ require('chai')
 contract('DividendAssetToken', (accounts) => {
     let token = null
     let owner = null
+
+    let clearing = null
     
     const ONEETHER  = 1000000000000000000
     const HALFETHER = ONEETHER / 2
@@ -27,10 +31,18 @@ contract('DividendAssetToken', (accounts) => {
     let buyerD = accounts[4]
     let buyerE = accounts[5]
 
+    let condaAccount = accounts[6]
+    let companyAccount = accounts[7]
+
     beforeEach(async () => {
         token = await DividendAssetToken.new()
         await token.setTokenAlive()
         owner = await token.owner()
+        
+        //mock clearing so it doesn't cost money
+        clearing = await MOCKCRWDClearing.new()
+        await clearing.setFee((await StandardToken.new()).address, 0, 0, condaAccount, companyAccount)
+        await token.setClearingAddress(clearing.address)
         
         //split
         await token.mint(buyerA, 100) //10%
