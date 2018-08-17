@@ -111,6 +111,7 @@ contract BasicAssetToken is Ownable {
     event BurnDetailed(address indexed initiator, address indexed burner, uint256 value);
     event TransferPaused(address indexed initiator);
     event TransferResumed(address indexed initiator);
+    event Reopened(address indexed initiator);
 
 ///////////////////
 // Modifiers
@@ -416,6 +417,20 @@ contract BasicAssetToken is Ownable {
         emit Transfer(_who, address(0), _value);
     }
 
+////////////////
+// Reopen crowdsale (by capitalControl e.g. notary)
+////////////////
+
+    /** @dev If a capitalControl is set he can reopen the crowdsale.
+      * @param _newCrowdsale the address of the new crowdsale
+      */
+    function reopenCrowdsale(address _newCrowdsale) public onlyCapitalControl returns (bool) {
+        require(crowdsale != _newCrowdsale);
+
+        crowdsale = _newCrowdsale;
+        
+        require(availability.reopenCrowdsale());
+    }
 
 ////////////////
 // Query balance and totalSupply in History

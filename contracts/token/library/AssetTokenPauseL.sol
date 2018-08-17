@@ -31,6 +31,16 @@ library AssetTokenPauseL {
         return true;
     }
 
+    function reopenCrowdsale(Availability storage _self) public returns (bool) {
+        if(_self.crowdsalePhaseFinished == false) {
+            return false;
+        }
+
+        _self.crowdsalePhaseFinished = false;
+        emit Reopened(msg.sender);
+        return true;
+    }
+
     function setPauseControl(Availability storage _self, address _pauseControl) public {
         require(_pauseControl != address(0));
         
@@ -68,4 +78,5 @@ library AssetTokenPauseL {
     event MintFinished();
     event TransferPaused(address indexed initiator);
     event TransferResumed(address indexed initiator);
+    event Reopened(address indexed initiator);
 }
