@@ -150,6 +150,11 @@ contract BasicAssetToken is Ownable {
         _;
     }
 
+    modifier onlyOwnerOrCrowdsale() {
+        require(msg.sender == owner || msg.sender == crowdsale);
+        _;
+    }
+
 ///////////////////
 // Set / Get Metadata
 ///////////////////
@@ -201,15 +206,15 @@ contract BasicAssetToken is Ownable {
         capitalControl = _capitalControl;
     }
 
-    function setPauseControl(address _pauseControl) public {
-        require(msg.sender == owner || msg.sender == address(crowdsale));
-
+    function setPauseControl(address _pauseControl) public 
+    onlyOwnerOrCrowdsale
+    {
         availability.setPauseControl(_pauseControl);
     }
 
-    function setTokenAlive() public {
-        require(msg.sender == owner || msg.sender == crowdsale);
-
+    function setTokenAlive() public 
+    onlyOwnerOrCrowdsale
+    {
         availability.setTokenAlive();
     }
 
