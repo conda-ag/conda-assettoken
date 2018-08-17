@@ -21,7 +21,7 @@ library AssetTokenPauseL {
 
     ///  @dev Function to stop minting new tokens and also disables burning.
     ///  @return True if the operation was successful.
-    function finishCrowdsalePhase(Availability storage _self) public returns (bool) {
+    function finishMinting(Availability storage _self) public returns (bool) {
         if(_self.crowdsalePhaseFinished) {
             return false;
         }

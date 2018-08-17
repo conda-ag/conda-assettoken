@@ -104,9 +104,11 @@ contract BasicAssetToken is Ownable {
 
     event Approval(address indexed owner, address indexed spender, uint256 value);
     event Transfer(address indexed from, address indexed to, uint256 value);
-    event Mint(address indexed initiator, address indexed to, uint256 amount);
+    event Mint(address indexed to, uint256 amount);
+    event MintDetailed(address indexed initiator, address indexed to, uint256 amount);
     event MintFinished();
-    event Burn(address indexed initiator, address indexed burner, uint256 value);
+    event Burn(address indexed burner, uint256 value);
+    event BurnDetailed(address indexed initiator, address indexed burner, uint256 value);
 
 ///////////////////
 // Modifiers
@@ -369,16 +371,17 @@ contract BasicAssetToken is Ownable {
         updateValueAtNow(totalSupplyHistory, curTotalSupply.add(_amount));
         updateValueAtNow(balances[_to], previousBalanceTo.add(_amount));
 
-        emit Mint(msg.sender, _to, _amount);
+        emit Mint(_to, _amount); //zeppelin compliant
+        emit MintDetailed(msg.sender, _to, _amount);
         emit Transfer(address(0), _to, _amount);
 
         return true;
     }
 
-    ///  @dev Function to stop minting new tokens and also disables burning.
+    ///  @dev Function to stop minting new tokens and also disables burning so it finishes crowdsale. 
     ///  @return True if the operation was successful.
-    function finishCrowdsalePhase() public onlyOwner canMintOrBurn returns (bool) {
-        return availability.finishCrowdsalePhase();
+    function finishMinting() public onlyOwner canMintOrBurn returns (bool) {
+        return availability.finishMinting();
     }
 
 ////////////////
@@ -401,7 +404,8 @@ contract BasicAssetToken is Ownable {
         updateValueAtNow(totalSupplyHistory, curTotalSupply.sub(_value));
         updateValueAtNow(balances[_who], previousBalanceWho.sub(_value));
 
-        emit Burn(msg.sender, _who, _value);
+        emit Burn(_who, _value); //zeppelin compliant
+        emit BurnDetailed(msg.sender, _who, _value);
         emit Transfer(_who, address(0), _value);
     }
 

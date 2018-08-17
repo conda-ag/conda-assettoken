@@ -67,7 +67,7 @@ contract('CRWDAssetToken', (accounts) => {
         })
 
         it('should throw an error after finishing mint', async () => {
-            await token.finishCrowdsalePhase()
+            await token.finishMinting()
             await token.mint(buyerA, 100).should.be.rejectedWith(EVMRevert)
         })
 
@@ -96,7 +96,7 @@ contract('CRWDAssetToken', (accounts) => {
         })
 
         it('should throw an error after finishing mint', async () => {
-            await token.finishCrowdsalePhase()
+            await token.finishMinting()
             await token.mint(buyerA, 100).should.be.rejectedWith(EVMRevert)
         })
 
@@ -117,7 +117,7 @@ contract('CRWDAssetToken', (accounts) => {
 
         it('burn should throw an error after finishing mint', async () => {
             await token.mint(buyerA, 100)
-            await token.finishCrowdsalePhase()
+            await token.finishMinting()
             await token.burn(buyerA, 100).should.be.rejectedWith(EVMRevert)
         })
 

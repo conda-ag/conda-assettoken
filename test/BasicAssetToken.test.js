@@ -158,7 +158,7 @@ contract('BasicAssetToken', (accounts) => {
 
         it('should throw an error when trying to mint but finished minting', async () => {
             await token.setTokenAlive()
-            await token.finishCrowdsalePhase()
+            await token.finishMinting()
             await token.mint(buyerA, 100).should.be.rejectedWith(EVMRevert)
         })
 
@@ -178,7 +178,7 @@ contract('BasicAssetToken', (accounts) => {
             it('can mint as capitalControl even when finished capital increase/decrease phase', async () => {
                 await token.setCapitalControl(capitalControl, {from: owner})
                 await token.setTokenAlive({from: owner})
-                await token.finishCrowdsalePhase()
+                await token.finishMinting()
                 await token.mint(buyerA, 10, {from: capitalControl}) //works because capitalControl
             })
         })
@@ -218,7 +218,7 @@ contract('BasicAssetToken', (accounts) => {
         it('burn should throw an error after finishing mint', async () => {
             await token.setTokenAlive()
             await token.mint(buyerA, 100)
-            await token.finishCrowdsalePhase()
+            await token.finishMinting()
             await token.burn(buyerA, 100).should.be.rejectedWith(EVMRevert)
         })
 
@@ -246,7 +246,7 @@ contract('BasicAssetToken', (accounts) => {
                 await token.setTokenAlive({from: owner})
                 await token.mint(buyerA, 100)
 
-                await token.finishCrowdsalePhase()
+                await token.finishMinting()
                 await token.burn(buyerA, 10, {from: capitalControl}) //works because capitalControl
 
                 let firstAccountBalance = await token.balanceOf(buyerA)
@@ -446,7 +446,7 @@ contract('BasicAssetToken', (accounts) => {
 
         it('owner can change name when canMintOrBurn not finished', async () => {
             await token.setTokenAlive()
-            await token.finishCrowdsalePhase()
+            await token.finishMinting()
             await token.setMetaData("changed name", "", "").should.be.rejectedWith(EVMRevert)
         })
     })
@@ -464,7 +464,7 @@ contract('BasicAssetToken', (accounts) => {
 
         it('owner cannot change symbol when canMintOrBurn has finished', async () => {
             await token.setTokenAlive()
-            await token.finishCrowdsalePhase()
+            await token.finishMinting()
             await token.setMetaData("", "SYM", "").should.be.rejectedWith(EVMRevert)
         })
     })
@@ -482,7 +482,7 @@ contract('BasicAssetToken', (accounts) => {
 
         it('owner cannot change description when canMintOrBurn has finished', async () => {
             await token.setTokenAlive()
-            await token.finishCrowdsalePhase()
+            await token.finishMinting()
             await token.setMetaData("", "", "My short description from test.").should.be.rejectedWith(EVMRevert)
         })
     })
@@ -500,7 +500,7 @@ contract('BasicAssetToken', (accounts) => {
 
         it('owner cannot change setBaseRate when canMintOrBurn has finished', async () => {
             await token.setTokenAlive()
-            await token.finishCrowdsalePhase()
+            await token.finishMinting()
             await token.setCurrencyMetaData(eurt.address, 3, { from: owner }).should.be.rejectedWith(EVMRevert)
         })
     })
@@ -522,7 +522,7 @@ contract('BasicAssetToken', (accounts) => {
 
         it('owner cannot change setBaseCurrency when canMintOrBurn has finished', async () => {
             await token.setTokenAlive()
-            await token.finishCrowdsalePhase()
+            await token.finishMinting()
 
             let erc20TestToken = await ERC20TestToken.new()
             
