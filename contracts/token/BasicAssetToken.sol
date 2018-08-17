@@ -28,7 +28,7 @@ contract BasicAssetToken is Ownable {
     /*
     * @title This contract includes the basic AssetToken features
     * @author Paul Pöltner / Conda
-    * @dev CRWDAssetToken inherits from DividendAssetToken which inherits from BasicAssetToken
+    * @dev DividendAssetToken inherits from CRWDAssetToken which inherits from BasicAssetToken
     */
 
     using SafeMath for uint256;
