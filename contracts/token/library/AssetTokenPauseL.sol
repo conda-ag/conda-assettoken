@@ -50,6 +50,12 @@ library AssetTokenPauseL {
     function pauseTransfer(Availability storage _self, bool _transfersEnabled) public
     {
         _self.transfersPaused = !_transfersEnabled;
+
+        if(_transfersEnabled) {
+            emit TransferResumed(msg.sender);
+        } else {
+            emit TransferPaused(msg.sender);
+        }
     }
 
     /// @dev `pauseMinting` can pause mint/burn
@@ -60,4 +66,6 @@ library AssetTokenPauseL {
     }
 
     event MintFinished();
+    event TransferPaused(address indexed initiator);
+    event TransferResumed(address indexed initiator);
 }

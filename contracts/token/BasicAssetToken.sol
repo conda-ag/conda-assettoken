@@ -109,6 +109,8 @@ contract BasicAssetToken is Ownable {
     event MintFinished();
     event Burn(address indexed burner, uint256 value);
     event BurnDetailed(address indexed initiator, address indexed burner, uint256 value);
+    event TransferPaused(address indexed initiator);
+    event TransferResumed(address indexed initiator);
 
 ///////////////////
 // Modifiers
