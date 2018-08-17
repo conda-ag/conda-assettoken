@@ -18,9 +18,5 @@ module.exports = (deployer, network, accounts) => {
     deployer.link(AssetTokenPauseL, AssetTokenGenerator)
 
     //deploy contracts
-    deployer.deploy(BasicAssetToken)    
-    deployer.deploy(DividendAssetToken)
-    deployer.deploy(CRWDAssetToken)
-    
-    deployer.deploy(AssetTokenGenerator)
+    deployer.deploy(AssetTokenGenerator) //knows all the others
 }
