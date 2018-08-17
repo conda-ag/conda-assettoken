@@ -50,7 +50,7 @@ contract CRWDAssetToken is DividendAssetToken {
     /** @dev Set clearing address that receives clearing.
       * @param _clearingAddress Address to be used for clearing.
       */
-    function setClearingAddress(address _clearingAddress) public {
+    function setClearingAddress(address _clearingAddress) public onlyOwner {
         clearingAddress = _clearingAddress;
     }
 }
