@@ -132,7 +132,7 @@ contract BasicAssetToken is Ownable {
         _;
     }
 
-    modifier canSetMetadataEarly() {
+    modifier canSetMetadata() {
         require(!availability.tokenAlive);
         require(!availability.crowdsalePhaseFinished);
         _;
@@ -159,7 +159,7 @@ contract BasicAssetToken is Ownable {
       */
     function setMetaData(string _name, string _symbol, string _shortDescription) public 
     onlyOwner
-    canSetMetadataEarly 
+    canSetMetadata 
     {
         name = _name;
         symbol = _symbol;
@@ -172,7 +172,7 @@ contract BasicAssetToken is Ownable {
       */
     function setCurrencyMetaData(address _tokenBaseCurrency, uint256 _baseRate) public 
     onlyOwner
-    canSetMetadataEarly
+    canSetMetadata
     {
         require(_tokenBaseCurrency != address(0));
         require(_tokenBaseCurrency != address(this));
@@ -185,13 +185,13 @@ contract BasicAssetToken is Ownable {
     /** @dev Set the address of the crowdsale contract.
       * @param _crowdsale The address of the crowdsale.
       */
-    function setCrowdsaleAddress(address _crowdsale) public onlyOwner canSetMetadataEarly {
+    function setCrowdsaleAddress(address _crowdsale) public onlyOwner canSetMetadata {
         require(_crowdsale != address(0));
 
         crowdsale = _crowdsale;
     }
 
-    function setCapitalControl(address _capitalControl) public onlyOwner canSetMetadataEarly {
+    function setCapitalControl(address _capitalControl) public onlyOwner canSetMetadata {
         capitalControl = _capitalControl;
     }
 
