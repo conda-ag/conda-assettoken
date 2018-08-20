@@ -237,8 +237,6 @@ contract BasicAssetToken is Ownable {
     /// @param _amount The amount of tokens to be approved for transfer
     /// @return True if the approval was successful
     function approve(address _spender, uint256 _amount) public returns (bool success) {
-        require(!availability.transfersPaused);
-
         return supply.approve(_spender, _amount);
     }
 
