@@ -387,16 +387,6 @@ contract('BasicAssetToken', (accounts) => {
             await token.transferFrom(buyerA, 0x0, 100, { from: buyerB }).should.be.rejectedWith(EVMRevert)
         })
 
-        it('should throw when trying to approve but transfer disabled', async () => {
-            await token.setTokenAlive()
-            await token.mint(buyerA, 100)
-
-            await token.enableTransfers(false)
-
-            assert.equal(await token.balanceOf(buyerA), 100)
-            await token.approve(buyerB, 100, { from: buyerA }).should.be.rejectedWith(EVMRevert)
-        })
-
         it('should throw when trying to transferFrom but transfer disabled', async () => {
             await token.setTokenAlive()
             await token.mint(buyerA, 100)
