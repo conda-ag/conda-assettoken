@@ -13,6 +13,7 @@ contract('CRWDAssetToken', (accounts) => {
     let token = null
     let crwdToken = null
     let clearing = null
+    let owner = null
 
     let buyerA = accounts[1]
     let buyerB = accounts[2]
@@ -21,6 +22,8 @@ contract('CRWDAssetToken', (accounts) => {
     let condaAccount = accounts[5]
 
     let unknown = accounts[6]
+
+    const capitalControl = accounts[8]
   
     beforeEach(async () => {
         token = await CRWDAssetToken.new()
@@ -33,6 +36,7 @@ contract('CRWDAssetToken', (accounts) => {
     contract('validating setClearingAddress()', () => {
         it('can be set by owner', async () => {
             token = await CRWDAssetToken.new()
+            owner = await token.owner()
             crwdToken = await ERC20TestToken.new()
             const goodClearing = await MOCKCRWDClearing.new()
             await token.setClearingAddress(goodClearing.address)
@@ -64,6 +68,22 @@ contract('CRWDAssetToken', (accounts) => {
       
             let firstAccountBalance = await token.balanceOf(buyerA)
             assert.equal(firstAccountBalance, 100)
+        })
+
+        it('capitalControl can mint anytime ', async () => {
+            const tmpToken = await CRWDAssetToken.new()
+
+            //mock clearing so it doesn't cost money
+            await tmpToken.setClearingAddress(clearing.address)
+
+            await tmpToken.setCapitalControl(capitalControl, {from: owner})
+
+            await tmpToken.mint(buyerA, 100, { from: capitalControl })
+            await tmpToken.setTokenAlive({from: owner})
+            await tmpToken.mint(buyerA, 100, { from: capitalControl })
+      
+            let firstAccountBalance = await tmpToken.balanceOf(buyerA)
+            assert.equal(firstAccountBalance, 200)
         })
 
         it('should throw an error after finishing mint', async () => {
