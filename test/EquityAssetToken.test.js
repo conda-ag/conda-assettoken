@@ -448,16 +448,16 @@ contract('EquityAssetToken', (accounts) => {
             await tmpToken.setCurrencyMetaData(tmpEurt.address, 1, { from: unknown }).should.be.rejectedWith(EVMRevert)
         })
 
-        it('capitalControl can change baseCurrency anytime', async () => {
+        it('capitalControl cannot change before alive but can when alive', async () => {
             const tmpToken = await EquityAssetToken.new(capitalControl, false)
-            const tmpEurt1 = await ERC20TestToken.new()
-            const tmpEurt2 = await ERC20TestToken.new()
+            const tmpEurt = await ERC20TestToken.new()
 
-            await tmpToken.setCurrencyMetaData(tmpEurt1.address, 1, { from: capitalControl })
-            assert.equal(await tmpToken.baseCurrency(), tmpEurt1.address)
+            await tmpToken.setCurrencyMetaData(tmpEurt.address, 1, { from: capitalControl }).should.be.rejectedWith(EVMRevert)
 
-            await tmpToken.setCurrencyMetaData(tmpEurt2.address, 1, { from: capitalControl })
-            assert.equal(await tmpToken.baseCurrency(), tmpEurt2.address)
+            await tmpToken.setTokenAlive()
+
+            await tmpToken.setCurrencyMetaData(tmpEurt.address, 1, { from: capitalControl })
+            assert.equal(await tmpToken.baseCurrency(), tmpEurt.address)
         })
 
         it('owner cannot change currencyMetaData when alive', async () => {
