@@ -10,7 +10,7 @@ import "../interfaces/ICRWDClearing.sol";
 /** @title CRWD AssetToken. */
 contract CRWDAssetToken is BasicAssetToken {
     /*
-    * @title This contract is the Crwd AssetToken created for each project via the AssetTokenGenerator
+    * @title This contract is the Crwd AssetToken created for each project via an AssetTokenGenerator
     * @author Paul Pöltner / Conda
     * @dev DividendAssetToken inherits from CRWDAssetToken which inherits from BasicAssetToken
     */

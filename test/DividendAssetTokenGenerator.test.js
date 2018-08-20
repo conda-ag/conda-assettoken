@@ -1,12 +1,12 @@
-const AssetTokenGenerator = artifacts.require('AssetTokenGenerator.sol');
+const DividendAssetTokenGenerator = artifacts.require('DividendAssetTokenGenerator.sol');
 const BasicAssetToken = artifacts.require('BasicAssetToken.sol');
 
-contract('AssetTokenGenerator', (accounts) => {
+contract('DividendAssetTokenGenerator', (accounts) => {
 
     let token = null
   
     beforeEach(async () => {
-        token = await AssetTokenGenerator.new()
+        token = await DividendAssetTokenGenerator.new()
     })
 
     contract('validating token generation', () => {

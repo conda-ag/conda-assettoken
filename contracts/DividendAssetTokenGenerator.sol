@@ -7,7 +7,7 @@ import "./token/library/AssetTokenSupplyL.sol";
 import "./token/DividendAssetToken.sol";
 
 /** @title AssetToken generator. */
-contract AssetTokenGenerator {
+contract DividendAssetTokenGenerator {
     /*
     * @title This contract can create project specific Crwd AssetToken
     * @author Paul Pöltner / Conda
