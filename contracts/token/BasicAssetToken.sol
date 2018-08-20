@@ -68,15 +68,15 @@ contract BasicAssetToken is Ownable {
 
     //availability: what's paused
     AssetTokenPauseL.Availability availability;
-    function mintingAndBurningPaused() public view returns (bool) {
+    function isMintingAndBurningPaused() public view returns (bool) {
         return availability.mintingAndBurningPaused;
     }
 
-    function pauseControl() public view returns (address) {
+    function getPauseControl() public view returns (address) {
         return availability.pauseControl;
     }
 
-    function transfersPaused() public view returns (bool) {
+    function isTransfersPaused() public view returns (bool) {
         return availability.transfersPaused;
     }
 
