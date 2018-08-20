@@ -184,6 +184,32 @@ contract('BasicAssetToken', (accounts) => {
         })
     })
 
+    contract('validating reopenCrowdsale()', () => {
+        it('can reopen crowdsale as capitalControl', async () => {
+            await token.setCapitalControl(capitalControl, {from: owner})
+            await token.setTokenAlive({from: owner})
+            await token.finishMinting()
+            await token.mint(buyerA, 10, {from: capitalControl}) //works because capitalControl
+            await token.mint(buyerA, 10).should.be.rejectedWith(EVMRevert) //not possible when finished
+            
+            const newCrowdsale = await ERC20TestToken.new()
+            await token.reopenCrowdsale(newCrowdsale.address, {from: capitalControl})
+
+            await token.mint(buyerA, 10) //now possible again...
+
+            let firstAccountBalance = await token.balanceOf(buyerA)
+            assert.equal(firstAccountBalance, 20)
+        })
+
+        it('cannot reopen crowdsale as non-capitalControl', async () => {
+            await token.setTokenAlive({from: owner})
+            await token.finishMinting()
+            
+            const newCrowdsale = await ERC20TestToken.new()
+            await token.reopenCrowdsale(newCrowdsale.address, {from: unknown}).should.be.rejectedWith(EVMRevert)
+        })
+    })
+
     contract('validating burn', () => {
 
         it('should return correct balances after burn ', async () => {
