@@ -104,22 +104,21 @@ contract BasicAssetToken is Ownable {
     }
 
     modifier canMintOrBurn() {
-        require(availability.tokenAlive);
-
-        if (availability.crowdsalePhaseFinished == false) {
+        if(msg.sender != capitalControl) {
             require(msg.sender == owner);
+            require(availability.tokenAlive);
             require(!availability.mintingAndBurningPaused);
             require(!availability.crowdsalePhaseFinished);
-        }
-        else {
-            require(msg.sender == capitalControl);
         }
         _;
     }
 
     modifier canSetMetadata() {
-        require(!availability.tokenAlive);
-        require(!availability.crowdsalePhaseFinished);
+        if(msg.sender != capitalControl) {
+            require(msg.sender == owner);
+            require(!availability.tokenAlive);
+            require(!availability.crowdsalePhaseFinished);
+        }
         _;
     }
 
@@ -148,7 +147,6 @@ contract BasicAssetToken is Ownable {
       * @param _shortDescription The description of the token.
       */
     function setMetaData(string _name, string _symbol, string _shortDescription) public 
-    onlyOwner
     canSetMetadata 
     {
         name = _name;
@@ -161,7 +159,6 @@ contract BasicAssetToken is Ownable {
       * @param _baseRate Base conversion of number of tokens to the initial rate.
       */
     function setCurrencyMetaData(address _tokenBaseCurrency, uint256 _baseRate) public 
-    onlyOwner
     canSetMetadata
     {
         require(_tokenBaseCurrency != address(0));
@@ -175,13 +172,13 @@ contract BasicAssetToken is Ownable {
     /** @dev Set the address of the crowdsale contract.
       * @param _crowdsale The address of the crowdsale.
       */
-    function setCrowdsaleAddress(address _crowdsale) public onlyOwner canSetMetadata {
+    function setCrowdsaleAddress(address _crowdsale) public canSetMetadata {
         require(_crowdsale != address(0));
 
         crowdsale = _crowdsale;
     }
 
-    function setCapitalControl(address _capitalControl) public onlyOwner canSetMetadata {
+    function setCapitalControl(address _capitalControl) public canSetMetadata {
         capitalControl = _capitalControl;
     }
 

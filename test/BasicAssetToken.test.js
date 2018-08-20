@@ -36,27 +36,27 @@ contract('BasicAssetToken', (accounts) => {
 
     contract('validating updateCapitalControl()', () => {
         it('updateCapitalControl() cannot be set by owner when not yet alive', async () => {
-            await token.updateCapitalControl({from: owner}).should.be.rejectedWith(EVMRevert)
+            await token.updateCapitalControl(buyerA, {from: owner}).should.be.rejectedWith(EVMRevert)
         })
 
         it('updateCapitalControl() cannot be set by unknown', async () => {
-            await token.updateCapitalControl({from: unknown}).should.be.rejectedWith(EVMRevert)
+            await token.updateCapitalControl(buyerA, {from: unknown}).should.be.rejectedWith(EVMRevert)
         })
 
         it('updateCapitalControl() can be set by capitalControl when alive', async () => {
             await token.setCapitalControl(capitalControl, {from: owner})
             await token.setTokenAlive({from: owner})
-            await token.updateCapitalControl({from: owner}).should.be.rejectedWith(EVMRevert)
+            await token.updateCapitalControl(buyerA, {from: owner}).should.be.rejectedWith(EVMRevert)
         })
 
         it('updateCapitalControl() cannot be set by owner even when alive', async () => {
             await token.setTokenAlive({from: owner})
-            await token.updateCapitalControl({from: owner}).should.be.rejectedWith(EVMRevert)
+            await token.updateCapitalControl(buyerA, {from: owner}).should.be.rejectedWith(EVMRevert)
         })
 
         it('updateCapitalControl() cannot be set by unknown when alive', async () => {
             await token.setTokenAlive({from: owner})
-            await token.updateCapitalControl({from: unknown}).should.be.rejectedWith(EVMRevert)
+            await token.updateCapitalControl(buyerA, {from: unknown}).should.be.rejectedWith(EVMRevert)
         })
     })
 
