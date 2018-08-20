@@ -267,7 +267,7 @@ contract('BasicAssetToken', (accounts) => {
         })
 
         contract('validating burn when finished', () => {
-            it('can mint as capitalControl even when finished capital increase/decrease phase', async () => {
+            it('can burn as capitalControl even when finished capital increase/decrease phase', async () => {
                 await token.setCapitalControl(capitalControl, {from: owner})
                 await token.setTokenAlive({from: owner})
                 await token.mint(buyerA, 100)
@@ -310,7 +310,7 @@ contract('BasicAssetToken', (accounts) => {
         it('should throw an error when trying to transfer to 0x0', async () => {
             await token.setTokenAlive()
             await token.mint(buyerA, 100)
-            await token.transfer(0x0, 100).should.be.rejectedWith(EVMRevert)
+            await token.transfer(0x0, 100, {from: buyerA}).should.be.rejectedWith(EVMRevert)
         })
 
         it('should throw when trying to transfer but transfer is disabled', async () => {
