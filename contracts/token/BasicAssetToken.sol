@@ -65,6 +65,9 @@ contract BasicAssetToken is Ownable {
 
     //supply: balance, checkpoints etc.
     AssetTokenSupplyL.Supply supply;
+    function getCapitalControl() public view returns (address) {
+        return capitalControl;
+    }
 
     //availability: what's paused
     AssetTokenPauseL.Availability availability;

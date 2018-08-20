@@ -460,7 +460,7 @@ contract('BasicAssetToken', (accounts) => {
             await token.setMetaData("changed name", "", "", { 'from': buyerA }).should.be.rejectedWith(EVMRevert)
         })
 
-        it('owner can change name when canMintOrBurn not finished', async () => {
+        it('owner cannot change name when canMintOrBurn is finished', async () => {
             await token.setTokenAlive()
             await token.finishMinting()
             await token.setMetaData("changed name", "", "").should.be.rejectedWith(EVMRevert)
