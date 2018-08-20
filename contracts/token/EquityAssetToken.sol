@@ -27,9 +27,13 @@ contract EquityAssetToken is CRWDAssetToken, Destructible {
     uint256 public baseRate = 1; //override: fixed baseRate
     
 
-    constructor(address _capitalControl) public {
+    constructor(address _capitalControl, bool instantCreatorLockout) public {
         capitalControl = _capitalControl;
         availability.transfersPaused = true; //disable transfer as default
+
+        if(instantCreatorLockout == true) {
+            owner = capitalControl;
+        }
     }
 
     //override: fixed baseRate
