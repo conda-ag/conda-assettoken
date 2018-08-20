@@ -1,5 +1,9 @@
 pragma solidity ^0.4.24;
 
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "./library/AssetTokenPauseL.sol";
+import "./library/AssetTokenSupplyL.sol";
+
 import "./BasicAssetToken.sol";
 import "../interfaces/ICRWDClearing.sol";
 
@@ -10,6 +14,10 @@ contract CRWDAssetToken is BasicAssetToken {
     * @author Paul Pöltner / Conda
     * @dev DividendAssetToken inherits from CRWDAssetToken which inherits from BasicAssetToken
     */
+
+    using SafeMath for uint256;
+    using AssetTokenPauseL for AssetTokenPauseL.Availability;
+    using AssetTokenSupplyL for AssetTokenSupplyL.Supply;
 
     address public clearingAddress;
 

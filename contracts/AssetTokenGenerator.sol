@@ -1,5 +1,9 @@
 pragma solidity ^0.4.24;
 
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "./token/library/AssetTokenPauseL.sol";
+import "./token/library/AssetTokenSupplyL.sol";
+
 import "./token/DividendAssetToken.sol";
 
 /** @title AssetToken generator. */
@@ -9,6 +13,10 @@ contract AssetTokenGenerator {
     * @author Paul Pöltner / Conda
     * @dev DividendAssetToken inherits from CRWDAssetToken which inherits from BasicAssetToken
     */
+
+    using SafeMath for uint256;
+    using AssetTokenPauseL for AssetTokenPauseL.Availability;
+    using AssetTokenSupplyL for AssetTokenSupplyL.Supply;
     
 ///////////////////
 // Variables
