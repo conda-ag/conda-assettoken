@@ -36,6 +36,48 @@ contract('BasicAssetToken', (accounts) => {
         assert.equal(await token.totalSupply(), 0)
     })
 
+    contract('validating rescueToken()', () => {
+        it('can rescue tokens as tokenAssignmentControl', async () => {
+            await token.setRoles(pauseControl, tokenAssignmentControl)
+
+            const someToken = await ERC20TestToken.new()
+            
+            await someToken.mint(buyerA, 100) //buyerA has some token
+            assert.equal((await someToken.balanceOf(buyerA)).toString(), '100')
+
+            await someToken.transfer(token.address, 100, {from: buyerA}) //buyerA accidentally sends this token to the contract
+            assert.equal((await someToken.balanceOf(buyerA)).toString(), '0')
+            assert.equal((await someToken.balanceOf(token.address)).toString(), '100')
+
+            await token.setTokenAlive()
+            await token.finishMinting()
+
+            await token.rescueToken(someToken.address, owner, {from: tokenAssignmentControl})
+            assert.equal((await someToken.balanceOf(token.address)).toString(), '0', "balance of sender/token is unexpected")
+            assert.equal((await someToken.balanceOf(owner)).toString(), '100', "balance of receiver is unexpected")
+        })
+
+        it('cannot rescue tokens as non-tokenAssignmentControl', async () => {
+            await token.setRoles(pauseControl, tokenAssignmentControl)
+
+            const someToken = await ERC20TestToken.new()
+            
+            await someToken.mint(buyerA, 100) //buyerA has some token
+            assert.equal((await someToken.balanceOf(buyerA)).toString(), '100')
+
+            await someToken.transfer(token.address, 100, {from: buyerA}) //buyerA accidentally sends this token to the contract
+            assert.equal((await someToken.balanceOf(buyerA)).toString(), '0')
+            assert.equal((await someToken.balanceOf(token.address)).toString(), '100')
+
+            await token.setTokenAlive()
+            await token.finishMinting()
+
+            await token.rescueToken(someToken.address, owner, {from: unknown}).should.be.rejectedWith(EVMRevert)
+            assert.equal((await someToken.balanceOf(token.address)).toString(), '100', "balance of sender/token is unexpected")
+            assert.equal((await someToken.balanceOf(owner)).toString(), '0', "balance of receiver is unexpected")
+        })
+    })
+
     contract('validating updateCapitalControl()', () => {
         it('updateCapitalControl() cannot be set by owner when not yet alive', async () => {
             await token.updateCapitalControl({from: owner}).should.be.rejectedWith(EVMRevert)
