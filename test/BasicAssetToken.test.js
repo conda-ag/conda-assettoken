@@ -22,6 +22,8 @@ contract('BasicAssetToken', (accounts) => {
     const pauseControl = accounts[4]
     const capitalControl = accounts[5]
 
+    const tokenAssignmentControl = accounts[6]
+
     const unknown = accounts[9]
   
     beforeEach(async () => {
@@ -156,6 +158,15 @@ contract('BasicAssetToken', (accounts) => {
             assert.equal(firstAccountBalance, 200)
         })
 
+        it('can mint as tokenAssignmentControl', async () => {
+            await token.setRoles(pauseControl, tokenAssignmentControl, {from: owner})
+            await token.setTokenAlive()
+            await token.mint(buyerA, 100, {from: tokenAssignmentControl})
+
+            let firstAccountBalance = await token.balanceOf(buyerA)
+            assert.equal(firstAccountBalance, 100)
+        })
+
         it('should throw an error when trying to mint but finished minting', async () => {
             await token.setTokenAlive()
             await token.finishMinting()
@@ -164,9 +175,9 @@ contract('BasicAssetToken', (accounts) => {
 
         contract('validating mint when paused', () => {
             it('trying to mint when minting is paused should fail', async () => {
+                await token.setRoles(pauseControl, ZERO_ADDRESS, {from: owner})
                 await token.setTokenAlive()
                 await token.mint(buyerA, 10) //works
-                await token.setPauseControl(pauseControl, {from: owner})
                 await token.pauseCapitalIncreaseOrDecrease(false, {from: pauseControl}) //now disabled
                 assert.equal(await token.isMintingAndBurningPaused(), true, "as precondition minting must be paused")
 
@@ -256,9 +267,9 @@ contract('BasicAssetToken', (accounts) => {
 
         contract('validating burn when paused', () => {
             it('trying to burn when minting is paused should fail', async () => {
+                await token.setRoles(pauseControl, ZERO_ADDRESS, {from: owner})
                 await token.setTokenAlive()
                 await token.mint(buyerA, 100)
-                await token.setPauseControl(pauseControl, {from: owner})
                 await token.pauseCapitalIncreaseOrDecrease(false, {from: pauseControl}) //now disabled
                 assert.equal(await token.isMintingAndBurningPaused(), true, "as precondition burning must be paused")
 
@@ -692,27 +703,52 @@ contract('BasicAssetToken', (accounts) => {
         })
     })
 
-    contract('validating setPauseControl()', () => {
-        it('setPauseControl() can set pauseControl address as owner', async () => {
+    contract('validating setRoles()', () => {
+        it('setRoles() can set pauseControl address as owner', async () => {
             assert.equal(await token.getPauseControl(), ZERO_ADDRESS) //precondition
 
-            await token.setPauseControl(pauseControl, {from: owner})
+            await token.setRoles(pauseControl, ZERO_ADDRESS, {from: owner})
 
             assert.equal(await token.getPauseControl(), pauseControl)
         })
 
-        it('setPauseControl() cannot set pauseControl address as not-owner', async () => {
+        it('setRoles() cannot set pauseControl address as not-owner', async () => {
             assert.equal(await token.getPauseControl(), ZERO_ADDRESS) //precondition
 
-            await token.setPauseControl(pauseControl, {from: unknown}).should.be.rejectedWith(EVMRevert)
+            await token.setRoles(pauseControl, ZERO_ADDRESS, {from: unknown}).should.be.rejectedWith(EVMRevert)
 
             assert.equal(await token.getPauseControl(), ZERO_ADDRESS)
+        })
+
+        it('setRoles() can set tokenAssignmentControl address as owner', async () => {
+            assert.equal(await token.tokenAssignmentControl(), ZERO_ADDRESS) //precondition
+
+            await token.setRoles(pauseControl, tokenAssignmentControl, {from: owner})
+
+            assert.equal(await token.tokenAssignmentControl(), tokenAssignmentControl)
+        })
+
+        it('setRoles() cannot set tokenAssignmentControl address as not-owner', async () => {
+            assert.equal(await token.tokenAssignmentControl(), ZERO_ADDRESS) //precondition
+
+            await token.setRoles(pauseControl, tokenAssignmentControl, {from: unknown}).should.be.rejectedWith(EVMRevert)
+
+            assert.equal(await token.tokenAssignmentControl(), ZERO_ADDRESS)
+        })
+
+        it('cannot setRoles() when alive', async () => {
+            await token.setTokenAlive()
+
+            await token.setRoles(pauseControl, tokenAssignmentControl, {from: owner}).should.be.rejectedWith(EVMRevert)
+
+            assert.equal(await token.getPauseControl(), ZERO_ADDRESS)
+            assert.equal(await token.tokenAssignmentControl(), ZERO_ADDRESS)
         })
     })
 
     contract('validating pauseTransfer()', () => {
         it('pauseTransfer() can pause as pauseControl', async () => {
-            await token.setPauseControl(pauseControl, {from: owner})
+            await token.setRoles(pauseControl, ZERO_ADDRESS, {from: owner})
 
             await token.pauseTransfer(false, {from: pauseControl})
 
@@ -720,7 +756,7 @@ contract('BasicAssetToken', (accounts) => {
         })
 
         it('pauseTransfer() can resume as pauseControl', async () => {
-            await token.setPauseControl(pauseControl, {from: owner})
+            await token.setRoles(pauseControl, ZERO_ADDRESS, {from: owner})
             await token.pauseTransfer(false, {from: pauseControl})
             assert.equal(await token.isTransfersPaused(), true)
 
@@ -730,7 +766,7 @@ contract('BasicAssetToken', (accounts) => {
         })
 
         it('pauseTransfer() cannot be set as not-pauseControl', async () => {
-            await token.setPauseControl(pauseControl, {from: unknown}).should.be.rejectedWith(EVMRevert)
+            await token.setRoles(pauseControl, ZERO_ADDRESS, {from: unknown}).should.be.rejectedWith(EVMRevert)
 
             await token.pauseTransfer(false, { from: unknown }).should.be.rejectedWith(EVMRevert)
 
@@ -740,7 +776,7 @@ contract('BasicAssetToken', (accounts) => {
 
     contract('validating pauseCapitalIncreaseOrDecrease()', () => {
         it('pauseCapitalIncreaseOrDecrease() can pause as pauseControl', async () => {
-            await token.setPauseControl(pauseControl, {from: owner})
+            await token.setRoles(pauseControl, ZERO_ADDRESS, {from: owner})
 
             await token.pauseCapitalIncreaseOrDecrease(false, {from: pauseControl})
 
@@ -748,7 +784,7 @@ contract('BasicAssetToken', (accounts) => {
         })
 
         it('pauseCapitalIncreaseOrDecrease() can resume as pauseControl', async () => {
-            await token.setPauseControl(pauseControl, {from: owner})
+            await token.setRoles(pauseControl, ZERO_ADDRESS, {from: owner})
             await token.pauseCapitalIncreaseOrDecrease(false, {from: pauseControl})
             assert.equal(await token.isMintingAndBurningPaused(), true)
 
@@ -758,7 +794,7 @@ contract('BasicAssetToken', (accounts) => {
         })
 
         it('pauseCapitalIncreaseOrDecrease() cannot be set as not-pauseControl', async () => {
-            await token.setPauseControl(pauseControl, {from: unknown}).should.be.rejectedWith(EVMRevert)
+            await token.setRoles(pauseControl, ZERO_ADDRESS, {from: unknown}).should.be.rejectedWith(EVMRevert)
 
             await token.pauseCapitalIncreaseOrDecrease(false, { from: unknown }).should.be.rejectedWith(EVMRevert)
 
