@@ -64,7 +64,7 @@ contract BasicAssetToken is Ownable {
     //if set can mint/burn after finished. E.g. a notary.
     address public capitalControl;
 
-    //can rescue tokens
+    //can assign and rescue tokens
     address public tokenAssignmentControl;
 
     //supply: balance, checkpoints etc.
