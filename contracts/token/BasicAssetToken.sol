@@ -323,12 +323,12 @@ contract BasicAssetToken is Ownable {
 // Rescue Tokens 
 ////////////////
     //if this contract gets a balance in some other ERC20 contract - or even iself - then we can rescue it.
-    function rescueToken(ERC20 _foreignToken, address _to)
+    function rescueToken(address _foreignTokenAddress, address _to)
     onlyTokenAssignmentControl
     public
     {
         require(availability.crowdsalePhaseFinished);
-        _foreignToken.transfer(_to, _foreignToken.balanceOf(this));
+        ERC20(_foreignTokenAddress).transfer(_to, ERC20(_foreignTokenAddress).balanceOf(this));
     }
 
 ////////////////
