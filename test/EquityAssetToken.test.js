@@ -348,6 +348,73 @@ contract('EquityAssetToken', (accounts) => {
         })
     })
 
+    contract('validating transferFrom() with approve()', () => {
+        it('can send transferFrom() with approval', async () => {
+            await token.enableTransfers(true, {from: capitalControl})
+
+            const balanceBuyerABefore = await token.balanceOf(buyerA)
+            const balanceBuyerBBefore = await token.balanceOf(buyerB)
+            const balanceBuyerCBefore = await token.balanceOf(buyerC)
+            
+            await token.approve(buyerB, 100, {from: buyerA})
+            await token.transferFrom(buyerA, buyerC, 30, {from: buyerB})
+
+            const balanceBuyerAAfter = await token.balanceOf(buyerA)
+            const balanceBuyerBAfter = await token.balanceOf(buyerB)
+            const balanceBuyerCAfter = await token.balanceOf(buyerC)
+
+            assert.equal(balanceBuyerAAfter.toString(), (balanceBuyerABefore.toNumber()-30).toString(), "balanceBuyerA was unexpected")
+            assert.equal(balanceBuyerBAfter.toString(), balanceBuyerBBefore.toString(), "balanceBuyerB was unexpected")
+            assert.equal(balanceBuyerCAfter.toString(), (balanceBuyerCBefore.toNumber()+30).toString(), "balanceBuyerC was unexpected")
+        })
+
+        it('cannot send transferFrom() without approval', async () => {
+            await token.enableTransfers(true, {from: capitalControl})
+
+            const balanceBuyerABefore = await token.balanceOf(buyerA)
+            const balanceBuyerBBefore = await token.balanceOf(buyerB)
+            const balanceBuyerCBefore = await token.balanceOf(buyerC)
+            
+            //await token.approve(buyerB, 100, {from: buyerA})
+            await token.transferFrom(buyerA, buyerC, 30, {from: buyerB}).should.be.rejectedWith(EVMRevert)
+
+            const balanceBuyerAAfter = await token.balanceOf(buyerA)
+            const balanceBuyerBAfter = await token.balanceOf(buyerB)
+            const balanceBuyerCAfter = await token.balanceOf(buyerC)
+
+            assert.equal(balanceBuyerAAfter.toString(), balanceBuyerABefore.toString(), "balanceBuyerA was unexpected")
+            assert.equal(balanceBuyerBAfter.toString(), balanceBuyerBBefore.toString(), "balanceBuyerB was unexpected")
+            assert.equal(balanceBuyerCAfter.toString(), balanceBuyerCBefore.toString(), "balanceBuyerC was unexpected")
+        })
+
+        it('can send transferFrom() even without approval as capitalControl', async () => {
+            const tmpToken = await EquityAssetToken.new(capitalControl, false)
+            await tmpToken.setClearingAddress(clearing.address)
+
+            await tmpToken.setTokenAlive()
+
+            await tmpToken.mint(buyerA, 100, { from: capitalControl }) //buyerA has 100
+
+            await tmpToken.enableTransfers(true, {from: capitalControl})
+
+            const balanceBuyerABefore = await tmpToken.balanceOf(buyerA)
+            const balanceBuyerBBefore = await tmpToken.balanceOf(buyerB)
+            const balanceBuyerCBefore = await tmpToken.balanceOf(buyerC)
+            assert.equal(balanceBuyerABefore.toString(), '100', 'prerequisit: buyerA needs tokens')
+
+            // await tmpToken.approve(capitalControl, 100, {from: buyerA})
+            await tmpToken.transferFrom(buyerA, buyerC, 30, {from: capitalControl}) //capitalControl passes money without approval
+
+            const balanceBuyerAAfter = await tmpToken.balanceOf(buyerA)
+            const balanceBuyerBAfter = await tmpToken.balanceOf(buyerB)
+            const balanceBuyerCAfter = await tmpToken.balanceOf(buyerC)
+
+            assert.equal(balanceBuyerAAfter.toString(), (balanceBuyerABefore.toNumber()-30).toString(), "balanceBuyerA was unexpected")
+            assert.equal(balanceBuyerBAfter.toString(), balanceBuyerBBefore.toString(), "balanceBuyerB was unexpected")
+            assert.equal(balanceBuyerCAfter.toString(), (balanceBuyerCBefore.toNumber()+30).toString(), "balanceBuyerC was unexpected")
+        })
+    })
+
     contract('validating approve and allowance', () => {
         it('should return the correct allowance amount after approval', async () => {
             await token.enableTransfers(true, {from: capitalControl})
