@@ -203,6 +203,7 @@ contract BasicAssetToken is Ownable {
 
     function setRoles(address _pauseControl, address _tokenAssignmentControl) public 
     onlyOwnerOrCrowdsale
+    canSetMetadata
     {
         availability.setPauseControl(_pauseControl);
         tokenAssignmentControl = _tokenAssignmentControl;
