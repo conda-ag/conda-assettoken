@@ -36,6 +36,15 @@ contract EquityAssetToken is CRWDAssetToken, Destructible {
         }
     }
 
+///////////////////
+// Events
+///////////////////
+    event SelfApprovedTransfer(address indexed initiator, address indexed from, address indexed to, uint256 value);
+
+
+///////////////////
+// Overrides
+///////////////////
     //override: fixed baseRate
     function setCurrencyMetaData(address _tokenBaseCurrency, uint256 _baseRate) public 
     onlyOwner
@@ -52,4 +61,15 @@ contract EquityAssetToken is CRWDAssetToken, Destructible {
 
         owner = capitalControl;
     }
+
+    //override: transferFrom that has special self-approve behaviour when executed as capitalControl
+    function transferFrom(address _from, address _to, uint256 _value) public returns (bool)
+    {
+        if (msg.sender == capitalControl) {
+            return supply.enforcedTransferFrom(_from, _to, _value);
+        } else {
+            return super.transferFrom(_from, _to, _value);
+        }
+    }
+
 }

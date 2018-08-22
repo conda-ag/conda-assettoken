@@ -129,6 +129,19 @@ library AssetTokenSupplyL {
         return true;
     }
 
+    /// @notice Send `_amount` tokens to `_to` from `_from` WITHOUT approval. UseCase: notar transfers from lost wallet
+    /// @param _from The address holding the tokens being transferred
+    /// @param _to The address of the recipient
+    /// @param _amount The amount of tokens to be transferred
+    /// @return True if the transfer was successful
+    function enforcedTransferFrom(Supply storage _self, address _from, address _to, uint256 _amount) internal returns (bool success) {
+        doTransfer(_self, _from, _to, _amount);
+
+        emit SelfApprovedTransfer(msg.sender, _from, _to, _amount);
+
+        return true;
+    }
+
 ////////////////
 // Miniting 
 ////////////////
@@ -261,6 +274,7 @@ library AssetTokenSupplyL {
     }
 
     event Transfer(address indexed from, address indexed to, uint256 value);
+    event SelfApprovedTransfer(address indexed initiator, address indexed from, address indexed to, uint256 value);
     event Mint(address indexed to, uint256 amount);
     event MintDetailed(address indexed initiator, address indexed to, uint256 amount);
     event MintFinished();
