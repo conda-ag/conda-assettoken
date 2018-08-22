@@ -21,6 +21,7 @@ pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 import "./library/AssetTokenPauseL.sol";
 import "./library/AssetTokenSupplyL.sol";
 
@@ -62,6 +63,9 @@ contract BasicAssetToken is Ownable {
 
     //if set can mint/burn after finished. E.g. a notary.
     address public capitalControl;
+
+    //can rescue tokens
+    address public tokenAssignmentControl;
 
     //supply: balance, checkpoints etc.
     AssetTokenSupplyL.Supply supply;
@@ -110,7 +114,7 @@ contract BasicAssetToken is Ownable {
         require(availability.tokenAlive);
 
         if (availability.crowdsalePhaseFinished == false) {
-            require(msg.sender == owner);
+            require(msg.sender == owner || msg.sender == tokenAssignmentControl);
             require(!availability.mintingAndBurningPaused);
             require(!availability.crowdsalePhaseFinished);
         }
@@ -138,6 +142,11 @@ contract BasicAssetToken is Ownable {
 
     modifier onlyOwnerOrCrowdsale() {
         require(msg.sender == owner || msg.sender == crowdsale);
+        _;
+    }
+
+    modifier onlyTokenAssignmentControl() {
+        require(msg.sender == tokenAssignmentControl);
         _;
     }
 
@@ -192,10 +201,11 @@ contract BasicAssetToken is Ownable {
         capitalControl = _capitalControl;
     }
 
-    function setPauseControl(address _pauseControl) public 
+    function setRoles(address _pauseControl, address _tokenAssignmentControl) public 
     onlyOwnerOrCrowdsale
     {
         availability.setPauseControl(_pauseControl);
+        tokenAssignmentControl = _tokenAssignmentControl;
     }
 
     function setTokenAlive() public 
@@ -306,6 +316,18 @@ contract BasicAssetToken is Ownable {
 
     function burn(address _who, uint256 _amount) public canMintOrBurn {
         return supply.burn(_who, _amount);
+    }
+
+////////////////
+// Rescue Tokens 
+////////////////
+    //if this contract gets a balance in some other ERC20 contract - or even iself - then we can rescue it.
+    function rescueToken(ERC20 _foreignToken, address _to)
+    onlyTokenAssignmentControl
+    public
+    {
+        require(availability.crowdsalePhaseFinished);
+        _foreignToken.transfer(_to, _foreignToken.balanceOf(this));
     }
 
 ////////////////
