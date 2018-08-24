@@ -22,8 +22,6 @@ contract('CRWDAssetToken', (accounts) => {
     let condaAccount = accounts[5]
 
     let unknown = accounts[6]
-
-    const capitalControl = accounts[8]
   
     beforeEach(async () => {
         token = await CRWDAssetToken.new()
@@ -68,22 +66,6 @@ contract('CRWDAssetToken', (accounts) => {
       
             let firstAccountBalance = await token.balanceOf(buyerA)
             assert.equal(firstAccountBalance, 100)
-        })
-
-        it('capitalControl can mint anytime ', async () => {
-            const tmpToken = await CRWDAssetToken.new()
-
-            //mock clearing so it doesn't cost money
-            await tmpToken.setClearingAddress(clearing.address)
-
-            await tmpToken.setCapitalControl(capitalControl, {from: owner})
-
-            await tmpToken.mint(buyerA, 100, { from: capitalControl })
-            await tmpToken.setTokenAlive({from: owner})
-            await tmpToken.mint(buyerA, 100, { from: capitalControl })
-      
-            let firstAccountBalance = await tmpToken.balanceOf(buyerA)
-            assert.equal(firstAccountBalance, 200)
         })
 
         it('should throw an error after finishing mint', async () => {
