@@ -1,12 +1,14 @@
-const AssetTokenGenerator = artifacts.require('AssetTokenGenerator.sol');
+const EquityAssetTokenGenerator = artifacts.require('EquityAssetTokenGenerator.sol');
 const BasicAssetToken = artifacts.require('BasicAssetToken.sol');
 
-contract('AssetTokenGenerator', (accounts) => {
+contract('EquityAssetTokenGenerator', (accounts) => {
 
     let token = null
   
+    const capitalControl = accounts[1]
+
     beforeEach(async () => {
-        token = await AssetTokenGenerator.new()
+        token = await EquityAssetTokenGenerator.new()
     })
 
     contract('validating token generation', () => {
@@ -16,19 +18,19 @@ contract('AssetTokenGenerator', (accounts) => {
             assert.equal(tokensOfUser.length, 0)
         })
 
-        it('generateToken without arguments creates a token and assigns it to user', async () => {
-            await token.generateToken()
+        it('generateToken with little arguments creates a token and assigns it to user', async () => {
+            await token.generateToken(capitalControl)
             let tokensOfUser = await token.getOwnTokens()
     
             assert.equal(tokensOfUser.length, 1)
         })
 
-        it('generateToken with arguments creates a token and assigns it to user', async () => {
+        it('generateToken with many arguments creates a token and assigns it to user', async () => {
             const name ="MyName"
             const symbol ="SYM"
             const shortDescription ="My token description."
             
-            await token.generateTokenWithAttributes(name, symbol, shortDescription)
+            await token.generateTokenWithAttributes(capitalControl, name, symbol, shortDescription)
             let tokensOfUser = await token.getOwnTokens()
 
             let tokenOfUser = BasicAssetToken.at(tokensOfUser[0])

@@ -60,14 +60,8 @@ contract BasicAssetToken is Ownable {
     // Crowdsale Contract
     address public crowdsale;
 
-    //if set can mint/burn after finished. E.g. a notary.
-    address public capitalControl;
-
     //supply: balance, checkpoints etc.
     AssetTokenSupplyL.Supply supply;
-    function getCapitalControl() public view returns (address) {
-        return capitalControl;
-    }
 
     //availability: what's paused
     AssetTokenPauseL.Availability availability;
@@ -106,28 +100,27 @@ contract BasicAssetToken is Ownable {
         _;
     }
 
-    modifier canMintOrBurn() {
-        require(availability.tokenAlive);
+    //can be overwritten in inherited contracts...
+    function _canDoAnytime() internal view returns (bool) {
+        return false;
+    }
 
-        if (availability.crowdsalePhaseFinished == false) {
+    modifier canMintOrBurn() {
+        if(_canDoAnytime() == false) { 
             require(msg.sender == owner);
-            require(!availability.mintingAndBurningPaused);
+            require(availability.tokenAlive);
             require(!availability.crowdsalePhaseFinished);
-        }
-        else {
-            require(msg.sender == capitalControl);
+            require(!availability.mintingAndBurningPaused);
         }
         _;
     }
 
     modifier canSetMetadata() {
-        require(!availability.tokenAlive);
-        require(!availability.crowdsalePhaseFinished);
-        _;
-    }
-
-    modifier onlyCapitalControl() {
-        require(msg.sender == capitalControl);
+        if(_canDoAnytime() == false) {
+            require(msg.sender == owner);
+            require(!availability.tokenAlive);
+            require(!availability.crowdsalePhaseFinished);
+        }
         _;
     }
 
@@ -151,7 +144,6 @@ contract BasicAssetToken is Ownable {
       * @param _shortDescription The description of the token.
       */
     function setMetaData(string _name, string _symbol, string _shortDescription) public 
-    onlyOwner
     canSetMetadata 
     {
         name = _name;
@@ -164,7 +156,6 @@ contract BasicAssetToken is Ownable {
       * @param _baseRate Base conversion of number of tokens to the initial rate.
       */
     function setCurrencyMetaData(address _tokenBaseCurrency, uint256 _baseRate) public 
-    onlyOwner
     canSetMetadata
     {
         require(_tokenBaseCurrency != address(0));
@@ -178,18 +169,10 @@ contract BasicAssetToken is Ownable {
     /** @dev Set the address of the crowdsale contract.
       * @param _crowdsale The address of the crowdsale.
       */
-    function setCrowdsaleAddress(address _crowdsale) public onlyOwner canSetMetadata {
+    function setCrowdsaleAddress(address _crowdsale) public canSetMetadata {
         require(_crowdsale != address(0));
 
         crowdsale = _crowdsale;
-    }
-
-    function setCapitalControl(address _capitalControl) public onlyOwner canSetMetadata {
-        capitalControl = _capitalControl;
-    }
-
-    function updateCapitalControl(address _capitalControl) public onlyCapitalControl {
-        capitalControl = _capitalControl;
     }
 
     function setPauseControl(address _pauseControl) public 
@@ -306,21 +289,6 @@ contract BasicAssetToken is Ownable {
 
     function burn(address _who, uint256 _amount) public canMintOrBurn {
         return supply.burn(_who, _amount);
-    }
-
-////////////////
-// Reopen crowdsale (by capitalControl e.g. notary)
-////////////////
-
-    /** @dev If a capitalControl is set he can reopen the crowdsale.
-      * @param _newCrowdsale the address of the new crowdsale
-      */
-    function reopenCrowdsale(address _newCrowdsale) public onlyCapitalControl returns (bool) {
-        require(crowdsale != _newCrowdsale);
-
-        crowdsale = _newCrowdsale;
-        
-        return availability.reopenCrowdsale();
     }
 
 ////////////////

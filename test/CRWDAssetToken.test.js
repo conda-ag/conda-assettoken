@@ -13,6 +13,7 @@ contract('CRWDAssetToken', (accounts) => {
     let token = null
     let crwdToken = null
     let clearing = null
+    let owner = null
 
     let buyerA = accounts[1]
     let buyerB = accounts[2]
@@ -33,6 +34,7 @@ contract('CRWDAssetToken', (accounts) => {
     contract('validating setClearingAddress()', () => {
         it('can be set by owner', async () => {
             token = await CRWDAssetToken.new()
+            owner = await token.owner()
             crwdToken = await ERC20TestToken.new()
             const goodClearing = await MOCKCRWDClearing.new()
             await token.setClearingAddress(goodClearing.address)

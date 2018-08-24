@@ -4,10 +4,10 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "./token/library/AssetTokenPauseL.sol";
 import "./token/library/AssetTokenSupplyL.sol";
 
-import "./token/DividendAssetToken.sol";
+import "./token/EquityAssetToken.sol";
 
 /** @title AssetToken generator. */
-contract AssetTokenGenerator {
+contract EquityAssetTokenGenerator {
     /*
     * @title This contract can create project specific Crwd AssetToken
     * @author Paul Pöltner / Conda
@@ -37,10 +37,9 @@ contract AssetTokenGenerator {
     /** @dev Generate a new AssetToken.
       * @return The token address of the generated token.
       */
-    function generateToken() public returns (address tokenAddress) {
+    function generateToken(address capitalControl) public returns (address tokenAddress) {
         // create the company Token
-        DividendAssetToken token = new DividendAssetToken();
-        token.transferOwnership(msg.sender);
+        EquityAssetToken token = new EquityAssetToken(capitalControl, true);
         assetToken[msg.sender].push(address(token));
         emit TokenCreated(token, msg.sender);
 
@@ -54,13 +53,14 @@ contract AssetTokenGenerator {
       * @return The token address of the generated token.
       */
     function generateTokenWithAttributes(
+        address capitalControl,
         string _name, 
         string _symbol, 
         string _shortDescription) 
         public returns (address tokenAddress) 
     {
         // create the company Token
-        DividendAssetToken token = new DividendAssetToken();
+        EquityAssetToken token = new EquityAssetToken(capitalControl, false);
         token.setMetaData(_name, _symbol, _shortDescription);
         token.transferOwnership(msg.sender);
         assetToken[msg.sender].push(address(token));

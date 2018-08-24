@@ -20,7 +20,6 @@ contract('BasicAssetToken', (accounts) => {
     const buyerC = accounts[3]
 
     const pauseControl = accounts[4]
-    const capitalControl = accounts[5]
 
     const unknown = accounts[9]
   
@@ -34,47 +33,6 @@ contract('BasicAssetToken', (accounts) => {
         assert.equal(await token.totalSupply(), 0)
     })
 
-    contract('validating updateCapitalControl()', () => {
-        it('updateCapitalControl() cannot be set by owner when not yet alive', async () => {
-            await token.updateCapitalControl({from: owner}).should.be.rejectedWith(EVMRevert)
-        })
-
-        it('updateCapitalControl() cannot be set by unknown', async () => {
-            await token.updateCapitalControl({from: unknown}).should.be.rejectedWith(EVMRevert)
-        })
-
-        it('updateCapitalControl() can be set by capitalControl when alive', async () => {
-            await token.setCapitalControl(capitalControl, {from: owner})
-            await token.setTokenAlive({from: owner})
-            await token.updateCapitalControl({from: owner}).should.be.rejectedWith(EVMRevert)
-        })
-
-        it('updateCapitalControl() cannot be set by owner even when alive', async () => {
-            await token.setTokenAlive({from: owner})
-            await token.updateCapitalControl({from: owner}).should.be.rejectedWith(EVMRevert)
-        })
-
-        it('updateCapitalControl() cannot be set by unknown when alive', async () => {
-            await token.setTokenAlive({from: owner})
-            await token.updateCapitalControl({from: unknown}).should.be.rejectedWith(EVMRevert)
-        })
-    })
-
-    contract('validating setCapitalControl()', () => {
-        it('setCapitalControl() can be set by owner when not alive', async () => {
-            await token.setCapitalControl(capitalControl, {from: owner})
-        })
-
-        it('setCapitalControl() cannot be set by unknown', async () => {
-            await token.setCapitalControl(capitalControl, {from: unknown}).should.be.rejectedWith(EVMRevert)
-        })
-
-        it('setCapitalControl() cannot be set when alive', async () => {
-            await token.setTokenAlive({from: owner})
-            await token.setCapitalControl(capitalControl, {from: owner}).should.be.rejectedWith(EVMRevert)
-        })
-    })
-
     contract('validating setTokenAlive()', () => {
         it('cannot mint when token is not alive', async () => {
             await token.mint(buyerA, 100, {from: owner}).should.be.rejectedWith(EVMRevert)
@@ -86,11 +44,6 @@ contract('BasicAssetToken', (accounts) => {
 
         it('setTokenAlive() cannot be set by investor', async () => {
             await token.setTokenAlive({from: buyerA}).should.be.rejectedWith(EVMRevert)
-        })
-
-        it('setCapitalControl() cannot be set when alive', async () => {
-            await token.setTokenAlive()
-            await token.setCapitalControl(capitalControl, {from: owner}).should.be.rejectedWith(EVMRevert)
         })
 
         it('can mint when alive', async () => {
@@ -173,41 +126,6 @@ contract('BasicAssetToken', (accounts) => {
                 await token.mint(buyerA, 10).should.be.rejectedWith(EVMRevert)
             })
         })
-
-        contract('validating mint when finished', () => {
-            it('can mint as capitalControl even when finished capital increase/decrease phase', async () => {
-                await token.setCapitalControl(capitalControl, {from: owner})
-                await token.setTokenAlive({from: owner})
-                await token.finishMinting()
-                await token.mint(buyerA, 10, {from: capitalControl}) //works because capitalControl
-            })
-        })
-    })
-
-    contract('validating reopenCrowdsale()', () => {
-        it('can reopen crowdsale as capitalControl', async () => {
-            await token.setCapitalControl(capitalControl, {from: owner})
-            await token.setTokenAlive({from: owner})
-            await token.finishMinting()
-            await token.mint(buyerA, 10, {from: capitalControl}) //works because capitalControl
-            await token.mint(buyerA, 10).should.be.rejectedWith(EVMRevert) //not possible when finished
-            
-            const newCrowdsale = await ERC20TestToken.new()
-            await token.reopenCrowdsale(newCrowdsale.address, {from: capitalControl})
-
-            await token.mint(buyerA, 10) //now possible again...
-
-            let firstAccountBalance = await token.balanceOf(buyerA)
-            assert.equal(firstAccountBalance, 20)
-        })
-
-        it('cannot reopen crowdsale as non-capitalControl', async () => {
-            await token.setTokenAlive({from: owner})
-            await token.finishMinting()
-            
-            const newCrowdsale = await ERC20TestToken.new()
-            await token.reopenCrowdsale(newCrowdsale.address, {from: unknown}).should.be.rejectedWith(EVMRevert)
-        })
     })
 
     contract('validating burn', () => {
@@ -265,23 +183,6 @@ contract('BasicAssetToken', (accounts) => {
                 await token.burn(buyerA, 1).should.be.rejectedWith(EVMRevert)
             })
         })
-
-        contract('validating burn when finished', () => {
-            it('can mint as capitalControl even when finished capital increase/decrease phase', async () => {
-                await token.setCapitalControl(capitalControl, {from: owner})
-                await token.setTokenAlive({from: owner})
-                await token.mint(buyerA, 100)
-
-                await token.finishMinting()
-                await token.burn(buyerA, 10, {from: capitalControl}) //works because capitalControl
-
-                let firstAccountBalance = await token.balanceOf(buyerA)
-                assert.equal(firstAccountBalance, 90)
-
-                let totalSupply = await token.totalSupply()
-                assert.equal(totalSupply, 90)
-            })
-        })
     })
 
     contract('validating transfer', () => {
@@ -310,7 +211,7 @@ contract('BasicAssetToken', (accounts) => {
         it('should throw an error when trying to transfer to 0x0', async () => {
             await token.setTokenAlive()
             await token.mint(buyerA, 100)
-            await token.transfer(0x0, 100).should.be.rejectedWith(EVMRevert)
+            await token.transfer(0x0, 100, {from: buyerA}).should.be.rejectedWith(EVMRevert)
         })
 
         it('should throw when trying to transfer but transfer is disabled', async () => {

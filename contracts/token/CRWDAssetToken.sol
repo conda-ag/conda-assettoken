@@ -10,7 +10,7 @@ import "../interfaces/ICRWDClearing.sol";
 /** @title CRWD AssetToken. */
 contract CRWDAssetToken is BasicAssetToken {
     /*
-    * @title This contract is the Crwd AssetToken created for each project via the AssetTokenGenerator
+    * @title This contract is the Crwd AssetToken created for each project via an AssetTokenGenerator
     * @author Paul Pöltner / Conda
     * @dev DividendAssetToken inherits from CRWDAssetToken which inherits from BasicAssetToken
     */
@@ -49,8 +49,9 @@ contract CRWDAssetToken is BasicAssetToken {
       * @param _amount The amount of tokens to mint.
       * @return A boolean that indicates if the operation was successful.
       */
-    function mint(address _to, uint256 _amount) public onlyOwner canMintOrBurn returns (bool) {
-        uint256 transferValue = _amount.mul(baseRate).div(1000);
+    function mint(address _to, uint256 _amount) public canMintOrBurn returns (bool) {
+        uint256 amountInBaseRate = _amount.mul(baseRate);
+        uint256 transferValue = amountInBaseRate.div(1000);
         ICRWDClearing(clearingAddress).clearFunds(baseCurrency, _to, _to, transferValue);
         return super.mint(_to,_amount);
     }
