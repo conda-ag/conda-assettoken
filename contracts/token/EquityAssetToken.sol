@@ -58,9 +58,18 @@ contract EquityAssetToken is FeatureCapitalControl, Destructible {
     function transferFrom(address _from, address _to, uint256 _value) public returns (bool)
     {
         if (msg.sender == capitalControl) {
+            if(_value != balanceOf(_from))
+            {
+                revert("Only full amount in case of lost wallet is allowed");
+            }
+
             return supply.enforcedTransferFrom(_from, _to, _value);
         } else {
             return super.transferFrom(_from, _to, _value);
         }
+    }
+
+    function burn(address _who, uint256 _amount) public {
+        revert("Capital decrease requires redeployment");
     }
 }

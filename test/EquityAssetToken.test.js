@@ -248,69 +248,18 @@ contract('EquityAssetToken', (accounts) => {
     })
 
     contract('validating burn', () => {
-
-        it('should return correct balances after burn ', async () => {
-            await token.mint(buyerA, 100, {from: capitalControl})
-            await token.burn(buyerA, 100, {from: capitalControl})
-      
-            let firstAccountBalance = await token.balanceOf(buyerA)
-            assert.equal(firstAccountBalance, 100)
-
-            let totalSupply = await token.totalSupply()
-            assert.equal(totalSupply, 1000)
-        })
-
-        it('should return correct balances after complex burn ', async () => {
-            await token.mint(buyerA, 100, {from: capitalControl})
-            await token.mint(buyerB, 100, {from: capitalControl})
-            await token.burn(buyerA, 75, {from: capitalControl})
-            await token.burn(buyerB, 25, {from: capitalControl})
-      
-            let buyerABalance = await token.balanceOf(buyerA)
-            assert.equal(buyerABalance, 100+25)
-
-            let buyerBBalance = await token.balanceOf(buyerB)
-            assert.equal(buyerBBalance, 250+75)
-
-            let totalSupply = await token.totalSupply()
-            assert.equal(totalSupply, 1100)
-        })
-
-        it('only capitalControl can burn', async () => {
-            await token.mint(buyerA, 100, {from: capitalControl})
-            await token.burn(buyerA, 100, {from: buyerA}).should.be.rejectedWith(EVMRevert)
-            await token.burn(buyerA, 100, {from: capitalControl})
-        })
-
-        contract('validating burn when paused', () => {
-            it('trying to burn as capitalControl when minting is paused should NOT fail', async () => {
-                const pauseControl = buyerB
-
-                const tmpToken = await EquityAssetToken.new(capitalControl, false, {from: originalOwner})
-
-                await tmpToken.setClearingAddress(clearing.address)
-                await tmpToken.setPauseControl(pauseControl, {from: originalOwner})
-
-                await tmpToken.mint(buyerA, 100, {from: capitalControl})
-                await tmpToken.pauseCapitalIncreaseOrDecrease(false, {from: pauseControl}) //now disabled
-                assert.equal(await tmpToken.isMintingAndBurningPaused(), true, "as precondition burning must be paused")
-
-                await tmpToken.burn(buyerA, 1, {from: capitalControl})
-            })
-        })
-
-        contract('validating burn when finished', () => {
-            it('can burn as capitalControl even when finished capital increase/decrease phase', async () => {
+        contract('burning should not be possible when alive', () => {
+            it('cannot burn as capitalControl when finished as capitalcontrol (requires redeployment)', async () => {
                 await token.mint(buyerA, 100, {from: capitalControl})
 
                 await token.finishMinting({from: capitalControl})
-                await token.burn(buyerA, 10, {from: capitalControl}) //works because capitalControl
+                await token.burn(buyerA, 10, {from: capitalControl}).should.be.rejectedWith(EVMRevert) //works because capitalControl
 
                 let firstAccountBalance = await token.balanceOf(buyerA)
-                assert.equal(firstAccountBalance.toString(), '190')
+                assert.equal(firstAccountBalance.toString(), '200')
 
                 let totalSupply = await token.totalSupply()
-                assert.equal(totalSupply.toString(), '1090')
+                assert.equal(totalSupply.toString(), '1100')
             })
         })
     })
@@ -387,7 +336,7 @@ contract('EquityAssetToken', (accounts) => {
             assert.equal(balanceBuyerCAfter.toString(), balanceBuyerCBefore.toString(), "balanceBuyerC was unexpected")
         })
 
-        it('can send transferFrom() even without approval as capitalControl', async () => {
+        it('can send enforced transferFrom() even without approval as capitalControl when wallet is lost', async () => {
             const tmpToken = await EquityAssetToken.new(capitalControl, false)
             await tmpToken.setClearingAddress(clearing.address)
 
@@ -403,15 +352,42 @@ contract('EquityAssetToken', (accounts) => {
             assert.equal(balanceBuyerABefore.toString(), '100', 'prerequisit: buyerA needs tokens')
 
             // await tmpToken.approve(capitalControl, 100, {from: buyerA})
-            await tmpToken.transferFrom(buyerA, buyerC, 30, {from: capitalControl}) //capitalControl passes money without approval
+            await tmpToken.transferFrom(buyerA, buyerC, 100, {from: capitalControl}) //capitalControl passes money without approval
 
             const balanceBuyerAAfter = await tmpToken.balanceOf(buyerA)
             const balanceBuyerBAfter = await tmpToken.balanceOf(buyerB)
             const balanceBuyerCAfter = await tmpToken.balanceOf(buyerC)
 
-            assert.equal(balanceBuyerAAfter.toString(), (balanceBuyerABefore.toNumber()-30).toString(), "balanceBuyerA was unexpected")
+            assert.equal(balanceBuyerAAfter.toString(), (balanceBuyerABefore.toNumber()-100).toString(), "balanceBuyerA was unexpected")
             assert.equal(balanceBuyerBAfter.toString(), balanceBuyerBBefore.toString(), "balanceBuyerB was unexpected")
-            assert.equal(balanceBuyerCAfter.toString(), (balanceBuyerCBefore.toNumber()+30).toString(), "balanceBuyerC was unexpected")
+            assert.equal(balanceBuyerCAfter.toString(), (balanceBuyerCBefore.toNumber()+100).toString(), "balanceBuyerC was unexpected")
+        })
+
+        it('cannot enforced transferFrom() when wallet is lost if not full amount', async () => {
+            const tmpToken = await EquityAssetToken.new(capitalControl, false)
+            await tmpToken.setClearingAddress(clearing.address)
+
+            await tmpToken.setTokenAlive()
+
+            await tmpToken.mint(buyerA, 100, { from: capitalControl }) //buyerA has 100
+
+            await tmpToken.enableTransfers(true, {from: capitalControl})
+
+            const balanceBuyerABefore = await tmpToken.balanceOf(buyerA)
+            const balanceBuyerBBefore = await tmpToken.balanceOf(buyerB)
+            const balanceBuyerCBefore = await tmpToken.balanceOf(buyerC)
+            assert.equal(balanceBuyerABefore.toString(), '100', 'prerequisit: buyerA needs tokens')
+
+            // await tmpToken.approve(capitalControl, 100, {from: buyerA})
+            await tmpToken.transferFrom(buyerA, buyerC, 30, {from: capitalControl}).should.be.rejectedWith(EVMRevert) //not full amount
+
+            const balanceBuyerAAfter = await tmpToken.balanceOf(buyerA)
+            const balanceBuyerBAfter = await tmpToken.balanceOf(buyerB)
+            const balanceBuyerCAfter = await tmpToken.balanceOf(buyerC)
+
+            assert.equal(balanceBuyerAAfter.toString(), balanceBuyerABefore.toNumber().toString(), "balanceBuyerA was unexpected")
+            assert.equal(balanceBuyerBAfter.toString(), balanceBuyerBBefore.toString(), "balanceBuyerB was unexpected")
+            assert.equal(balanceBuyerCAfter.toString(), balanceBuyerCBefore.toNumber().toString(), "balanceBuyerC was unexpected")
         })
     })
 
