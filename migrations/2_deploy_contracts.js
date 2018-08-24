@@ -3,6 +3,8 @@ const BasicAssetToken = artifacts.require("BasicAssetToken.sol")
 const DividendAssetToken = artifacts.require("DividendAssetToken.sol")
 const EquityAssetToken = artifacts.require("EquityAssetToken.sol")
 
+const FeatureCapitalControl = artifacts.require("FeatureCapitalControl.sol")
+
 const AssetTokenPauseL = artifacts.require("AssetTokenPauseL.sol")
 const AssetTokenSupplyL = artifacts.require("AssetTokenSupplyL.sol")
 
@@ -15,8 +17,8 @@ module.exports = (deployer, network, accounts) => {
     deployer.deploy(AssetTokenSupplyL)
 
     //link libraries
-    deployer.link(AssetTokenPauseL, [BasicAssetToken, DividendAssetToken, CRWDAssetToken, DividendAssetTokenGenerator, EquityAssetTokenGenerator, EquityAssetToken])
-    deployer.link(AssetTokenSupplyL, [BasicAssetToken, DividendAssetToken, CRWDAssetToken, DividendAssetTokenGenerator, EquityAssetTokenGenerator, EquityAssetToken])
+    deployer.link(AssetTokenPauseL, [BasicAssetToken, DividendAssetToken, CRWDAssetToken, DividendAssetTokenGenerator, EquityAssetTokenGenerator, EquityAssetToken, FeatureCapitalControl])
+    deployer.link(AssetTokenSupplyL, [BasicAssetToken, DividendAssetToken, CRWDAssetToken, DividendAssetTokenGenerator, EquityAssetTokenGenerator, EquityAssetToken, FeatureCapitalControl])
 
     //deploy contracts
     deployer.deploy(DividendAssetTokenGenerator) //knows all the others
