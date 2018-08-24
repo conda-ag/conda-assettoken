@@ -17,24 +17,17 @@ pragma solidity ^0.4.24;
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import "./CRWDAssetToken.sol";
+import "./FeatureCapitalControl.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 import "openzeppelin-solidity/contracts/lifecycle/Destructible.sol";
 
 /** @title Equity AssetToken. */
-contract EquityAssetToken is CRWDAssetToken, Destructible {
+contract EquityAssetToken is FeatureCapitalControl, Destructible {
     uint256 public baseRate = 1; //override: fixed baseRate
     
 
-    constructor(address _capitalControl, bool instantCreatorLockout) public {
-        capitalControl = _capitalControl;
-        availability.transfersPaused = true; //disable transfer as default
-
-        if(instantCreatorLockout == true) {
-            owner = capitalControl;
-        }
-    }
+    constructor(address _capitalControl, bool instantCreatorLockout) FeatureCapitalControl(_capitalControl, instantCreatorLockout) public {}
 
 ///////////////////
 // Events
@@ -54,7 +47,6 @@ contract EquityAssetToken is CRWDAssetToken, Destructible {
         super.setCurrencyMetaData(_tokenBaseCurrency, _baseRate);
     }
 
-
     //override: transfer ownership to capitalControl as soon as alive
     function setTokenAlive() public {
         super.setTokenAlive();
@@ -71,5 +63,4 @@ contract EquityAssetToken is CRWDAssetToken, Destructible {
             return super.transferFrom(_from, _to, _value);
         }
     }
-
 }
