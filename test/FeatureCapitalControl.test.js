@@ -22,13 +22,13 @@ contract('FeatureCapitalControl', (accounts) => {
     
     const capitalControl = accounts[5]
 
-    let crowdsale = accounts[6]
+    let mintControl = accounts[6]
 
     const unknown = accounts[9]
   
     beforeEach(async () => {
         token = await FeatureCapitalControl.new(capitalControl)
-        await token.setCrowdsaleAddress(crowdsale)
+        await token.setMintControl(mintControl)
         owner = await token.owner()
 
         //mock clearing so it doesn't cost money
@@ -87,7 +87,7 @@ contract('FeatureCapitalControl', (accounts) => {
         it('can mint as capitalControl even when finished capital increase/decrease phase', async () => {
             await token.setCapitalControl(capitalControl, {from: owner})
             await token.setTokenAlive({from: owner})
-            await token.finishMinting({from: crowdsale})
+            await token.finishMinting({from: mintControl})
             await token.mint(buyerA, 10, {from: capitalControl}) //works because capitalControl
         })
     })
@@ -96,16 +96,16 @@ contract('FeatureCapitalControl', (accounts) => {
         it('can reopen crowdsale as capitalControl', async () => {
             await token.setCapitalControl(capitalControl, {from: owner})
             await token.setTokenAlive({from: owner})
-            await token.finishMinting({from: crowdsale})
+            await token.finishMinting({from: mintControl})
             await token.mint(buyerA, 10, {from: capitalControl}) //works because capitalControl
-            await token.mint(buyerA, 10, {from: crowdsale}).should.be.rejectedWith(EVMRevert) //not possible when finished
+            await token.mint(buyerA, 10, {from: mintControl}).should.be.rejectedWith(EVMRevert) //not possible when finished
             
-            const newCrowdsale = accounts[2]
-            await token.reopenCrowdsale(newCrowdsale, {from: capitalControl})
+            const newMintControl = accounts[2]
+            await token.reopenCrowdsale(newMintControl, {from: capitalControl})
 
             await token.mint(buyerA, 10, {from: unknown}).should.be.rejectedWith(EVMRevert)
-            await token.mint(buyerA, 10, {from: crowdsale}).should.be.rejectedWith(EVMRevert) //no longer possible...
-            await token.mint(buyerA, 10, {from: newCrowdsale}) //now possible again...
+            await token.mint(buyerA, 10, {from: mintControl}).should.be.rejectedWith(EVMRevert) //no longer possible...
+            await token.mint(buyerA, 10, {from: newMintControl}) //now possible again...
 
             let firstAccountBalance = await token.balanceOf(buyerA)
             assert.equal(firstAccountBalance, 20)
@@ -113,27 +113,27 @@ contract('FeatureCapitalControl', (accounts) => {
 
         it('cannot reopen crowdsale as owner', async () => {
             await token.setTokenAlive({from: owner})
-            await token.finishMinting({from: crowdsale})
+            await token.finishMinting({from: mintControl})
             
-            const newCrowdsale = await ERC20TestToken.new()
-            await token.reopenCrowdsale(newCrowdsale.address, {from: owner}).should.be.rejectedWith(EVMRevert)
+            const newMintControl = await ERC20TestToken.new()
+            await token.reopenCrowdsale(newMintControl.address, {from: owner}).should.be.rejectedWith(EVMRevert)
         })
 
         it('cannot reopen crowdsale as non-capitalControl', async () => {
             await token.setTokenAlive({from: owner})
-            await token.finishMinting({from: crowdsale})
+            await token.finishMinting({from: mintControl})
             
-            const newCrowdsale = await ERC20TestToken.new()
-            await token.reopenCrowdsale(newCrowdsale.address, {from: unknown}).should.be.rejectedWith(EVMRevert)
+            const newMintControl = await ERC20TestToken.new()
+            await token.reopenCrowdsale(newMintControl.address, {from: unknown}).should.be.rejectedWith(EVMRevert)
         })
 
         contract('validating burn as capitalControl', () => {
             it('can burn as capitalControl even when finished capital increase/decrease phase', async () => {
                 await token.setCapitalControl(capitalControl, {from: owner})
                 await token.setTokenAlive({from: owner})
-                await token.mint(buyerA, 100, {from: crowdsale})
+                await token.mint(buyerA, 100, {from: mintControl})
 
-                await token.finishMinting({from: crowdsale})
+                await token.finishMinting({from: mintControl})
                 await token.burn(buyerA, 10, {from: capitalControl}) //works because capitalControl
 
                 let firstAccountBalance = await token.balanceOf(buyerA)

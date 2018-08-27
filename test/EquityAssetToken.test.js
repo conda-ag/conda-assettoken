@@ -32,7 +32,7 @@ contract('EquityAssetToken', (accounts) => {
     let buyerD = accounts[4]
     let buyerE = accounts[5]
 
-    let crowdsale = accounts[6]
+    let mintControl = accounts[6]
 
     const capitalControl = accounts[8]
 
@@ -40,7 +40,7 @@ contract('EquityAssetToken', (accounts) => {
     
     beforeEach(async () => {
         token = await EquityAssetToken.new(capitalControl)
-        await token.setCrowdsaleAddress(crowdsale)
+        await token.setMintControl(mintControl)
         erc20 = await ERC20TestToken.new()
         erc20RetFalse = await ERC20TestTokenRetFalse.new()
         originalOwner = await token.owner()
@@ -118,9 +118,9 @@ contract('EquityAssetToken', (accounts) => {
             await tmpToken.setTokenAlive({from: buyerA}).should.be.rejectedWith(EVMRevert)
         })
 
-        it('setTokenAlive() cannot be set by crowdsale', async () => {
+        it('setTokenAlive() cannot be set by mintControl', async () => {
             const tmpToken = await EquityAssetToken.new(capitalControl)
-            await tmpToken.setTokenAlive({from: crowdsale}).should.be.rejectedWith(EVMRevert)
+            await tmpToken.setTokenAlive({from: mintControl}).should.be.rejectedWith(EVMRevert)
         })
 
         it('setCapitalControl() cannot be set when alive', async () => {
@@ -143,18 +143,18 @@ contract('EquityAssetToken', (accounts) => {
         })
     })
 
-    contract('validating setting of crowdsale address', () => {
+    contract('validating setting of mintControl address', () => {
         it('address 0x0 is reverted', async () => {
-            await token.setCrowdsaleAddress(ZERO_ADDRESS, {from: capitalControl}).should.be.rejectedWith(EVMRevert)
+            await token.setMintControl(ZERO_ADDRESS, {from: capitalControl}).should.be.rejectedWith(EVMRevert)
         })
 
-        it('can set erc20 address as crowdsale address', async () => {
+        it('can set erc20 address as mintControl address', async () => {
             let anyErc20Token = await ERC20TestToken.new()
 
-            await token.setCrowdsaleAddress(anyErc20Token.address, {from: capitalControl})
+            await token.setMintControl(anyErc20Token.address, {from: capitalControl})
 
             assert.notEqual(anyErc20Token.address, ZERO_ADDRESS)
-            assert.equal(await token.crowdsale.call(), anyErc20Token.address)
+            assert.equal(await token.mintControl.call(), anyErc20Token.address)
         })
     })
 
@@ -214,12 +214,12 @@ contract('EquityAssetToken', (accounts) => {
             it('trying to mint when minting is paused should still work for capitalControl', async () => {
                 const tmpToken = await EquityAssetToken.new(capitalControl)
                 await tmpToken.setClearingAddress(clearing.address)
-                await tmpToken.setCrowdsaleAddress(crowdsale)
+                await tmpToken.setMintControl(mintControl)
                 await tmpToken.setRoles(buyerA, ZERO_ADDRESS, {from: originalOwner})
 
                 await tmpToken.setTokenAlive()
 
-                await tmpToken.mint(buyerA, 10, {from: crowdsale}) //works
+                await tmpToken.mint(buyerA, 10, {from: mintControl}) //works
                 await tmpToken.pauseCapitalIncreaseOrDecrease(false, {from: buyerA}) //now disabled
                 assert.equal(await tmpToken.isMintingAndBurningPaused(), true, "as precondition minting must be paused")
 

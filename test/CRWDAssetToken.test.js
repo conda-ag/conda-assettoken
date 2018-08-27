@@ -27,7 +27,7 @@ contract('CRWDAssetToken', (accounts) => {
   
     beforeEach(async () => {
         token = await CRWDAssetToken.new()
-        await token.setCrowdsaleAddress(crowdsale)
+        await token.setMintControl(crowdsale)
         crwdToken = await ERC20TestToken.new()
         clearing = await MOCKCRWDClearing.new()
         await token.setTokenAlive()

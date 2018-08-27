@@ -54,8 +54,8 @@ contract BasicAssetToken is Ownable {
     // this amount will be used for regulatory checks. 
     uint256 public baseRate;
     
-    // Crowdsale Contract
-    address public crowdsale; //ERROR: mintControl
+    // mintControl can mint and burn when token is alive
+    address public mintControl;
 
     //can rescue tokens
     address public tokenRescueControl;
@@ -115,7 +115,7 @@ contract BasicAssetToken is Ownable {
 
     modifier canMintOrBurn() { //ERROR: canMint (burn fliegt raus)
         if(_canDoAnytime() == false) { 
-            require(msg.sender == crowdsale); //Error: nur Crowdsale addresss? -> später mintControl
+            require(msg.sender == mintControl);
             require(availability.tokenAlive); //ERROR: Alive richtige Bezeichnung 
             require(!availability.crowdsalePhaseFinished);
             require(!availability.mintingAndBurningPaused);
@@ -173,13 +173,13 @@ contract BasicAssetToken is Ownable {
     }
 
     /** @dev Set the address of the crowdsale contract.
-      * @param _crowdsale The address of the crowdsale.
+      * @param _mintControl The address of the crowdsale.
       */
     //Error setMintControl
-    function setCrowdsaleAddress(address _crowdsale) public canSetMetadata {
-        require(_crowdsale != address(0));
+    function setMintControl(address _mintControl) public canSetMetadata { //ERROR: only as capitalControl (initial assignment?)
+        require(_mintControl != address(0));
 
-        crowdsale = _crowdsale;
+        mintControl = _mintControl;
     }
 
     function setRoles(address _pauseControl, address _tokenRescueControl) public 
@@ -289,7 +289,7 @@ contract BasicAssetToken is Ownable {
         return supply.mint(_to, _amount);
     }
 
-    ///  @dev Function to stop minting new tokens and also disables burning so it finishes crowdsale. 
+    ///  @dev Function to stop minting new tokens (as mintControl).
     ///  @return True if the operation was successful.
     function finishMinting() public canMintOrBurn returns (bool) {
         return availability.finishMinting();

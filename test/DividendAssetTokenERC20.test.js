@@ -35,11 +35,11 @@ contract('DividendAssetToken', (accounts) => {
     let condaAccount = accounts[6]
     let companyAccount = accounts[7]
 
-    let crowdsale = accounts[8]
+    let mintControl = accounts[8]
     
     beforeEach(async () => {
         token = await DividendAssetToken.new()
-        await token.setCrowdsaleAddress(crowdsale)
+        await token.setMintControl(mintControl)
         erc20 = await ERC20TestToken.new()
         erc20RetFalse = await ERC20TestTokenRetFalse.new()
         owner = await token.owner()
@@ -55,10 +55,10 @@ contract('DividendAssetToken', (accounts) => {
         await token.setTokenAlive()
 
         //split
-        await token.mint(buyerA, 100, {from: crowdsale}) //10%
-        await token.mint(buyerB, 250, {from: crowdsale}) //25%
-        await token.mint(buyerD, 500, {from: crowdsale}) //50%
-        await token.mint(buyerE, 150, {from: crowdsale}) //15%
+        await token.mint(buyerA, 100, {from: mintControl}) //10%
+        await token.mint(buyerB, 250, {from: mintControl}) //25%
+        await token.mint(buyerD, 500, {from: mintControl}) //50%
+        await token.mint(buyerE, 150, {from: mintControl}) //15%
 
         //Make a deposit
         await erc20.mint(owner, ONETHOUSANDTOKEN)
@@ -131,7 +131,7 @@ contract('DividendAssetToken', (accounts) => {
 
     contract('validating recycle', () => {
         it('Add a new token balance for account C', async () => {
-            await token.mint(buyerC, 800, {from: crowdsale})
+            await token.mint(buyerC, 800, {from: mintControl})
             const balance = await token.balanceOf(buyerC)
             assert.equal(balance, 800)
         })
