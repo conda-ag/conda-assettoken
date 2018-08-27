@@ -1,7 +1,5 @@
 pragma solidity ^0.4.24;
 
-//ERROR: no tokenAssignmentControl and rights move to capitalControl
-
 /*
     Copyright 2018, CONDA
     This contract is a fork from Jordi Baylina
@@ -55,11 +53,12 @@ contract BasicAssetToken is Ownable {
     // defines the base conversion of number of tokens to the initial rate
     // this amount will be used for regulatory checks. 
     uint256 public baseRate;
-
-    string public shortDescription; //ERROR:del?
     
     // Crowdsale Contract
     address public crowdsale; //ERROR: mintControl
+
+    //can rescue tokens
+    address public tokenRescueControl;
 
     //supply: balance, checkpoints etc.
     AssetTokenSupplyL.Supply supply;
@@ -136,6 +135,11 @@ contract BasicAssetToken is Ownable {
     //     _;
     // }
 
+    modifier onlyTokenRescueControl() {
+        require(msg.sender == tokenRescueControl);
+        _;
+    }
+
 ///////////////////
 // Set / Get Metadata
 ///////////////////
@@ -143,14 +147,12 @@ contract BasicAssetToken is Ownable {
     /** @dev Change the token's metadata.
       * @param _name The name of the token.
       * @param _symbol The symbol of the token.
-      * @param _shortDescription The description of the token.
       */
-    function setMetaData(string _name, string _symbol, string _shortDescription) public 
+    function setMetaData(string _name, string _symbol) public 
     canSetMetadata 
     {
         name = _name;
         symbol = _symbol;
-        shortDescription = _shortDescription;
     }
 
     /** @dev Change the token's currency metadata.
@@ -178,10 +180,12 @@ contract BasicAssetToken is Ownable {
         crowdsale = _crowdsale;
     }
 
-    function setPauseControl(address _pauseControl) public 
+    function setRoles(address _pauseControl, address _tokenRescueControl) public 
     onlyOwner
+    canSetMetadata
     {
         availability.setPauseControl(_pauseControl);
+        tokenRescueControl = _tokenRescueControl;
     }
 
     function setTokenAlive() public 
@@ -297,6 +301,17 @@ contract BasicAssetToken is Ownable {
     //ERROR: we remove (make comment) burn completely
     function burn(address _who, uint256 _amount) public canMintOrBurn {
         return supply.burn(_who, _amount);
+    }
+
+////////////////
+// Rescue Tokens 
+////////////////
+    //if this contract gets a balance in some other ERC20 contract - or even iself - then we can rescue it.
+    function rescueToken(address _foreignTokenAddress, address _to)
+    onlyTokenRescueControl
+    public
+    {
+        availability.rescueToken(_foreignTokenAddress, _to);
     }
 
 ////////////////

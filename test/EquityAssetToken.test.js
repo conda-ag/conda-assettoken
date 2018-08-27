@@ -215,7 +215,7 @@ contract('EquityAssetToken', (accounts) => {
         contract('validating mint when paused', () => {
             it('trying to mint when minting is paused should still work for capitalControl', async () => {
                 await token.mint(buyerA, 10, {from: capitalControl}) //works
-                await token.setPauseControl(buyerA, {from: capitalControl})
+                await token.setRoles(buyerA, ZERO_ADDRESS, {from: capitalControl})
                 await token.pauseCapitalIncreaseOrDecrease(false, {from: buyerA}) //now disabled
                 assert.equal(await token.isMintingAndBurningPaused(), true, "as precondition minting must be paused")
 
@@ -512,44 +512,44 @@ contract('EquityAssetToken', (accounts) => {
         })
     })
 
-    contract('validating setPauseControl()', () => {
-        it('setPauseControl() can set pauseControl address as capitalControl when alive', async () => {
+    contract('validating setRoles() set pauseControl', () => {
+        it('setRoles() set pauseControl can set pauseControl address as capitalControl when alive', async () => {
             const pauseControl = buyerB
 
             assert.equal(await token.getPauseControl(), ZERO_ADDRESS) //precondition
 
-            await token.setPauseControl(pauseControl, {from: capitalControl})
+            await token.setRoles(pauseControl, ZERO_ADDRESS, {from: capitalControl})
 
             assert.equal(await token.getPauseControl(), pauseControl)
         })
 
-        it('setPauseControl() can be set as owner before alive', async () => {
+        it('setRoles() set pauseControl can be set as owner before alive', async () => {
             const pauseControl = buyerB
 
             const tmpToken = await EquityAssetToken.new(capitalControl, false)
             assert.equal(await tmpToken.getPauseControl(), ZERO_ADDRESS) //precondition
 
-            await tmpToken.setPauseControl(pauseControl, {from: originalOwner})
+            await tmpToken.setRoles(pauseControl, ZERO_ADDRESS, {from: originalOwner})
 
             assert.equal(await tmpToken.getPauseControl(), pauseControl)
         })
 
-        it('setPauseControl() cannot set pauseControl address as unknown', async () => {
+        it('setRoles() set pauseControl cannot set pauseControl address as unknown', async () => {
             const pauseControl = buyerB
 
             assert.equal(await token.getPauseControl(), ZERO_ADDRESS) //precondition
 
-            await token.setPauseControl(pauseControl, {from: unknown}).should.be.rejectedWith(EVMRevert)
+            await token.setRoles(pauseControl, ZERO_ADDRESS, {from: unknown}).should.be.rejectedWith(EVMRevert)
 
             assert.equal(await token.getPauseControl(), ZERO_ADDRESS)
         })
 
-        it('setPauseControl() cannot set pauseControl address as originalOwner', async () => {
+        it('setRoles() set pauseControl cannot set pauseControl address as originalOwner', async () => {
             const pauseControl = buyerB
             
             assert.equal(await token.getPauseControl(), ZERO_ADDRESS) //precondition
 
-            await token.setPauseControl(pauseControl, {from: originalOwner}).should.be.rejectedWith(EVMRevert)
+            await token.setRoles(pauseControl, ZERO_ADDRESS, {from: originalOwner}).should.be.rejectedWith(EVMRevert)
 
             assert.equal(await token.getPauseControl(), ZERO_ADDRESS)
         })

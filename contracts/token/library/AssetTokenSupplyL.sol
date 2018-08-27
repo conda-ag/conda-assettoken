@@ -2,6 +2,7 @@ pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 
 library AssetTokenSupplyL {
 
@@ -528,6 +529,13 @@ library AssetTokenSupplyL {
             )
         );
         emit DividendRecycled(msg.sender, blockNumber, remainingAmount, _currentSupply, dividendIndex);
+    }
+
+    //if this contract gets a balance in some other ERC20 contract - or even iself - then we can rescue it.
+    function rescueToken(Availability storage _self, address _foreignTokenAddress, address _to) internal
+    {
+        require(_self.crowdsalePhaseFinished);
+        ERC20(_foreignTokenAddress).transfer(_to, ERC20(_foreignTokenAddress).balanceOf(this));
     }
 
     event Transfer(address indexed from, address indexed to, uint256 value);
