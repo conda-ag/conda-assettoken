@@ -19,7 +19,7 @@ pragma solidity ^0.4.24;
 
 import "./CRWDAssetToken.sol";
 
-/** @title Equity AssetToken. */
+/** @title FeatureCapitalControl. */
 contract FeatureCapitalControl is CRWDAssetToken {
     //if set can mint/burn after finished. E.g. a notary.
     address public capitalControl;
