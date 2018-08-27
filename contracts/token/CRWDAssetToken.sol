@@ -6,6 +6,7 @@ import "./library/AssetTokenSupplyL.sol";
 import "./BasicAssetToken.sol";
 import "../interfaces/ICRWDClearing.sol";
 
+//Error: nicht verwendete Variablen vom basic asset token in den CRWDAsset token bringen
 /** @title CRWD AssetToken. */
 contract CRWDAssetToken is BasicAssetToken {
     /*
@@ -15,7 +16,7 @@ contract CRWDAssetToken is BasicAssetToken {
     */
 
     using SafeMath for uint256;
-    using AssetTokenSupplyL for AssetTokenSupplyL.Supply;
+    using AssetTokenSupplyL for AssetTokenSupplyL.Supply; //Error: delete
 
     address public clearingAddress;
 
@@ -47,6 +48,9 @@ contract CRWDAssetToken is BasicAssetToken {
       * @param _amount The amount of tokens to mint.
       * @return A boolean that indicates if the operation was successful.
       */
+
+    //Error: berechnung sollte gleich
+    //Error: Mint wird vom clearing aufgerufen. circel bezug?
     function mint(address _to, uint256 _amount) public canMintOrBurn returns (bool) {
         uint256 amountInBaseRate = _amount.mul(baseRate);
         uint256 transferValue = amountInBaseRate.div(1000);

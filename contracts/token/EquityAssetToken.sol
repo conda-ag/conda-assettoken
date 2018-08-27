@@ -42,17 +42,19 @@ contract EquityAssetToken is FeatureCapitalControl, Destructible {
     function setCurrencyMetaData(address _tokenBaseCurrency, uint256 _baseRate) public 
     onlyOwner
     {
+        //Error: Decimals immer 1 nicht baserate
         require(_baseRate == 1); //requires 1Token=1BaseCurrency
 
         super.setCurrencyMetaData(_tokenBaseCurrency, _baseRate);
     }
 
-    //override: transfer ownership to capitalControl as soon as alive
-    function setTokenAlive() public {
-        super.setTokenAlive();
+    //ERROR: removed transfer ownership now
+    // //override: transfer ownership to capitalControl as soon as alive
+    // function setTokenAlive() public {
+    //     super.setTokenAlive();
 
-        owner = capitalControl;
-    }
+    //     owner = capitalControl;
+    // }
 
     //override: transferFrom that has special self-approve behaviour when executed as capitalControl
     function transferFrom(address _from, address _to, uint256 _value) public returns (bool)

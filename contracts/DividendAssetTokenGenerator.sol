@@ -5,6 +5,8 @@ import "./token/library/AssetTokenSupplyL.sol";
 
 import "./token/DividendAssetToken.sol";
 
+//ERROR: REMOVE
+
 /** @title AssetToken generator. */
 contract DividendAssetTokenGenerator {
     /*

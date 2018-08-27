@@ -22,6 +22,7 @@ library AssetTokenSupplyL {
 
     struct Availability {
         // Flag that determines if the token is yet alive.
+        // Meta data cannot be changed anymore (except capitalControl)
         bool tokenAlive;
 
         // Flag that determines if the token is transferable or not.
@@ -496,6 +497,8 @@ library AssetTokenSupplyL {
     /** @dev Dividends which have not been claimed
       * @param _dividendIndex The index to be recycled
       */
+
+    //Error: geht zurück an wallet des owner
     function recycleDividend(Store storage _self, uint256 _dividendIndex, uint256 recycleLockedTimespan, uint256 _currentSupply) public {
         // Get the dividend distribution
         Dividend storage dividend = _self.dividends[_dividendIndex];

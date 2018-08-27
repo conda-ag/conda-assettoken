@@ -31,6 +31,8 @@ contract DividendAssetToken is CRWDAssetToken {
     */
 
     using SafeMath for uint256;
+
+    //Error: kann herausgenommen werden
     using AssetTokenSupplyL for AssetTokenSupplyL.Supply;
     using AssetTokenSupplyL for AssetTokenSupplyL.Store;
 

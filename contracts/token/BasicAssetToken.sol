@@ -1,5 +1,7 @@
 pragma solidity ^0.4.24;
 
+//ERROR: no tokenAssignmentControl and rights move to capitalControl
+
 /*
     Copyright 2018, CONDA
     This contract is a fork from Jordi Baylina
@@ -54,16 +56,17 @@ contract BasicAssetToken is Ownable {
     // this amount will be used for regulatory checks. 
     uint256 public baseRate;
 
-    string public shortDescription;
+    string public shortDescription; //ERROR:del?
     
     // Crowdsale Contract
-    address public crowdsale;
+    address public crowdsale; //ERROR: mintControl
 
     //supply: balance, checkpoints etc.
     AssetTokenSupplyL.Supply supply;
 
     //availability: what's paused
     AssetTokenSupplyL.Availability availability;
+
     function isMintingAndBurningPaused() public view returns (bool) {
         return availability.mintingAndBurningPaused;
     }
@@ -104,10 +107,10 @@ contract BasicAssetToken is Ownable {
         return false;
     }
 
-    modifier canMintOrBurn() {
+    modifier canMintOrBurn() { //ERROR: canMint (burn fliegt raus)
         if(_canDoAnytime() == false) { 
-            require(msg.sender == owner);
-            require(availability.tokenAlive);
+            require(msg.sender == owner); //Error: nur Crowdsale addresss?
+            require(availability.tokenAlive); //ERROR: Alive richtige Bezeichnung 
             require(!availability.crowdsalePhaseFinished);
             require(!availability.mintingAndBurningPaused);
         }
@@ -128,10 +131,10 @@ contract BasicAssetToken is Ownable {
         _;
     }
 
-    modifier onlyOwnerOrCrowdsale() {
-        require(msg.sender == owner || msg.sender == crowdsale);
-        _;
-    }
+    // modifier onlyOwnerOrCrowdsale() {
+    //     require(msg.sender == owner || msg.sender == crowdsale);
+    //     _;
+    // }
 
 ///////////////////
 // Set / Get Metadata
@@ -168,6 +171,7 @@ contract BasicAssetToken is Ownable {
     /** @dev Set the address of the crowdsale contract.
       * @param _crowdsale The address of the crowdsale.
       */
+    //Error setMintControl
     function setCrowdsaleAddress(address _crowdsale) public canSetMetadata {
         require(_crowdsale != address(0));
 
@@ -175,13 +179,13 @@ contract BasicAssetToken is Ownable {
     }
 
     function setPauseControl(address _pauseControl) public 
-    onlyOwnerOrCrowdsale
+    onlyOwner
     {
         availability.setPauseControl(_pauseControl);
     }
 
     function setTokenAlive() public 
-    onlyOwnerOrCrowdsale
+    onlyOwner
     {
         availability.setTokenAlive();
     }
@@ -194,6 +198,8 @@ contract BasicAssetToken is Ownable {
     /// @param _to The address of the recipient
     /// @param _amount The amount of tokens to be transferred
     /// @return Whether the transfer was successful or not
+    //ERROR: crowdsale zuende und alive
+    // Inside library
     function transfer(address _to, uint256 _amount) public returns (bool success) {
         require(!availability.transfersPaused);
         supply.doTransfer(msg.sender, _to, _amount);
@@ -206,6 +212,8 @@ contract BasicAssetToken is Ownable {
     /// @param _to The address of the recipient
     /// @param _amount The amount of tokens to be transferred
     /// @return True if the transfer was successful
+
+    //ERROR: siehe transfer
     function transferFrom(address _from, address _to, uint256 _amount) public returns (bool success) {
         require(!availability.transfersPaused);
 
@@ -286,6 +294,7 @@ contract BasicAssetToken is Ownable {
 // Burn - only during minting 
 ////////////////
 
+    //ERROR: we remove (make comment) burn completely
     function burn(address _who, uint256 _amount) public canMintOrBurn {
         return supply.burn(_who, _amount);
     }
