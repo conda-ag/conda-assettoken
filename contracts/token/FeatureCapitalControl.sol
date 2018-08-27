@@ -51,14 +51,10 @@ contract FeatureCapitalControl is CRWDAssetToken {
 // Reopen crowdsale (by capitalControl e.g. notary)
 ////////////////
 
-    /** @dev If a capitalControl is set he can reopen the crowdsale.
-      * @param _newMintControl the address of the new mintControl
+    /** 
+      * @dev capitalControl can reopen the crowdsale.
       */
-    function reopenCrowdsale(address _newMintControl) public onlyCapitalControl returns (bool) {
-        require(mintControl != _newMintControl); //ERROR: can be removed
-
-        mintControl = _newMintControl;
-        
+    function reopenCrowdsale() public onlyCapitalControl returns (bool) {        
         return availability.reopenCrowdsale();
     }
 }

@@ -232,22 +232,21 @@ contract('EquityAssetToken', (accounts) => {
         it('can reopen crowdsale as capitalControl', async () => {
             await token.finishMinting({from: capitalControl})
             await token.mint(buyerA, 10, {from: capitalControl}) //works because capitalControl
-            await token.mint(buyerA, 10, {from: originalOwner}).should.be.rejectedWith(EVMRevert) //not possible anymore
+            await token.mint(buyerA, 10, {from: mintControl}).should.be.rejectedWith(EVMRevert) //not possible anymore
             
-            const newCrowdsale = await ERC20TestToken.new()
-            await token.reopenCrowdsale(newCrowdsale.address, {from: capitalControl})
+            await token.reopenCrowdsale({from: capitalControl})
 
             await token.mint(buyerA, 10, {from: capitalControl}) //still possible as capitalControl...
+            await token.mint(buyerA, 10, {from: mintControl}) //again possible as mintControl...
 
             let firstAccountBalance = await token.balanceOf(buyerA)
-            assert.equal(firstAccountBalance, 120)
+            assert.equal(firstAccountBalance, 130)
         })
 
         it('cannot reopen crowdsale as non-capitalControl', async () => {
             await token.finishMinting({from: capitalControl})
             
-            const newCrowdsale = await ERC20TestToken.new()
-            await token.reopenCrowdsale(newCrowdsale.address, {from: unknown}).should.be.rejectedWith(EVMRevert)
+            await token.reopenCrowdsale({from: unknown}).should.be.rejectedWith(EVMRevert)
         })
     })
 

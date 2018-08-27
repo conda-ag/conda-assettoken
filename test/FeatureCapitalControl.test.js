@@ -100,31 +100,26 @@ contract('FeatureCapitalControl', (accounts) => {
             await token.mint(buyerA, 10, {from: capitalControl}) //works because capitalControl
             await token.mint(buyerA, 10, {from: mintControl}).should.be.rejectedWith(EVMRevert) //not possible when finished
             
-            const newMintControl = accounts[2]
-            await token.reopenCrowdsale(newMintControl, {from: capitalControl})
+            await token.reopenCrowdsale({from: capitalControl})
 
             await token.mint(buyerA, 10, {from: unknown}).should.be.rejectedWith(EVMRevert)
-            await token.mint(buyerA, 10, {from: mintControl}).should.be.rejectedWith(EVMRevert) //no longer possible...
-            await token.mint(buyerA, 10, {from: newMintControl}) //now possible again...
 
             let firstAccountBalance = await token.balanceOf(buyerA)
-            assert.equal(firstAccountBalance, 20)
+            assert.equal(firstAccountBalance, 10)
         })
 
         it('cannot reopen crowdsale as owner', async () => {
             await token.setTokenAlive({from: owner})
             await token.finishMinting({from: mintControl})
             
-            const newMintControl = await ERC20TestToken.new()
-            await token.reopenCrowdsale(newMintControl.address, {from: owner}).should.be.rejectedWith(EVMRevert)
+            await token.reopenCrowdsale({from: owner}).should.be.rejectedWith(EVMRevert)
         })
 
         it('cannot reopen crowdsale as non-capitalControl', async () => {
             await token.setTokenAlive({from: owner})
             await token.finishMinting({from: mintControl})
             
-            const newMintControl = await ERC20TestToken.new()
-            await token.reopenCrowdsale(newMintControl.address, {from: unknown}).should.be.rejectedWith(EVMRevert)
+            await token.reopenCrowdsale({from: unknown}).should.be.rejectedWith(EVMRevert)
         })
 
         contract('validating burn as capitalControl', () => {
