@@ -47,14 +47,6 @@ contract EquityAssetToken is FeatureCapitalControl, Destructible {
         super.setCurrencyMetaData(_tokenBaseCurrency, _baseRate);
     }
 
-    //ERROR: removed transfer ownership now
-    // //override: transfer ownership to capitalControl as soon as configured
-    // function setTokenConfigured() public {
-    //     super.setTokenConfigured();
-
-    //     owner = capitalControl;
-    // }
-
     //override: transferFrom that has special self-approve behaviour when executed as capitalControl
     function transferFrom(address _from, address _to, uint256 _value) public returns (bool)
     {
