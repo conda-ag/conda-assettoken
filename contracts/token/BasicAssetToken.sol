@@ -106,9 +106,16 @@ contract BasicAssetToken is Ownable {
         return false;
     }
 
+    modifier onlyOwnerOrOverruled() {
+        if(_canDoAnytime() == false) { 
+            require(msg.sender == owner);
+        }
+        _;
+    }
+
     modifier canMintOrBurn() { //ERROR: canMint (burn fliegt raus)
         if(_canDoAnytime() == false) { 
-            require(msg.sender == owner); //Error: nur Crowdsale addresss?
+            require(msg.sender == crowdsale); //Error: nur Crowdsale addresss? -> später mintControl
             require(availability.tokenAlive); //ERROR: Alive richtige Bezeichnung 
             require(!availability.crowdsalePhaseFinished);
             require(!availability.mintingAndBurningPaused);
@@ -129,11 +136,6 @@ contract BasicAssetToken is Ownable {
         require(availability.tokenAlive);
         _;
     }
-
-    // modifier onlyOwnerOrCrowdsale() {
-    //     require(msg.sender == owner || msg.sender == crowdsale);
-    //     _;
-    // }
 
     modifier onlyTokenRescueControl() {
         require(msg.sender == tokenRescueControl);
@@ -181,7 +183,6 @@ contract BasicAssetToken is Ownable {
     }
 
     function setRoles(address _pauseControl, address _tokenRescueControl) public 
-    onlyOwner
     canSetMetadata
     {
         availability.setPauseControl(_pauseControl);
@@ -290,7 +291,7 @@ contract BasicAssetToken is Ownable {
 
     ///  @dev Function to stop minting new tokens and also disables burning so it finishes crowdsale. 
     ///  @return True if the operation was successful.
-    function finishMinting() public onlyOwner canMintOrBurn returns (bool) {
+    function finishMinting() public canMintOrBurn returns (bool) {
         return availability.finishMinting();
     }
 
@@ -339,7 +340,7 @@ contract BasicAssetToken is Ownable {
 
     /// @notice Enables token holders to transfer their tokens freely if true
     /// @param _transfersEnabled True if transfers are allowed
-    function enableTransfers(bool _transfersEnabled) public onlyOwner {
+    function enableTransfers(bool _transfersEnabled) public onlyOwnerOrOverruled {
         availability.transfersPaused = (_transfersEnabled == false);
     }
 

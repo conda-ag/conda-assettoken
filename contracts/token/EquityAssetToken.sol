@@ -40,7 +40,6 @@ contract EquityAssetToken is FeatureCapitalControl, Destructible {
 ///////////////////
     //override: fixed baseRate
     function setCurrencyMetaData(address _tokenBaseCurrency, uint256 _baseRate) public 
-    onlyOwner
     {
         //Error: Decimals immer 1 nicht baserate
         require(_baseRate == 1); //requires 1Token=1BaseCurrency
