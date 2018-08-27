@@ -1,7 +1,6 @@
 pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "./token/library/AssetTokenPauseL.sol";
 import "./token/library/AssetTokenSupplyL.sol";
 
 import "./token/EquityAssetToken.sol";
@@ -15,7 +14,6 @@ contract EquityAssetTokenGenerator {
     */
 
     using SafeMath for uint256;
-    using AssetTokenPauseL for AssetTokenPauseL.Availability;
     using AssetTokenSupplyL for AssetTokenSupplyL.Supply;
     
 ///////////////////

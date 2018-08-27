@@ -22,7 +22,6 @@ pragma solidity ^0.4.24;
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
-import "./library/AssetTokenPauseL.sol";
 import "./library/AssetTokenSupplyL.sol";
 
 /** @title Basic AssetToken. */
@@ -34,8 +33,8 @@ contract BasicAssetToken is Ownable {
     */
 
     using SafeMath for uint256;
-    using AssetTokenPauseL for AssetTokenPauseL.Availability;
     using AssetTokenSupplyL for AssetTokenSupplyL.Supply;
+    using AssetTokenSupplyL for AssetTokenSupplyL.Availability;
 
 ///////////////////
 // Variables
@@ -68,7 +67,7 @@ contract BasicAssetToken is Ownable {
     AssetTokenSupplyL.Supply supply;
 
     //availability: what's paused
-    AssetTokenPauseL.Availability availability;
+    AssetTokenSupplyL.Availability availability;
     function isMintingAndBurningPaused() public view returns (bool) {
         return availability.mintingAndBurningPaused;
     }
