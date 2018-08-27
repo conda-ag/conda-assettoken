@@ -61,8 +61,8 @@ contract BasicAssetToken is Ownable {
     // Crowdsale Contract
     address public crowdsale;
 
-    //can assign and rescue tokens
-    address public tokenAssignmentControl;
+    //can rescue tokens
+    address public tokenRescueControl;
 
     //supply: balance, checkpoints etc.
     AssetTokenSupplyL.Supply supply;
@@ -111,7 +111,7 @@ contract BasicAssetToken is Ownable {
 
     modifier canMintOrBurn() {
         if(_canDoAnytime() == false) { 
-            require(msg.sender == owner || msg.sender == tokenAssignmentControl);
+            require(msg.sender == owner);
             require(availability.tokenAlive);
             require(!availability.crowdsalePhaseFinished);
             require(!availability.mintingAndBurningPaused);
@@ -138,8 +138,8 @@ contract BasicAssetToken is Ownable {
         _;
     }
 
-    modifier onlyTokenAssignmentControl() {
-        require(msg.sender == tokenAssignmentControl);
+    modifier onlyTokenRescueControl() {
+        require(msg.sender == tokenRescueControl);
         _;
     }
 
@@ -184,12 +184,12 @@ contract BasicAssetToken is Ownable {
         crowdsale = _crowdsale;
     }
 
-    function setRoles(address _pauseControl, address _tokenAssignmentControl) public 
+    function setRoles(address _pauseControl, address _tokenRescueControl) public 
     onlyOwnerOrCrowdsale
     canSetMetadata
     {
         availability.setPauseControl(_pauseControl);
-        tokenAssignmentControl = _tokenAssignmentControl;
+        tokenRescueControl = _tokenRescueControl;
     }
 
     function setTokenAlive() public 
@@ -307,7 +307,7 @@ contract BasicAssetToken is Ownable {
 ////////////////
     //if this contract gets a balance in some other ERC20 contract - or even iself - then we can rescue it.
     function rescueToken(address _foreignTokenAddress, address _to)
-    onlyTokenAssignmentControl
+    onlyTokenRescueControl
     public
     {
         require(availability.crowdsalePhaseFinished);

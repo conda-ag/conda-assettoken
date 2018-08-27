@@ -21,7 +21,7 @@ contract('BasicAssetToken', (accounts) => {
 
     const pauseControl = accounts[4]
 
-    const tokenAssignmentControl = accounts[6]
+    const tokenRescueControl = accounts[6]
 
     const unknown = accounts[9]
   
@@ -36,8 +36,8 @@ contract('BasicAssetToken', (accounts) => {
     })
 
     contract('validating rescueToken()', () => {
-        it('can rescue tokens as tokenAssignmentControl', async () => {
-            await token.setRoles(pauseControl, tokenAssignmentControl)
+        it('can rescue tokens as tokenRescueControl', async () => {
+            await token.setRoles(pauseControl, tokenRescueControl)
 
             const someToken = await ERC20TestToken.new()
             
@@ -51,13 +51,13 @@ contract('BasicAssetToken', (accounts) => {
             await token.setTokenAlive()
             await token.finishMinting()
 
-            await token.rescueToken(someToken.address, owner, {from: tokenAssignmentControl})
+            await token.rescueToken(someToken.address, owner, {from: tokenRescueControl})
             assert.equal((await someToken.balanceOf(token.address)).toString(), '0', "balance of sender/token is unexpected")
             assert.equal((await someToken.balanceOf(owner)).toString(), '100', "balance of receiver is unexpected")
         })
 
-        it('cannot rescue tokens as non-tokenAssignmentControl', async () => {
-            await token.setRoles(pauseControl, tokenAssignmentControl)
+        it('cannot rescue tokens as non-tokenRescueControl', async () => {
+            await token.setRoles(pauseControl, tokenRescueControl)
 
             const someToken = await ERC20TestToken.new()
             
@@ -151,15 +151,6 @@ contract('BasicAssetToken', (accounts) => {
       
             let firstAccountBalance = await token.balanceOf(buyerA)
             assert.equal(firstAccountBalance, 200)
-        })
-
-        it('can mint as tokenAssignmentControl', async () => {
-            await token.setRoles(pauseControl, tokenAssignmentControl, {from: owner})
-            await token.setTokenAlive()
-            await token.mint(buyerA, 100, {from: tokenAssignmentControl})
-
-            let firstAccountBalance = await token.balanceOf(buyerA)
-            assert.equal(firstAccountBalance, 100)
         })
 
         it('should throw an error when trying to mint but finished minting', async () => {
@@ -663,29 +654,29 @@ contract('BasicAssetToken', (accounts) => {
             assert.equal(await token.getPauseControl(), ZERO_ADDRESS)
         })
 
-        it('setRoles() can set tokenAssignmentControl address as owner', async () => {
-            assert.equal(await token.tokenAssignmentControl(), ZERO_ADDRESS) //precondition
+        it('setRoles() can set tokenRescueControl address as owner', async () => {
+            assert.equal(await token.tokenRescueControl(), ZERO_ADDRESS) //precondition
 
-            await token.setRoles(pauseControl, tokenAssignmentControl, {from: owner})
+            await token.setRoles(pauseControl, tokenRescueControl, {from: owner})
 
-            assert.equal(await token.tokenAssignmentControl(), tokenAssignmentControl)
+            assert.equal(await token.tokenRescueControl(), tokenRescueControl)
         })
 
-        it('setRoles() cannot set tokenAssignmentControl address as not-owner', async () => {
-            assert.equal(await token.tokenAssignmentControl(), ZERO_ADDRESS) //precondition
+        it('setRoles() cannot set tokenRescueControl address as not-owner', async () => {
+            assert.equal(await token.tokenRescueControl(), ZERO_ADDRESS) //precondition
 
-            await token.setRoles(pauseControl, tokenAssignmentControl, {from: unknown}).should.be.rejectedWith(EVMRevert)
+            await token.setRoles(pauseControl, tokenRescueControl, {from: unknown}).should.be.rejectedWith(EVMRevert)
 
-            assert.equal(await token.tokenAssignmentControl(), ZERO_ADDRESS)
+            assert.equal(await token.tokenRescueControl(), ZERO_ADDRESS)
         })
 
         it('cannot setRoles() when alive', async () => {
             await token.setTokenAlive()
 
-            await token.setRoles(pauseControl, tokenAssignmentControl, {from: owner}).should.be.rejectedWith(EVMRevert)
+            await token.setRoles(pauseControl, tokenRescueControl, {from: owner}).should.be.rejectedWith(EVMRevert)
 
             assert.equal(await token.getPauseControl(), ZERO_ADDRESS)
-            assert.equal(await token.tokenAssignmentControl(), ZERO_ADDRESS)
+            assert.equal(await token.tokenRescueControl(), ZERO_ADDRESS)
         })
     })
 
