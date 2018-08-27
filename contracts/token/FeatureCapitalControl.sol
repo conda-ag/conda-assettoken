@@ -42,13 +42,9 @@ contract FeatureCapitalControl is CRWDAssetToken {
         capitalControl = _capitalControl;
     }
 
-    constructor(address _capitalControl, bool instantCreatorLockout) public {
+    constructor(address _capitalControl) public {
         capitalControl = _capitalControl;
         availability.transfersPaused = true; //disable transfer as default
-
-        if(instantCreatorLockout == true) {
-            owner = capitalControl;
-        }
     }
 
 ////////////////

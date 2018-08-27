@@ -16,6 +16,6 @@ module.exports = (deployer, network, accounts) => {
 
     //deploy contracts
     capitalControl = accounts[0];
-    deployer.deploy(EquityAssetToken, capitalControl, true)
+    deployer.deploy(EquityAssetToken, capitalControl)
     deployer.deploy(DividendAssetToken)
 }

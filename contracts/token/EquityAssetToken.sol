@@ -27,7 +27,7 @@ contract EquityAssetToken is FeatureCapitalControl, Destructible {
     uint256 public baseRate = 1; //override: fixed baseRate
     
 
-    constructor(address _capitalControl, bool instantCreatorLockout) FeatureCapitalControl(_capitalControl, instantCreatorLockout) public {}
+    constructor(address _capitalControl) FeatureCapitalControl(_capitalControl) public {}
 
 ///////////////////
 // Events

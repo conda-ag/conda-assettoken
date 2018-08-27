@@ -27,7 +27,7 @@ contract('FeatureCapitalControl', (accounts) => {
     const unknown = accounts[9]
   
     beforeEach(async () => {
-        token = await FeatureCapitalControl.new(capitalControl, false)
+        token = await FeatureCapitalControl.new(capitalControl)
         await token.setCrowdsaleAddress(crowdsale)
         owner = await token.owner()
 
