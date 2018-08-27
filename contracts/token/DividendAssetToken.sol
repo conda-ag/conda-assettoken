@@ -21,8 +21,6 @@ pragma solidity ^0.4.24;
 
 import "./CRWDAssetToken.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
-import "./library/AssetTokenDividendL.sol";
 
 /** @title Dividend AssetToken. */
 contract DividendAssetToken is CRWDAssetToken {
@@ -34,7 +32,7 @@ contract DividendAssetToken is CRWDAssetToken {
 
     using SafeMath for uint256;
     using AssetTokenSupplyL for AssetTokenSupplyL.Supply;
-    using AssetTokenDividendL for AssetTokenDividendL.Store;
+    using AssetTokenSupplyL for AssetTokenSupplyL.Store;
 
 ///////////////////
 // Variables
@@ -43,7 +41,7 @@ contract DividendAssetToken is CRWDAssetToken {
     /** @dev `recycleLockedTimespan` devines the time, when the dividends will be recycled*/
     uint256 public recycleLockedTimespan = 365 days;
 
-    AssetTokenDividendL.Store storedDividends;
+    AssetTokenSupplyL.Store storedDividends;
 
 ///////////////////
 // Events
@@ -112,7 +110,7 @@ contract DividendAssetToken is CRWDAssetToken {
       * @notice In case claimDividendAll runs out of gas
       */
     function claimInBatches(uint256 startIndex, uint256 endIndex) public {
-        storedDividends.claimInBatches(supply, startIndex, endIndex);
+        storedDividends.claimInBatches(supply, startIndex, endIndex); 
     }
 
     /** @dev Dividends which have not been claimed

@@ -21,7 +21,7 @@ module.exports = {
       host: "localhost",
       port: 8545,
       network_id: "*",
-      gas: 6700000 
+      gas: 4700000 
     },
     coverage: {
       host: "localhost",
@@ -34,7 +34,7 @@ module.exports = {
       provider: () => {
         return new HDWalletProvider(getMnemonic(), "https://ropsten.infura.io/YXH1Jwgfs2Gzfm3IJdmR")
       },
-      gas: 4000000,
+      gas: 4700000,
       network_id: 3
     }   
   }
