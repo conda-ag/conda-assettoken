@@ -54,7 +54,7 @@ contract('EquityAssetToken', (accounts) => {
         assert.equal((await token.baseRate()).toString(), 1) //baserate 1 even before setMetaData
         await token.setCurrencyMetaData(erc20.address, 1)
 
-        await token.setTokenAlive()
+        await token.setTokenConfigured()
 
         //split
         await token.mint(buyerA, 100, { from: capitalControl }) //10%
@@ -71,10 +71,10 @@ contract('EquityAssetToken', (accounts) => {
     })
 
     contract('validating updateCapitalControl()', () => {
-        it('updateCapitalControl() cannot be set by originalOwner (alive or not)', async () => {
+        it('updateCapitalControl() cannot be set by originalOwner (configured or not)', async () => {
             const tmpToken = await EquityAssetToken.new(capitalControl)
             await tmpToken.updateCapitalControl(buyerA, {from: originalOwner}).should.be.rejectedWith(EVMRevert)
-            await tmpToken.setTokenAlive()
+            await tmpToken.setTokenConfigured()
             await tmpToken.updateCapitalControl(buyerA, {from: originalOwner}).should.be.rejectedWith(EVMRevert)
         })
 
@@ -84,7 +84,7 @@ contract('EquityAssetToken', (accounts) => {
     })
 
     contract('validating setCapitalControl()', () => {
-        it('setCapitalControl() can be set by owner when not alive', async () => {
+        it('setCapitalControl() can be set by owner when not configured', async () => {
             const tmpToken = await EquityAssetToken.new(capitalControl)
             await tmpToken.setCapitalControl(buyerA, {from: originalOwner})
         })
@@ -94,49 +94,49 @@ contract('EquityAssetToken', (accounts) => {
             await tmpToken.setCapitalControl(capitalControl, {from: unknown}).should.be.rejectedWith(EVMRevert)
         })
 
-        it('setCapitalControl() cannot be set when alive', async () => {
+        it('setCapitalControl() cannot be set when configured', async () => {
             await token.setCapitalControl(buyerA, {from: originalOwner}).should.be.rejectedWith(EVMRevert)
             await token.setCapitalControl(buyerA, {from: capitalControl}) //this works because owner==capitalControl
         })
     })
 
-    contract('validating setTokenAlive()', () => {
+    contract('validating setTokenConfigured()', () => {
         it('owner cannot mint', async () => {
             await token.mint(buyerA, 100, {from: originalOwner}).should.be.rejectedWith(EVMRevert)
         })
 
-        it('setTokenAlive() can be set by owner', async () => {
+        it('setTokenConfigured() can be set by owner', async () => {
             const tmpToken = await EquityAssetToken.new(capitalControl)
-            await tmpToken.setTokenAlive({from: originalOwner})
+            await tmpToken.setTokenConfigured({from: originalOwner})
 
             assert.equal(await tmpToken.capitalControl(), capitalControl)
             assert.equal(await tmpToken.owner(), originalOwner)
         })
 
-        it('setTokenAlive() cannot be set by investor', async () => {
+        it('setTokenConfigured() cannot be set by investor', async () => {
             const tmpToken = await EquityAssetToken.new(capitalControl)
-            await tmpToken.setTokenAlive({from: buyerA}).should.be.rejectedWith(EVMRevert)
+            await tmpToken.setTokenConfigured({from: buyerA}).should.be.rejectedWith(EVMRevert)
         })
 
-        it('setTokenAlive() cannot be set by mintControl', async () => {
+        it('setTokenConfigured() cannot be set by mintControl', async () => {
             const tmpToken = await EquityAssetToken.new(capitalControl)
-            await tmpToken.setTokenAlive({from: mintControl}).should.be.rejectedWith(EVMRevert)
+            await tmpToken.setTokenConfigured({from: mintControl}).should.be.rejectedWith(EVMRevert)
         })
 
-        it('setCapitalControl() cannot be set when alive', async () => {
+        it('setCapitalControl() cannot be set when configured', async () => {
             const tmpToken = await EquityAssetToken.new(capitalControl)
-            await tmpToken.setTokenAlive()
+            await tmpToken.setTokenConfigured()
             await tmpToken.setCapitalControl(capitalControl, {from: originalOwner}).should.be.rejectedWith(EVMRevert)
         })
 
-        it('capitalControl can mint (alive or not)', async () => {
+        it('capitalControl can mint (configured or not)', async () => {
             const tmpToken = await EquityAssetToken.new(capitalControl)
 
             //mock clearing so it doesn't cost money
             await tmpToken.setClearingAddress(clearing.address)
 
             await tmpToken.mint(buyerA, 10, {from: capitalControl})
-            await tmpToken.setTokenAlive()
+            await tmpToken.setTokenConfigured()
             await tmpToken.mint(buyerA, 10, {from: capitalControl})
 
             assert.equal((await tmpToken.balanceOf(buyerA)).toString(), "20")
@@ -204,7 +204,7 @@ contract('EquityAssetToken', (accounts) => {
             assert.equal((await token.balanceOf(buyerA)).toString(), '300')
         })
 
-        it('originalOwner cannot mint after alive', async () => {
+        it('originalOwner cannot mint after configured', async () => {
             await token.mint(buyerA, 200, {from: originalOwner}).should.be.rejectedWith(EVMRevert)
 
             assert.equal((await token.balanceOf(buyerA)).toString(), '100')
@@ -217,7 +217,7 @@ contract('EquityAssetToken', (accounts) => {
                 await tmpToken.setMintControl(mintControl)
                 await tmpToken.setRoles(buyerA, ZERO_ADDRESS, {from: originalOwner})
 
-                await tmpToken.setTokenAlive()
+                await tmpToken.setTokenConfigured()
 
                 await tmpToken.mint(buyerA, 10, {from: mintControl}) //works
                 await tmpToken.pauseCapitalIncreaseOrDecrease(false, {from: buyerA}) //now disabled
@@ -251,7 +251,7 @@ contract('EquityAssetToken', (accounts) => {
     })
 
     contract('validating burn', () => {
-        contract('burning should not be possible when alive', () => {
+        contract('burning should not be possible when configured', () => {
             it('cannot burn as capitalControl when finished as capitalcontrol (requires redeployment)', async () => {
                 await token.mint(buyerA, 100, {from: capitalControl})
 
@@ -343,7 +343,7 @@ contract('EquityAssetToken', (accounts) => {
             const tmpToken = await EquityAssetToken.new(capitalControl)
             await tmpToken.setClearingAddress(clearing.address)
 
-            await tmpToken.setTokenAlive()
+            await tmpToken.setTokenConfigured()
 
             await tmpToken.mint(buyerA, 100, { from: capitalControl }) //buyerA has 100
 
@@ -370,7 +370,7 @@ contract('EquityAssetToken', (accounts) => {
             const tmpToken = await EquityAssetToken.new(capitalControl)
             await tmpToken.setClearingAddress(clearing.address)
 
-            await tmpToken.setTokenAlive()
+            await tmpToken.setTokenConfigured()
 
             await tmpToken.mint(buyerA, 100, { from: capitalControl }) //buyerA has 100
 
@@ -438,7 +438,7 @@ contract('EquityAssetToken', (accounts) => {
     })
 
     contract('validating setMetaData()', () => {
-        it('owner can change metadata when not alive', async () => {
+        it('owner can change metadata when not configured', async () => {
             const tmpToken = await EquityAssetToken.new(capitalControl)
 
             await tmpToken.setMetaData("changed name", "changed symbol", {from: originalOwner})
@@ -446,30 +446,30 @@ contract('EquityAssetToken', (accounts) => {
             assert.equal(await tmpToken.symbol(), "changed symbol")
         })
 
-        it('non owner cannot change metadata even if not alive yet', async () => {
+        it('non owner cannot change metadata even if not configured yet', async () => {
             const tmpToken = await EquityAssetToken.new(capitalControl)
 
             originalOwner.should.not.eq(buyerA)
             await tmpToken.setMetaData("changed name", "changed symbol", {'from': buyerA }).should.be.rejectedWith(EVMRevert)
         })
 
-        it('owner cannot change metadata when alive', async () => {
+        it('owner cannot change metadata when configured', async () => {
             const tmpToken = await EquityAssetToken.new(capitalControl)
 
-            await tmpToken.setTokenAlive()
+            await tmpToken.setTokenConfigured()
             await tmpToken.setMetaData("changed name", "changed symbol", {from: originalOwner}).should.be.rejectedWith(EVMRevert)
         })
 
-        it('capitalControl can change metadata even when alive', async () => {
+        it('capitalControl can change metadata even when configured', async () => {
             const tmpToken = await EquityAssetToken.new(capitalControl)
 
-            await tmpToken.setTokenAlive()
+            await tmpToken.setTokenConfigured()
             await tmpToken.setMetaData("changed name", "changed symbol", {from: capitalControl})
         })
     })
 
     contract('validating setCurrencyMetaData()', () => {
-        it('owner can change baseRate when not alive', async () => {
+        it('owner can change baseRate when not configured', async () => {
             const tmpToken = await EquityAssetToken.new(capitalControl)
             const tmpEurt = await ERC20TestToken.new()
 
@@ -485,7 +485,7 @@ contract('EquityAssetToken', (accounts) => {
             await tmpToken.setCurrencyMetaData(tmpEurt.address, 666, { from: originalOwner }).should.be.rejectedWith(EVMRevert)
         })
 
-        it('non owner cannot change baseCurrency even if not yet alive', async () => {
+        it('non owner cannot change baseCurrency even if not yet configured', async () => {
             const tmpToken = await EquityAssetToken.new(capitalControl)
             const tmpEurt = await ERC20TestToken.new()
 
@@ -501,23 +501,23 @@ contract('EquityAssetToken', (accounts) => {
             await tmpToken.setCurrencyMetaData(tmpEurt1.address, 1, { from: capitalControl })
             assert.equal(await tmpToken.baseCurrency(), tmpEurt1.address)
 
-            await tmpToken.setTokenAlive()
+            await tmpToken.setTokenConfigured()
 
             await tmpToken.setCurrencyMetaData(tmpEurt2.address, 1, { from: capitalControl })
             assert.equal(await tmpToken.baseCurrency(), tmpEurt2.address)
         })
 
-        it('owner cannot change currencyMetaData when alive', async () => {
+        it('owner cannot change currencyMetaData when configured', async () => {
             const tmpToken = await EquityAssetToken.new(capitalControl)
             const tmpEurt = await ERC20TestToken.new()
 
-            await tmpToken.setTokenAlive()
+            await tmpToken.setTokenConfigured()
             await tmpToken.setCurrencyMetaData(tmpEurt.address, 1, { from: originalOwner }).should.be.rejectedWith(EVMRevert)
         })
     })
 
     contract('validating setRoles() set pauseControl', () => {
-        it('setRoles() set pauseControl can set pauseControl address as capitalControl when alive', async () => {
+        it('setRoles() set pauseControl can set pauseControl address as capitalControl when configured', async () => {
             const pauseControl = buyerB
 
             assert.equal(await token.getPauseControl(), ZERO_ADDRESS) //precondition
@@ -527,7 +527,7 @@ contract('EquityAssetToken', (accounts) => {
             assert.equal(await token.getPauseControl(), pauseControl)
         })
 
-        it('setRoles() set pauseControl can be set as owner before alive', async () => {
+        it('setRoles() set pauseControl can be set as owner before configured', async () => {
             const pauseControl = buyerB
 
             const tmpToken = await EquityAssetToken.new(capitalControl)

@@ -54,7 +54,7 @@ contract BasicAssetToken is Ownable {
     // this amount will be used for regulatory checks. 
     uint256 public baseRate;
     
-    // mintControl can mint and burn when token is alive
+    // mintControl can mint and burn when token is configured
     address public mintControl;
 
     //can rescue tokens
@@ -116,7 +116,7 @@ contract BasicAssetToken is Ownable {
     modifier canMintOrBurn() { //ERROR: canMint (burn fliegt raus)
         if(_canDoAnytime() == false) { 
             require(msg.sender == mintControl);
-            require(availability.tokenAlive); //ERROR: Alive richtige Bezeichnung 
+            require(availability.tokenConfigured);
             require(!availability.crowdsalePhaseFinished);
             require(!availability.mintingAndBurningPaused);
         }
@@ -126,14 +126,14 @@ contract BasicAssetToken is Ownable {
     modifier canSetMetadata() {
         if(_canDoAnytime() == false) {
             require(msg.sender == owner);
-            require(!availability.tokenAlive);
+            require(!availability.tokenConfigured);
             require(!availability.crowdsalePhaseFinished);
         }
         _;
     }
 
-    modifier onlyAlive() {
-        require(availability.tokenAlive);
+    modifier onlyTokenConfigured() {
+        require(availability.tokenConfigured);
         _;
     }
 
@@ -189,10 +189,10 @@ contract BasicAssetToken is Ownable {
         tokenRescueControl = _tokenRescueControl;
     }
 
-    function setTokenAlive() public 
+    function setTokenConfigured() public 
     onlyOwner
     {
-        availability.setTokenAlive();
+        availability.setTokenConfigured();
     }
 
 ///////////////////
@@ -203,11 +203,10 @@ contract BasicAssetToken is Ownable {
     /// @param _to The address of the recipient
     /// @param _amount The amount of tokens to be transferred
     /// @return Whether the transfer was successful or not
-    //ERROR: crowdsale zuende und alive
+    //ERROR: crowdsale zuende und configured
     // Inside library
     function transfer(address _to, uint256 _amount) public returns (bool success) {
-        require(!availability.transfersPaused);
-        supply.doTransfer(msg.sender, _to, _amount);
+        supply.doTransfer(availability, msg.sender, _to, _amount);
         return true;
     }
 
@@ -222,7 +221,7 @@ contract BasicAssetToken is Ownable {
     function transferFrom(address _from, address _to, uint256 _amount) public returns (bool success) {
         require(!availability.transfersPaused);
 
-        return supply.transferFrom(_from, _to, _amount);
+        return supply.transferFrom(availability, _from, _to, _amount);
     }
 
     /// @param _owner The address that's balance is being requested

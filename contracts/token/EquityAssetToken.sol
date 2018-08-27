@@ -48,9 +48,9 @@ contract EquityAssetToken is FeatureCapitalControl, Destructible {
     }
 
     //ERROR: removed transfer ownership now
-    // //override: transfer ownership to capitalControl as soon as alive
-    // function setTokenAlive() public {
-    //     super.setTokenAlive();
+    // //override: transfer ownership to capitalControl as soon as configured
+    // function setTokenConfigured() public {
+    //     super.setTokenConfigured();
 
     //     owner = capitalControl;
     // }
@@ -64,7 +64,7 @@ contract EquityAssetToken is FeatureCapitalControl, Destructible {
                 revert("Only full amount in case of lost wallet is allowed");
             }
 
-            return supply.enforcedTransferFrom(_from, _to, _value);
+            return supply.enforcedTransferFrom(availability, _from, _to, _value);
         } else {
             return super.transferFrom(_from, _to, _value);
         }
