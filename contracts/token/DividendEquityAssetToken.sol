@@ -28,8 +28,4 @@ contract DividendEquityAssetToken is DividendAssetToken, FeatureCapitalControlWi
 {    
     constructor(address _capitalControl) FeatureCapitalControlWithForcedTransferFrom(_capitalControl) public {}
 
-    function test() public {
-
-    }
-
 }
