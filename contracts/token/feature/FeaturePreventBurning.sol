@@ -17,16 +17,11 @@ pragma solidity ^0.4.24;
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import "./CRWDAssetToken.sol";
-import "./feature/FeatureCapitalControlWithForcedTransferFrom.sol";
-import "./feature/FeaturePreventBurning.sol";
-import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
-import "openzeppelin-solidity/contracts/lifecycle/Destructible.sol";
+import "../abstract/IBasicAssetToken.sol";
 
-/** @title Equity AssetToken. */
-contract EquityAssetToken is CRWDAssetToken, FeatureCapitalControlWithForcedTransferFrom, FeaturePreventBurning, Destructible {
-    uint256 public decimals = 0; //override: fixed decimals
-
-    constructor(address _capitalControl) FeatureCapitalControl(_capitalControl) public {}
+/** @title FeaturePreventBurning. */
+contract FeaturePreventBurning is IBasicAssetToken {
+    function burn(address /*_who*/, uint256 /*_amount*/) public {
+        revert("Capital decrease requires redeployment");
+    }
 }

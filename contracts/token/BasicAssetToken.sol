@@ -23,8 +23,10 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "./library/AssetTokenSupplyL.sol";
 
+import "./abstract/IBasicAssetToken.sol";
+
 /** @title Basic AssetToken. */
-contract BasicAssetToken is Ownable {
+contract BasicAssetToken is IBasicAssetToken, Ownable {
     /*
     * @title This contract includes the basic AssetToken features
     * @author Paul Pöltner / Conda
@@ -123,12 +125,18 @@ contract BasicAssetToken is Ownable {
         _;
     }
 
-    modifier canSetMetadata() {
+    function checkCanSetMetadata() internal returns (bool) {
         if(_canDoAnytime() == false) {
             require(msg.sender == owner);
             require(!availability.tokenConfigured);
             require(!availability.crowdsalePhaseFinished);
         }
+
+        return true;
+    }
+
+    modifier canSetMetadata() {
+        checkCanSetMetadata();
         _;
     }
 
@@ -337,10 +345,16 @@ contract BasicAssetToken is Ownable {
 // Enable tokens transfers
 ////////////////
 
+    function enableTransferInternal(bool _transfersEnabled) internal {
+        availability.transfersPaused = (_transfersEnabled == false);
+    }
+
     /// @notice Enables token holders to transfer their tokens freely if true
     /// @param _transfersEnabled True if transfers are allowed
-    function enableTransfers(bool _transfersEnabled) public onlyOwnerOrOverruled {
-        availability.transfersPaused = (_transfersEnabled == false);
+    function enableTransfers(bool _transfersEnabled) public 
+    onlyOwnerOrOverruled 
+    {
+        enableTransferInternal(_transfersEnabled);
     }
 
 ////////////////
@@ -352,7 +366,7 @@ contract BasicAssetToken is Ownable {
     function pauseTransfer(bool _transfersEnabled) public
     onlyPauseControl
     {
-        availability.transfersPaused = (_transfersEnabled == false);
+        enableTransferInternal(_transfersEnabled);
     }
 
     /// @dev `pauseMinting` can pause mint/burn
@@ -363,4 +377,14 @@ contract BasicAssetToken is Ownable {
         availability.pauseCapitalIncreaseOrDecrease(_mintingAndBurningEnabled);
     }
 
+    /** 
+      * @dev capitalControl can reopen the crowdsale.
+      */
+    function reopenCrowdsaleInternal() internal returns (bool) {
+        return availability.reopenCrowdsale();
+    }
+
+    function inforcedTransferFromInternal(address _from, address _to, uint256 _value) internal returns (bool) {
+        return supply.enforcedTransferFrom(availability, _from, _to, _value);
+    }
 }

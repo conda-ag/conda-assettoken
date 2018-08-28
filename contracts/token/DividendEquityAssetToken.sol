@@ -2,6 +2,8 @@ pragma solidity ^0.4.24;
 
 /*
     Copyright 2018, CONDA
+    This contract is a fork from Adam Dossa
+    https://github.com/adamdossa/ProfitSharingContract/blob/master/contracts/ProfitSharing.sol
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,16 +19,18 @@ pragma solidity ^0.4.24;
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import "./CRWDAssetToken.sol";
-import "./feature/FeatureCapitalControlWithForcedTransferFrom.sol";
+import "./DividendAssetToken.sol";
+// import "./EquityAssetToken.sol";
 import "./feature/FeaturePreventBurning.sol";
-import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
-import "openzeppelin-solidity/contracts/lifecycle/Destructible.sol";
+import "./feature/FeatureCapitalControl.sol";
 
-/** @title Equity AssetToken. */
-contract EquityAssetToken is CRWDAssetToken, FeatureCapitalControlWithForcedTransferFrom, FeaturePreventBurning, Destructible {
-    uint256 public decimals = 0; //override: fixed decimals
-
+/** @title Dividend AssetToken. */
+contract DividendEquityAssetToken is DividendAssetToken, FeatureCapitalControl {
+    
     constructor(address _capitalControl) FeatureCapitalControl(_capitalControl) public {}
+
+    function test() public {
+
+    }
+
 }
