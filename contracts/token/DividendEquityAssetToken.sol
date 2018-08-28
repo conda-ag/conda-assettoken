@@ -21,13 +21,12 @@ pragma solidity ^0.4.24;
 
 import "./DividendAssetToken.sol";
 import "./EquityAssetToken.sol";
-import "./feature/FeaturePreventBurning.sol";
-import "./feature/FeatureCapitalControl.sol";
+import "./feature/FeatureCapitalControlWithForcedTransferFrom.sol";
 
 /** @title Dividend AssetToken. */
-contract DividendEquityAssetToken is DividendAssetToken, FeatureCapitalControl, FeaturePreventBurning {
-    
-    constructor(address _capitalControl) FeatureCapitalControl(_capitalControl) public {}
+contract DividendEquityAssetToken is DividendAssetToken, FeatureCapitalControlWithForcedTransferFrom
+{    
+    constructor(address _capitalControl) FeatureCapitalControlWithForcedTransferFrom(_capitalControl) public {}
 
     function test() public {
 

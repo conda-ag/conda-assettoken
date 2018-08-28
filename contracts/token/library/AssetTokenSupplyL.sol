@@ -29,11 +29,11 @@ library AssetTokenSupplyL {
         // Flag that determines if the token is transferable or not.
         bool transfersPaused;
 
-        // Flag that minting and burning is finished
+        // Flag that minting is finished
         bool crowdsalePhaseFinished;
 
-        // Flag that minting and burning is paused
-        bool mintingAndBurningPaused;
+        // Flag that minting is paused
+        bool mintingPaused;
 
         // role that can pause/resume
         address pauseControl;
@@ -229,30 +229,30 @@ library AssetTokenSupplyL {
         return true;
     }
 
-////////////////
-// Burn - only during minting 
-////////////////
+// ////////////////
+// // Burn - only during minting 
+// ////////////////
 
-    /** @dev Burn someone's tokens (only allowed during minting phase). 
-      * @param _who Eth address of person who's tokens should be burned.
-      */
-    function burn(Supply storage _self, address _who, uint256 _value) public {
-        uint256 curTotalSupply = totalSupplyAt(_self, block.number);
+//     /** @dev Burn someone's tokens (only allowed during minting phase). 
+//       * @param _who Eth address of person who's tokens should be burned.
+//       */
+//     function burn(Supply storage _self, address _who, uint256 _value) public {
+//         uint256 curTotalSupply = totalSupplyAt(_self, block.number);
 
-        // Check for overflow
-        require(curTotalSupply - _value <= curTotalSupply); 
+//         // Check for overflow
+//         require(curTotalSupply - _value <= curTotalSupply); 
 
-        uint256 previousBalanceWho = balanceOfAt(_self, _who, block.number);
+//         uint256 previousBalanceWho = balanceOfAt(_self, _who, block.number);
 
-        require(_value <= previousBalanceWho);
+//         require(_value <= previousBalanceWho);
 
-        updateValueAtNow(_self.totalSupplyHistory, curTotalSupply.sub(_value));
-        updateValueAtNow(_self.balances[_who], previousBalanceWho.sub(_value));
+//         updateValueAtNow(_self.totalSupplyHistory, curTotalSupply.sub(_value));
+//         updateValueAtNow(_self.balances[_who], previousBalanceWho.sub(_value));
 
-        emit Burn(_who, _value); //zeppelin compliant
-        emit BurnDetailed(msg.sender, _who, _value);
-        emit Transfer(_who, address(0), _value);
-    }
+//         emit Burn(_who, _value); //zeppelin compliant
+//         emit BurnDetailed(msg.sender, _who, _value);
+//         emit Transfer(_who, address(0), _value);
+//     }
 
 ////////////////
 // Query balance and totalSupply in History
@@ -332,7 +332,7 @@ library AssetTokenSupplyL {
         }
     }
 
-    ///  @dev Function to stop minting new tokens and also disables burning.
+    ///  @dev Function to stop minting new tokens.
     ///  @return True if the operation was successful.
     function finishMinting(Availability storage _self) public returns (bool) {
         if(_self.crowdsalePhaseFinished) {
@@ -381,11 +381,11 @@ library AssetTokenSupplyL {
         }
     }
 
-    /// @dev `pauseMinting` can pause mint/burn
-    /// @param _mintingAndBurningEnabled False if minting/burning is allowed
-    function pauseCapitalIncreaseOrDecrease(Availability storage _self, bool _mintingAndBurningEnabled) public
+    /// @dev `pauseMinting` can pause mint
+    /// @param _mintingEnabled False if minting is allowed
+    function pauseCapitalIncreaseOrDecrease(Availability storage _self, bool _mintingEnabled) public
     {
-        _self.mintingAndBurningPaused = (_mintingAndBurningEnabled == false);
+        _self.mintingPaused = (_mintingEnabled == false);
     }
 
     /** @dev Receives ether to be distriubted to all token owners*/
@@ -572,8 +572,8 @@ library AssetTokenSupplyL {
     event Mint(address indexed to, uint256 amount);
     event MintDetailed(address indexed initiator, address indexed to, uint256 amount);
     event MintFinished();
-    event Burn(address indexed burner, uint256 value);
-    event BurnDetailed(address indexed initiator, address indexed burner, uint256 value);
+    // event Burn(address indexed burner, uint256 value);
+    // event BurnDetailed(address indexed initiator, address indexed burner, uint256 value);
     event Approval(address indexed owner, address indexed spender, uint256 value);
     event TransferPaused(address indexed initiator);
     event TransferResumed(address indexed initiator);

@@ -107,26 +107,24 @@ contract('CRWDAssetToken', (accounts) => {
 
     })
 
-    contract('validating burn', () => {
-
-        it('should return correct balances after burn ', async () => {
-            await token.mint(buyerA, 100, {from: crowdsale})
-            await token.burn(buyerA, 100, {from: crowdsale})
+    // contract('validating burn', () => {
+    //     it('should return correct balances after burn ', async () => {
+    //         await token.mint(buyerA, 100, {from: crowdsale})
+    //         await token.burn(buyerA, 100, {from: crowdsale})
       
-            let firstAccountBalance = await token.balanceOf(buyerA)
-            assert.equal(firstAccountBalance, 0)
+    //         let firstAccountBalance = await token.balanceOf(buyerA)
+    //         assert.equal(firstAccountBalance, 0)
 
-            let totalSupply = await token.totalSupply()
-            assert.equal(totalSupply, 0)
-        })
+    //         let totalSupply = await token.totalSupply()
+    //         assert.equal(totalSupply, 0)
+    //     })
 
-        it('burn should throw an error after finishing mint', async () => {
-            await token.mint(buyerA, 100, {from: crowdsale})
-            await token.finishMinting({from: crowdsale})
-            await token.burn(buyerA, 100).should.be.rejectedWith(EVMRevert)
-        })
-
-    })
+    //     it('burn should throw an error after finishing mint', async () => {
+    //         await token.mint(buyerA, 100, {from: crowdsale})
+    //         await token.finishMinting({from: crowdsale})
+    //         await token.burn(buyerA, 100).should.be.rejectedWith(EVMRevert)
+    //     })
+    // })
 
     contract('validating transfer', () => {
         it('should return correct balances after transfer', async () => {

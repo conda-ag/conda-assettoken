@@ -19,13 +19,12 @@ pragma solidity ^0.4.24;
 
 import "./CRWDAssetToken.sol";
 import "./feature/FeatureCapitalControlWithForcedTransferFrom.sol";
-import "./feature/FeaturePreventBurning.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 import "openzeppelin-solidity/contracts/lifecycle/Destructible.sol";
 
 /** @title Equity AssetToken. */
-contract EquityAssetToken is CRWDAssetToken, FeatureCapitalControlWithForcedTransferFrom, FeaturePreventBurning, Destructible {
+contract EquityAssetToken is CRWDAssetToken, FeatureCapitalControlWithForcedTransferFrom, Destructible {
     uint256 public decimals = 0; //override: fixed decimals
 
     constructor(address _capitalControl) FeatureCapitalControlWithForcedTransferFrom(_capitalControl) public {}

@@ -38,7 +38,7 @@ contract FeatureCapitalControlWithForcedTransferFrom is FeatureCapitalControl {
     function transferFrom(address _from, address _to, uint256 _value) public returns (bool)
     {
         if (msg.sender == capitalControl) {
-            // return enforcedTransferFromInternal(_from, _to, _value, true);
+            return enforcedTransferFromInternal(_from, _to, _value, true);
         } else {
             return super.transferFrom(_from, _to, _value);
         }

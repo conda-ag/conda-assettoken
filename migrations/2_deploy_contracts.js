@@ -8,7 +8,6 @@ const DividendEquityAssetToken = artifacts.require("DividendEquityAssetToken.sol
 
 const FeatureCapitalControl = artifacts.require("FeatureCapitalControl.sol")
 const FeatureCapitalControlWithForcedTransferFrom = artifacts.require("FeatureCapitalControlWithForcedTransferFrom.sol")
-const FeaturePreventBurning = artifacts.require("FeaturePreventBurning.sol")
 
 const AssetTokenSupplyL = artifacts.require("AssetTokenSupplyL.sol")
 
