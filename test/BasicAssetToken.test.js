@@ -38,6 +38,17 @@ contract('BasicAssetToken', (accounts) => {
         assert.equal(await token.totalSupply(), 0)
     })
 
+    contract('validating isCrowdsalePhaseFinished()', () => {
+        it('isCrowdsalePhaseFinished() tells if crowdsale has finished', async () => {
+            assert.equal(await token.isCrowdsalePhaseFinished(), false) //precondition
+
+            await token.setTokenConfigured()
+            await token.finishMinting({from: mintControl})
+
+            assert.equal(await token.isCrowdsalePhaseFinished(), true)
+        })
+    })
+
     contract('validating rescueToken()', () => {
         it('can rescue tokens as tokenRescueControl', async () => {
             await token.setRoles(pauseControl, tokenRescueControl)

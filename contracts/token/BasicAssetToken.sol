@@ -72,6 +72,10 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
         return availability.mintingPaused;
     }
 
+    function isCrowdsalePhaseFinished() public view returns (bool) {
+        return availability.crowdsalePhaseFinished;
+    }
+
     function getPauseControl() public view returns (address) {
         return availability.pauseControl;
     }
