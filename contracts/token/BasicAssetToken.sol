@@ -115,7 +115,7 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
         _;
     }
 
-    modifier canMintOrBurn() { //ERROR: canMint (burn fliegt raus)
+    modifier canMintOrBurn() {
         if(_canDoAnytime() == false) { 
             require(msg.sender == mintControl);
             require(availability.tokenConfigured);
@@ -183,7 +183,6 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
     /** @dev Set the address of the crowdsale contract.
       * @param _mintControl The address of the crowdsale.
       */
-    //Error setMintControl
     function setMintControl(address _mintControl) public canSetMetadata { //ERROR: only as capitalControl (initial assignment?)
         require(_mintControl != address(0));
 
@@ -211,8 +210,6 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
     /// @param _to The address of the recipient
     /// @param _amount The amount of tokens to be transferred
     /// @return Whether the transfer was successful or not
-    //ERROR: crowdsale zuende und configured
-    // Inside library
     function transfer(address _to, uint256 _amount) public returns (bool success) {
         supply.doTransfer(availability, msg.sender, _to, _amount);
         return true;
@@ -224,11 +221,7 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
     /// @param _to The address of the recipient
     /// @param _amount The amount of tokens to be transferred
     /// @return True if the transfer was successful
-
-    //ERROR: siehe transfer
     function transferFrom(address _from, address _to, uint256 _amount) public returns (bool success) {
-        require(!availability.transfersPaused);
-
         return supply.transferFrom(availability, _from, _to, _amount);
     }
 
@@ -306,7 +299,6 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
 // Burn - only during minting 
 ////////////////
 
-    //ERROR: we remove (make comment) burn completely
     function burn(address _who, uint256 _amount) public canMintOrBurn {
         return supply.burn(_who, _amount);
     }

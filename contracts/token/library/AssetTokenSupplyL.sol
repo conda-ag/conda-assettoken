@@ -162,7 +162,10 @@ library AssetTokenSupplyL {
     /// @param _to The address of the recipient
     /// @param _amount The amount of tokens to be transferred
     /// @return True if the transfer was successful
-    function transferFrom(Supply storage _supply, Availability storage _availability, address _from, address _to, uint256 _amount) public returns (bool success) {
+    function transferFrom(Supply storage _supply, Availability storage _availability, address _from, address _to, uint256 _amount) 
+    public 
+    returns (bool success) 
+    {
         // The standard ERC 20 transferFrom functionality
         require(_supply.allowed[_from][msg.sender] >= _amount);
         _supply.allowed[_from][msg.sender].sub(_amount);

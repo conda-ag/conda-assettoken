@@ -21,6 +21,7 @@ import "../abstract/ICRWDAssetToken.sol";
 
 /** @title FeatureCapitalControl. */
 contract FeatureCapitalControl is ICRWDAssetToken {
+    
     //if set can mint/burn after finished. E.g. a notary.
     address public capitalControl;
 

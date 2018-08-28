@@ -1,7 +1,6 @@
 pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "./library/AssetTokenSupplyL.sol";
 
 import "./BasicAssetToken.sol";
 import "../interfaces/ICRWDClearing.sol";
@@ -17,7 +16,6 @@ contract CRWDAssetToken is BasicAssetToken, ICRWDAssetToken {
     */
 
     using SafeMath for uint256;
-    using AssetTokenSupplyL for AssetTokenSupplyL.Supply; //Error: delete
 
     address public clearingAddress;
 
@@ -50,11 +48,9 @@ contract CRWDAssetToken is BasicAssetToken, ICRWDAssetToken {
       * @return A boolean that indicates if the operation was successful.
       */
 
-    //Error: berechnung sollte gleich
     //Error: Mint wird vom clearing aufgerufen. circel bezug?
     function mint(address _to, uint256 _amount) public canMintOrBurn returns (bool) {
-        uint256 amountInBaseRate = _amount.mul(baseRate);
-        uint256 transferValue = amountInBaseRate.div(1000);
+        uint256 transferValue = _amount.mul(baseRate).div(1000);
         ICRWDClearing(clearingAddress).clearFunds(baseCurrency, _to, _to, transferValue);
         return super.mint(_to,_amount);
     }
