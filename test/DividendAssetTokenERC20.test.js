@@ -24,7 +24,6 @@ contract('DividendAssetToken', (accounts) => {
     const ONETOKEN  = 1
     const ONETHOUSANDTOKEN  = ONETOKEN * 1000
     const SECONDS_IN_A_YEAR = 86400 * 366
-    const gasPrice = 0
 
     let buyerA = accounts[1]
     let buyerB = accounts[2]
@@ -70,11 +69,11 @@ contract('DividendAssetToken', (accounts) => {
     })
 
     let claimDividendA = async () => {
-        return await token.claimDividend(0, {from: buyerA, gasPrice: gasPrice})
+        return await token.claimDividend(0, {from: buyerA, gasPrice: 0})
     }
 
     let claimDividendB = async () => {
-        return await token.claimDividend(0, {from: buyerB, gasPrice: gasPrice})
+        return await token.claimDividend(0, {from: buyerB, gasPrice: 0})
     }
 
     contract('validating deposit ERC20Token', () => {
@@ -96,35 +95,32 @@ contract('DividendAssetToken', (accounts) => {
     contract('validating claim', () => {
         it('buyer A should claim 0.1 of dividend', async () => {
             let beforeBalanceOne = await erc20.balanceOf(buyerA)
-            let txId1 = await claimDividendA()
+            await claimDividendA()
             let afterBalanceOne = await erc20.balanceOf(buyerA)
-            let gasCostTxId1 = txId1.receipt.gasUsed * gasPrice
             assert.equal(beforeBalanceOne.add(0.1 * ONETHOUSANDTOKEN).toNumber(), afterBalanceOne.toNumber(), "buyer A should claim 0.1 of dividend")
         })
 
         it('buyer B should claim 0.25 of dividend', async () => {
             let beforeBalanceTwo = await erc20.balanceOf(buyerB)
-            let txId2 = await token.claimDividend(0, {from: buyerB, gasPrice: gasPrice})
+            await token.claimDividend(0, {from: buyerB, gasPrice: 0})
             let afterBalanceTwo = await erc20.balanceOf(buyerB)
-            let gasCostTxId2 = txId2.receipt.gasUsed * gasPrice
             assert.equal(beforeBalanceTwo.add(0.25 * ONETHOUSANDTOKEN).toNumber(), afterBalanceTwo.toNumber(), "buyer B should claim 0.25 of dividend")        
         })
 
         it('Make sure further claims on this dividend fail for buyer A', async () => {
             await claimDividendA()
-            await token.claimDividend(0, {from: buyerA, gasPrice: gasPrice}).should.be.rejectedWith(EVMRevert)
+            await token.claimDividend(0, {from: buyerA, gasPrice: 0}).should.be.rejectedWith(EVMRevert)
         })
 
         it('Make sure further claims on this dividend fail for buyer B', async () => {
             await claimDividendB()
-            await token.claimDividend(0, {from: buyerB, gasPrice: gasPrice}).should.be.rejectedWith(EVMRevert)
+            await token.claimDividend(0, {from: buyerB, gasPrice: 0}).should.be.rejectedWith(EVMRevert)
         })
 
         it('Make sure zero balances give no value', async () => {
             let beforeBalanceThree = await erc20.balanceOf(buyerC)
-            let txId3 = await token.claimDividend(0, {from: buyerC, gasPrice: gasPrice})
+            await token.claimDividend(0, {from: buyerC, gasPrice: 0})
             let afterBalanceThree = await erc20.balanceOf(buyerC)
-            let gasCostTxId3 = txId3.receipt.gasUsed * gasPrice
             assert.equal(beforeBalanceThree.toNumber(), afterBalanceThree.toNumber(), "buyer C should have no claim")
         })
     })
@@ -150,9 +146,9 @@ contract('DividendAssetToken', (accounts) => {
             //claim all but buyerD
             await claimDividendA()
             await claimDividendB()
-            await token.claimDividendAll({from: buyerC, gasPrice: gasPrice})
-            //await token.claimDividendAll({from: buyerD, gasPrice: gasPrice})
-            await token.claimDividendAll({from: buyerE, gasPrice: gasPrice})
+            await token.claimDividendAll({from: buyerC, gasPrice: 0})
+            //await token.claimDividendAll({from: buyerD, gasPrice: 0})
+            await token.claimDividendAll({from: buyerE, gasPrice: 0})
 
             const beforeBalanceA = await erc20.balanceOf(buyerA)
             const beforeBalanceB = await erc20.balanceOf(buyerB)
@@ -164,19 +160,19 @@ contract('DividendAssetToken', (accounts) => {
 
             await token.recycleDividend(0, {from: owner}) //act
 
-            await token.claimDividend(0, {from: buyerA, gasPrice: gasPrice}).should.be.rejectedWith(EVMRevert)
-            await token.claimDividend(0, {from: buyerB, gasPrice: gasPrice}).should.be.rejectedWith(EVMRevert)
-            await token.claimDividend(0, {from: buyerC, gasPrice: gasPrice}).should.be.rejectedWith(EVMRevert)
-            await token.claimDividend(0, {from: buyerD, gasPrice: gasPrice}).should.be.rejectedWith(EVMRevert)
-            await token.claimDividend(0, {from: buyerE, gasPrice: gasPrice}).should.be.rejectedWith(EVMRevert)
+            await token.claimDividend(0, {from: buyerA, gasPrice: 0}).should.be.rejectedWith(EVMRevert)
+            await token.claimDividend(0, {from: buyerB, gasPrice: 0}).should.be.rejectedWith(EVMRevert)
+            await token.claimDividend(0, {from: buyerC, gasPrice: 0}).should.be.rejectedWith(EVMRevert)
+            await token.claimDividend(0, {from: buyerD, gasPrice: 0}).should.be.rejectedWith(EVMRevert)
+            await token.claimDividend(0, {from: buyerE, gasPrice: 0}).should.be.rejectedWith(EVMRevert)
 
             const newDividendIndexAfterRecycle = 1
 
-            await token.claimDividend(newDividendIndexAfterRecycle, {from: buyerA, gasPrice: gasPrice}).should.be.rejectedWith(EVMRevert)
-            await token.claimDividend(newDividendIndexAfterRecycle, {from: buyerB, gasPrice: gasPrice}).should.be.rejectedWith(EVMRevert)
-            await token.claimDividend(newDividendIndexAfterRecycle, {from: buyerC, gasPrice: gasPrice}).should.be.rejectedWith(EVMRevert)
-            await token.claimDividend(newDividendIndexAfterRecycle, {from: buyerD, gasPrice: gasPrice}).should.be.rejectedWith(EVMRevert)
-            await token.claimDividend(newDividendIndexAfterRecycle, {from: buyerE, gasPrice: gasPrice}).should.be.rejectedWith(EVMRevert)
+            await token.claimDividend(newDividendIndexAfterRecycle, {from: buyerA, gasPrice: 0}).should.be.rejectedWith(EVMRevert)
+            await token.claimDividend(newDividendIndexAfterRecycle, {from: buyerB, gasPrice: 0}).should.be.rejectedWith(EVMRevert)
+            await token.claimDividend(newDividendIndexAfterRecycle, {from: buyerC, gasPrice: 0}).should.be.rejectedWith(EVMRevert)
+            await token.claimDividend(newDividendIndexAfterRecycle, {from: buyerD, gasPrice: 0}).should.be.rejectedWith(EVMRevert)
+            await token.claimDividend(newDividendIndexAfterRecycle, {from: buyerE, gasPrice: 0}).should.be.rejectedWith(EVMRevert)
 
             const afterBalanceA = await erc20.balanceOf(buyerA)
             const afterBalanceB = await erc20.balanceOf(buyerB)
@@ -194,20 +190,20 @@ contract('DividendAssetToken', (accounts) => {
 
         it('Check owner can claim recycled dividend', async () => {
             //claim all but buyerD
-            await token.claimDividendAll({from: buyerD, gasPrice: gasPrice}) //claims his 50%
+            await token.claimDividendAll({from: buyerD, gasPrice: 0}) //claims his 50%
 
             const beforeBalanceA = await erc20.balanceOf(buyerA)
             const beforeBalanceOwner = await erc20.balanceOf(owner)
         
             await timeTravel(SECONDS_IN_A_YEAR) //1 year time lock passes
 
-            await token.recycleDividend(0, {from: owner, gasPrice: gasPrice}) //act
+            await token.recycleDividend(0, {from: owner, gasPrice: 0}) //act
             
-            await token.claimDividend(0, {from: buyerA, gasPrice: gasPrice}).should.be.rejectedWith(EVMRevert)
+            await token.claimDividend(0, {from: buyerA, gasPrice: 0}).should.be.rejectedWith(EVMRevert)
 
             const newDividendIndexAfterRecycle = 1
 
-            await token.claimDividend(newDividendIndexAfterRecycle, {from: buyerA, gasPrice: gasPrice}).should.be.rejectedWith(EVMRevert)
+            await token.claimDividend(newDividendIndexAfterRecycle, {from: buyerA, gasPrice: 0}).should.be.rejectedWith(EVMRevert)
             
             const afterBalanceA = await erc20.balanceOf(buyerA)
             const afterBalanceOwner = await erc20.balanceOf(owner)
