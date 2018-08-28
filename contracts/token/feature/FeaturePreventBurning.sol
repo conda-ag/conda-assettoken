@@ -17,10 +17,10 @@ pragma solidity ^0.4.24;
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import "../abstract/IBasicAssetToken.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 
 /** @title FeaturePreventBurning. */
-contract FeaturePreventBurning is IBasicAssetToken {
+contract FeaturePreventBurning is ERC20 {
     function burn(address /*_who*/, uint256 /*_amount*/) public {
         revert("Capital decrease requires redeployment");
     }

@@ -38,12 +38,7 @@ contract FeatureCapitalControlWithForcedTransferFrom is FeatureCapitalControl {
     function transferFrom(address _from, address _to, uint256 _value) public returns (bool)
     {
         if (msg.sender == capitalControl) {
-            if(_value != balanceOf(_from))
-            {
-                revert("Only full amount in case of lost wallet is allowed");
-            }
-
-            return inforcedTransferFromInternal(_from, _to, _value);
+            return enforcedTransferFromInternal(_from, _to, _value, true);
         } else {
             return super.transferFrom(_from, _to, _value);
         }

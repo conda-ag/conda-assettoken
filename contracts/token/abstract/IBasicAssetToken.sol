@@ -28,8 +28,6 @@ contract IBasicAssetToken {
 
     function finishMinting() public returns (bool);
 
-    function burn(address _who, uint256 _amount) public;
-
     function rescueToken(address _foreignTokenAddress, address _to) public;
 
     function balanceOfAt(address _owner, uint _blockNumber) public view returns (uint256);
@@ -40,9 +38,9 @@ contract IBasicAssetToken {
 
     function pauseTransfer(bool _transfersEnabled) public;
 
-    function pauseCapitalIncreaseOrDecrease(bool _mintingAndBurningEnabled) public;    
+    function pauseCapitalIncreaseOrDecrease(bool _mintingEnabled) public;    
 
-    function isMintingAndBurningPaused() public view returns (bool);
+    function isMintingPaused() public view returns (bool);
 
     function mint(address _to, uint256 _amount) public returns (bool);
 
@@ -54,15 +52,13 @@ contract IBasicAssetToken {
 
     function reopenCrowdsaleInternal() internal returns (bool);
 
-    function inforcedTransferFromInternal(address _from, address _to, uint256 _value) internal returns (bool);
+    function enforcedTransferFromInternal(address _from, address _to, uint256 _value, bool _fullAmountRequired) internal returns (bool);
 
     event Approval(address indexed owner, address indexed spender, uint256 value);
     event Transfer(address indexed from, address indexed to, uint256 value);
     event Mint(address indexed to, uint256 amount);
     event MintDetailed(address indexed initiator, address indexed to, uint256 amount);
     event MintFinished();
-    event Burn(address indexed burner, uint256 value);
-    event BurnDetailed(address indexed initiator, address indexed burner, uint256 value);
     event TransferPaused(address indexed initiator);
     event TransferResumed(address indexed initiator);
     event Reopened(address indexed initiator);

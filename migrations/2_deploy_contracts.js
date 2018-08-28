@@ -8,7 +8,6 @@ const DividendEquityAssetToken = artifacts.require("DividendEquityAssetToken.sol
 
 const FeatureCapitalControl = artifacts.require("FeatureCapitalControl.sol")
 const FeatureCapitalControlWithForcedTransferFrom = artifacts.require("FeatureCapitalControlWithForcedTransferFrom.sol")
-const FeaturePreventBurning = artifacts.require("FeaturePreventBurning.sol")
 
 const AssetTokenSupplyL = artifacts.require("AssetTokenSupplyL.sol")
 
@@ -23,5 +22,5 @@ module.exports = (deployer, network, accounts) => {
     capitalControl = accounts[0];
     deployer.deploy(EquityAssetToken, capitalControl)
     deployer.deploy(DividendAssetToken)
-    // deployer.deploy(DividendEquityAssetToken, capitalControl)
+    deployer.deploy(DividendEquityAssetToken, capitalControl)
 }

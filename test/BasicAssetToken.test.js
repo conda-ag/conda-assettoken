@@ -183,69 +183,69 @@ contract('BasicAssetToken', (accounts) => {
                 await token.setTokenConfigured()
                 await token.mint(buyerA, 10, {from: mintControl}) //works
                 await token.pauseCapitalIncreaseOrDecrease(false, {from: pauseControl}) //now disabled
-                assert.equal(await token.isMintingAndBurningPaused(), true, "as precondition minting must be paused")
+                assert.equal(await token.isMintingPaused(), true, "as precondition minting must be paused")
 
                 await token.mint(buyerA, 10, {from: mintControl}).should.be.rejectedWith(EVMRevert)
             })
         })
     })
 
-    contract('validating burn', () => {
+    // contract('validating burn', () => {
 
-        it('should return correct balances after burn ', async () => {
-            await token.setTokenConfigured()
-            await token.mint(buyerA, 100, {from: mintControl})
-            await token.burn(buyerA, 100, {from: mintControl})
+    //     it('should return correct balances after burn ', async () => {
+    //         await token.setTokenConfigured()
+    //         await token.mint(buyerA, 100, {from: mintControl})
+    //         await token.burn(buyerA, 100, {from: mintControl})
       
-            let firstAccountBalance = await token.balanceOf(buyerA)
-            assert.equal(firstAccountBalance, 0)
+    //         let firstAccountBalance = await token.balanceOf(buyerA)
+    //         assert.equal(firstAccountBalance, 0)
 
-            let totalSupply = await token.totalSupply()
-            assert.equal(totalSupply, 0)
-        })
+    //         let totalSupply = await token.totalSupply()
+    //         assert.equal(totalSupply, 0)
+    //     })
 
-        it('should return correct balances after complex burn ', async () => {
-            await token.setTokenConfigured()
-            await token.mint(buyerA, 100, {from: mintControl})
-            await token.mint(buyerB, 100, {from: mintControl})
-            await token.burn(buyerA, 75, {from: mintControl})
-            await token.burn(buyerB, 25, {from: mintControl})
+    //     it('should return correct balances after complex burn ', async () => {
+    //         await token.setTokenConfigured()
+    //         await token.mint(buyerA, 100, {from: mintControl})
+    //         await token.mint(buyerB, 100, {from: mintControl})
+    //         await token.burn(buyerA, 75, {from: mintControl})
+    //         await token.burn(buyerB, 25, {from: mintControl})
       
-            let buyerABalance = await token.balanceOf(buyerA)
-            assert.equal(buyerABalance, 25)
+    //         let buyerABalance = await token.balanceOf(buyerA)
+    //         assert.equal(buyerABalance, 25)
 
-            let buyerBBalance = await token.balanceOf(buyerB)
-            assert.equal(buyerBBalance, 75)
+    //         let buyerBBalance = await token.balanceOf(buyerB)
+    //         assert.equal(buyerBBalance, 75)
 
-            let totalSupply = await token.totalSupply()
-            assert.equal(totalSupply, 100)
-        })
+    //         let totalSupply = await token.totalSupply()
+    //         assert.equal(totalSupply, 100)
+    //     })
 
-        it('burn should throw an error after finishing mint', async () => {
-            await token.setTokenConfigured()
-            await token.mint(buyerA, 100, {from: mintControl})
-            await token.finishMinting({from: mintControl})
-            await token.burn(buyerA, 100).should.be.rejectedWith(EVMRevert)
-        })
+    //     it('burn should throw an error after finishing mint', async () => {
+    //         await token.setTokenConfigured()
+    //         await token.mint(buyerA, 100, {from: mintControl})
+    //         await token.finishMinting({from: mintControl})
+    //         await token.burn(buyerA, 100).should.be.rejectedWith(EVMRevert)
+    //     })
 
-        it('only owner can burn', async () => {
-            await token.setTokenConfigured()
-            await token.mint(buyerA, 100, {from: mintControl})
-            await token.burn(buyerA, 100, {'from': buyerA}).should.be.rejectedWith(EVMRevert)
-        })
+    //     it('only owner can burn', async () => {
+    //         await token.setTokenConfigured()
+    //         await token.mint(buyerA, 100, {from: mintControl})
+    //         await token.burn(buyerA, 100, {'from': buyerA}).should.be.rejectedWith(EVMRevert)
+    //     })
 
-        contract('validating burn when paused', () => {
-            it('trying to burn when minting is paused should fail', async () => {
-                await token.setRoles(pauseControl, ZERO_ADDRESS, {from: owner})
-                await token.setTokenConfigured()
-                await token.mint(buyerA, 100, {from: mintControl})
-                await token.pauseCapitalIncreaseOrDecrease(false, {from: pauseControl}) //now disabled
-                assert.equal(await token.isMintingAndBurningPaused(), true, "as precondition burning must be paused")
+    //     contract('validating burn when paused', () => {
+    //         it('trying to burn when minting is paused should fail', async () => {
+    //             await token.setRoles(pauseControl, ZERO_ADDRESS, {from: owner})
+    //             await token.setTokenConfigured()
+    //             await token.mint(buyerA, 100, {from: mintControl})
+    //             await token.pauseCapitalIncreaseOrDecrease(false, {from: pauseControl}) //now disabled
+    //             assert.equal(await token.isMintingPaused(), true, "as precondition burning must be paused")
 
-                await token.burn(buyerA, 1).should.be.rejectedWith(EVMRevert)
-            })
-        })
-    })
+    //             await token.burn(buyerA, 1).should.be.rejectedWith(EVMRevert)
+    //         })
+    //     })
+    // })
 
     contract('validating transfer', () => {
         it('should return correct balances after transfer', async () => {
@@ -714,17 +714,17 @@ contract('BasicAssetToken', (accounts) => {
 
             await token.pauseCapitalIncreaseOrDecrease(false, {from: pauseControl})
 
-            assert.equal(await token.isMintingAndBurningPaused(), true)
+            assert.equal(await token.isMintingPaused(), true)
         })
 
         it('pauseCapitalIncreaseOrDecrease() can resume as pauseControl', async () => {
             await token.setRoles(pauseControl, ZERO_ADDRESS, {from: owner})
             await token.pauseCapitalIncreaseOrDecrease(false, {from: pauseControl})
-            assert.equal(await token.isMintingAndBurningPaused(), true)
+            assert.equal(await token.isMintingPaused(), true)
 
             await token.pauseCapitalIncreaseOrDecrease(true, {from: pauseControl})
 
-            assert.equal(await token.isMintingAndBurningPaused(), false)
+            assert.equal(await token.isMintingPaused(), false)
         })
 
         it('pauseCapitalIncreaseOrDecrease() cannot be set as not-pauseControl', async () => {
@@ -732,7 +732,7 @@ contract('BasicAssetToken', (accounts) => {
 
             await token.pauseCapitalIncreaseOrDecrease(false, { from: unknown }).should.be.rejectedWith(EVMRevert)
 
-            assert.equal(await token.isMintingAndBurningPaused(), false)
+            assert.equal(await token.isMintingPaused(), false)
         })
     })
 })

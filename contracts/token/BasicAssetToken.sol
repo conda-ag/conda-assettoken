@@ -47,7 +47,7 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
 
     string public symbol;               //An identifier
 
-    string public version = "CRWD_0.1_alpha"; //An arbitrary versioning scheme
+    uint16 public version = 1000;        //1000 is version 1
 
     // defines the baseCurrency of the token
     address public baseCurrency;
@@ -56,7 +56,7 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
     // this amount will be used for regulatory checks. 
     uint256 public baseRate;
     
-    // mintControl can mint and burn when token is configured
+    // mintControl can mint when token is configured
     address public mintControl;
 
     //can rescue tokens
@@ -68,8 +68,8 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
     //availability: what's paused
     AssetTokenSupplyL.Availability availability;
 
-    function isMintingAndBurningPaused() public view returns (bool) {
-        return availability.mintingAndBurningPaused;
+    function isMintingPaused() public view returns (bool) {
+        return availability.mintingPaused;
     }
 
     function getPauseControl() public view returns (address) {
@@ -89,8 +89,6 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
     event Mint(address indexed to, uint256 amount);
     event MintDetailed(address indexed initiator, address indexed to, uint256 amount);
     event MintFinished();
-    event Burn(address indexed burner, uint256 value);
-    event BurnDetailed(address indexed initiator, address indexed burner, uint256 value);
     event TransferPaused(address indexed initiator);
     event TransferResumed(address indexed initiator);
     event Reopened(address indexed initiator);
@@ -115,12 +113,12 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
         _;
     }
 
-    modifier canMintOrBurn() {
+    modifier canMint() {
         if(_canDoAnytime() == false) { 
             require(msg.sender == mintControl);
             require(availability.tokenConfigured);
             require(!availability.crowdsalePhaseFinished);
-            require(!availability.mintingAndBurningPaused);
+            require(!availability.mintingPaused);
         }
         _;
     }
@@ -183,7 +181,7 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
     /** @dev Set the address of the crowdsale contract.
       * @param _mintControl The address of the crowdsale.
       */
-    function setMintControl(address _mintControl) public canSetMetadata { //ERROR: only as capitalControl (initial assignment?)
+    function setMintControl(address _mintControl) public canSetMetadata {
         require(_mintControl != address(0));
 
         mintControl = _mintControl;
@@ -285,23 +283,23 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
 // Miniting 
 ////////////////
 
-    function mint(address _to, uint256 _amount) public canMintOrBurn returns (bool) {
+    function mint(address _to, uint256 _amount) public canMint returns (bool) {
         return supply.mint(_to, _amount);
     }
 
     ///  @dev Function to stop minting new tokens (as mintControl).
     ///  @return True if the operation was successful.
-    function finishMinting() public canMintOrBurn returns (bool) {
+    function finishMinting() public canMint returns (bool) {
         return availability.finishMinting();
     }
 
 ////////////////
-// Burn - only during minting 
+// Burn - only during minting (feature removed on purpose)
 ////////////////
 
-    function burn(address _who, uint256 _amount) public canMintOrBurn {
-        return supply.burn(_who, _amount);
-    }
+    // function burn(address _who, uint256 _amount) public canMint {
+    //     return supply.burn(_who, _amount);
+    // }
 
 ////////////////
 // Rescue Tokens 
@@ -361,12 +359,12 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
         enableTransferInternal(_transfersEnabled);
     }
 
-    /// @dev `pauseMinting` can pause mint/burn
-    /// @param _mintingAndBurningEnabled False if minting/burning is allowed
-    function pauseCapitalIncreaseOrDecrease(bool _mintingAndBurningEnabled) public
+    /// @dev `pauseMinting` can pause mint
+    /// @param _mintingEnabled False if minting is allowed
+    function pauseCapitalIncreaseOrDecrease(bool _mintingEnabled) public
     onlyPauseControl
     {
-        availability.pauseCapitalIncreaseOrDecrease(_mintingAndBurningEnabled);
+        availability.pauseCapitalIncreaseOrDecrease(_mintingEnabled);
     }
 
     /** 
@@ -376,7 +374,7 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
         return availability.reopenCrowdsale();
     }
 
-    function inforcedTransferFromInternal(address _from, address _to, uint256 _value) internal returns (bool) {
-        return supply.enforcedTransferFrom(availability, _from, _to, _value);
+    function enforcedTransferFromInternal(address _from, address _to, uint256 _value, bool _fullAmountRequired) internal returns (bool) {
+        return supply.enforcedTransferFrom(availability, _from, _to, _value, _fullAmountRequired);
     }
 }

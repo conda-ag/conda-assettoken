@@ -29,11 +29,11 @@ library AssetTokenSupplyL {
         // Flag that determines if the token is transferable or not.
         bool transfersPaused;
 
-        // Flag that minting and burning is finished
+        // Flag that minting is finished
         bool crowdsalePhaseFinished;
 
-        // Flag that minting and burning is paused
-        bool mintingAndBurningPaused;
+        // Flag that minting is paused
+        bool mintingPaused;
 
         // role that can pause/resume
         address pauseControl;
@@ -179,11 +179,22 @@ library AssetTokenSupplyL {
     /// @param _to The address of the recipient
     /// @param _amount The amount of tokens to be transferred
     /// @return True if the transfer was successful
-    function enforcedTransferFrom(Supply storage _self, Availability storage _availability, address _from, address _to, uint256 _amount) 
+    function enforcedTransferFrom(
+        Supply storage _supply, 
+        Availability storage _availability, 
+        address _from, 
+        address _to, 
+        uint256 _amount, 
+        bool _fullAmountRequired) 
     internal 
     returns (bool success) 
     {
-        doTransfer(_self, _availability, _from, _to, _amount);
+        if(_amount != balanceOfAt(_supply, _from, block.number))
+        {
+            revert("Only full amount in case of lost wallet is allowed");
+        }
+
+        doTransfer(_supply, _availability, _from, _to, _amount);
 
         emit SelfApprovedTransfer(msg.sender, _from, _to, _amount);
 
@@ -218,30 +229,30 @@ library AssetTokenSupplyL {
         return true;
     }
 
-////////////////
-// Burn - only during minting 
-////////////////
+// ////////////////
+// // Burn - only during minting 
+// ////////////////
 
-    /** @dev Burn someone's tokens (only allowed during minting phase). 
-      * @param _who Eth address of person who's tokens should be burned.
-      */
-    function burn(Supply storage _self, address _who, uint256 _value) public {
-        uint256 curTotalSupply = totalSupplyAt(_self, block.number);
+//     /** @dev Burn someone's tokens (only allowed during minting phase). 
+//       * @param _who Eth address of person who's tokens should be burned.
+//       */
+//     function burn(Supply storage _self, address _who, uint256 _value) public {
+//         uint256 curTotalSupply = totalSupplyAt(_self, block.number);
 
-        // Check for overflow
-        require(curTotalSupply - _value <= curTotalSupply); 
+//         // Check for overflow
+//         require(curTotalSupply - _value <= curTotalSupply); 
 
-        uint256 previousBalanceWho = balanceOfAt(_self, _who, block.number);
+//         uint256 previousBalanceWho = balanceOfAt(_self, _who, block.number);
 
-        require(_value <= previousBalanceWho);
+//         require(_value <= previousBalanceWho);
 
-        updateValueAtNow(_self.totalSupplyHistory, curTotalSupply.sub(_value));
-        updateValueAtNow(_self.balances[_who], previousBalanceWho.sub(_value));
+//         updateValueAtNow(_self.totalSupplyHistory, curTotalSupply.sub(_value));
+//         updateValueAtNow(_self.balances[_who], previousBalanceWho.sub(_value));
 
-        emit Burn(_who, _value); //zeppelin compliant
-        emit BurnDetailed(msg.sender, _who, _value);
-        emit Transfer(_who, address(0), _value);
-    }
+//         emit Burn(_who, _value); //zeppelin compliant
+//         emit BurnDetailed(msg.sender, _who, _value);
+//         emit Transfer(_who, address(0), _value);
+//     }
 
 ////////////////
 // Query balance and totalSupply in History
@@ -321,7 +332,7 @@ library AssetTokenSupplyL {
         }
     }
 
-    ///  @dev Function to stop minting new tokens and also disables burning.
+    ///  @dev Function to stop minting new tokens.
     ///  @return True if the operation was successful.
     function finishMinting(Availability storage _self) public returns (bool) {
         if(_self.crowdsalePhaseFinished) {
@@ -370,15 +381,15 @@ library AssetTokenSupplyL {
         }
     }
 
-    /// @dev `pauseMinting` can pause mint/burn
-    /// @param _mintingAndBurningEnabled False if minting/burning is allowed
-    function pauseCapitalIncreaseOrDecrease(Availability storage _self, bool _mintingAndBurningEnabled) public
+    /// @dev `pauseMinting` can pause mint
+    /// @param _mintingEnabled False if minting is allowed
+    function pauseCapitalIncreaseOrDecrease(Availability storage _self, bool _mintingEnabled) public
     {
-        _self.mintingAndBurningPaused = (_mintingAndBurningEnabled == false);
+        _self.mintingPaused = (_mintingEnabled == false);
     }
 
     /** @dev Receives ether to be distriubted to all token owners*/
-    function depositDividend(Store storage _self, uint256 msgValue, uint256 _currentSupply) 
+    function depositDividend(Store storage _self, uint256 msgValue, uint256 _currentSupply) //ERROR: msgValue ok?
     public 
     {
         // creates a new index for the dividends
@@ -453,20 +464,7 @@ library AssetTokenSupplyL {
         dividend.claimed[msg.sender] = true;
         dividend.claimedAmount = SafeMath.add(dividend.claimedAmount, claim);
 
-        
-        // transfer the dividends to the token holder
-        if (claim > 0) {
-            if (dividend.dividendType == DividendType.Ether) { 
-                msg.sender.transfer(claim);
-                emit DividendClaimed(msg.sender, _dividendIndex, claim);
-            } 
-
-            if (dividend.dividendType == DividendType.ERC20) { 
-                require(ERC20(dividend.dividendToken).transfer(msg.sender, claim));
-
-                emit DividendClaimed(msg.sender, _dividendIndex, claim);
-            }     
-        }
+        claimThis(dividend.dividendType, _dividendIndex, msg.sender, claim, dividend.dividendToken);
     }
 
     /** @dev Claim all dividiends
@@ -518,25 +516,48 @@ library AssetTokenSupplyL {
         // The recycle time has to be over
         require(dividend.timestamp < SafeMath.sub(block.timestamp, recycleLockedTimespan));
 
+        // Devidends should not have been claimed already
+        require(dividend.claimed[msg.sender] == false);
+
+        //
+        //refund
+        //
+
         // The amount, which has not been claimed is distributed to all other token owners
         _self.dividends[_dividendIndex].recycled = true;
+
+        // calculates the amount of dividends that can be claimed
+        uint256 claim = SafeMath.sub(dividend.amount, dividend.claimedAmount);
+
+        // flag that dividends have been claimed
+        dividend.claimed[msg.sender] = true;
+        dividend.claimedAmount = SafeMath.add(dividend.claimedAmount, claim);
+
+        claimThis(dividend.dividendType, _dividendIndex, msg.sender, claim, dividend.dividendToken);
         
         uint256 remainingAmount = SafeMath.sub(dividend.amount, dividend.claimedAmount);
-        uint256 dividendIndex = _self.dividends.length;
         uint256 blockNumber = SafeMath.sub(block.number, 1);
-        _self.dividends.push(
-            Dividend(
-                blockNumber,
-                block.timestamp,
-                dividend.dividendType,
-                dividend.dividendToken,
-                remainingAmount,
-                0,
-                _currentSupply,
-                false
-            )
-        );
-        emit DividendRecycled(msg.sender, blockNumber, remainingAmount, _currentSupply, dividendIndex);
+
+        emit DividendRecycled(msg.sender, blockNumber, remainingAmount, _currentSupply, _dividendIndex);
+    }
+
+    function claimThis(DividendType _dividendType, uint256 _dividendIndex, address _beneficiary, uint256 _claim, address _dividendToken) 
+    private 
+    {
+        // transfer the dividends to the token holder
+        if (_claim > 0) {
+            if (_dividendType == DividendType.Ether) { 
+                _beneficiary.transfer(_claim);
+            } 
+            else if (_dividendType == DividendType.ERC20) { 
+                require(ERC20(_dividendToken).transfer(_beneficiary, _claim));
+            }
+            else {
+                revert("unknown type");
+            }
+
+            emit DividendClaimed(_beneficiary, _dividendIndex, _claim);
+        }
     }
 
     //if this contract gets a balance in some other ERC20 contract - or even iself - then we can rescue it.
@@ -551,8 +572,8 @@ library AssetTokenSupplyL {
     event Mint(address indexed to, uint256 amount);
     event MintDetailed(address indexed initiator, address indexed to, uint256 amount);
     event MintFinished();
-    event Burn(address indexed burner, uint256 value);
-    event BurnDetailed(address indexed initiator, address indexed burner, uint256 value);
+    // event Burn(address indexed burner, uint256 value);
+    // event BurnDetailed(address indexed initiator, address indexed burner, uint256 value);
     event Approval(address indexed owner, address indexed spender, uint256 value);
     event TransferPaused(address indexed initiator);
     event TransferResumed(address indexed initiator);
