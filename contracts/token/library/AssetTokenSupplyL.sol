@@ -378,7 +378,7 @@ library AssetTokenSupplyL {
     }
 
     /** @dev Receives ether to be distriubted to all token owners*/
-    function depositDividend(Store storage _self, uint256 msgValue, uint256 _currentSupply) 
+    function depositDividend(Store storage _self, uint256 msgValue, uint256 _currentSupply) //ERROR: msgValue ok?
     public 
     {
         // creates a new index for the dividends

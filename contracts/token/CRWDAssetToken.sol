@@ -6,7 +6,6 @@ import "./BasicAssetToken.sol";
 import "../interfaces/ICRWDClearing.sol";
 import "./abstract/ICRWDAssetToken.sol";
 
-//Error: nicht verwendete Variablen vom basic asset token in den CRWDAsset token bringen
 /** @title CRWD AssetToken. */
 contract CRWDAssetToken is BasicAssetToken, ICRWDAssetToken {
     /*

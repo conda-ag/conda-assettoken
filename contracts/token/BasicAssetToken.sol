@@ -183,7 +183,7 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
     /** @dev Set the address of the crowdsale contract.
       * @param _mintControl The address of the crowdsale.
       */
-    function setMintControl(address _mintControl) public canSetMetadata { //ERROR: only as capitalControl (initial assignment?)
+    function setMintControl(address _mintControl) public canSetMetadata {
         require(_mintControl != address(0));
 
         mintControl = _mintControl;
