@@ -1,6 +1,6 @@
 let EVMRevert = require('openzeppelin-solidity/test/helpers/assertRevert')
 
-const FeatureCapitalControl = artifacts.require('FeatureCapitalControl.sol')
+const FeatureCapitalControlWithForcedTransferFrom = artifacts.require('EquityAssetToken.sol')
 const ERC20TestToken = artifacts.require('ERC20TestToken.sol')
 const MOCKCRWDClearing = artifacts.require('MOCKCRWDClearing.sol')
 
@@ -10,7 +10,7 @@ require('chai')
   .use(require('chai-as-promised'))
   .should()
 
-contract('FeatureCapitalControl', (accounts) => {
+contract('FeatureCapitalControlWithForcedTransferFrom', (accounts) => {
     let token = null
     let owner = null
 
@@ -27,7 +27,7 @@ contract('FeatureCapitalControl', (accounts) => {
     const unknown = accounts[9]
   
     beforeEach(async () => {
-        token = await FeatureCapitalControl.new(capitalControl)
+        token = await FeatureCapitalControlWithForcedTransferFrom.new(capitalControl)
         await token.setMintControl(mintControl)
         owner = await token.owner()
 
@@ -120,23 +120,6 @@ contract('FeatureCapitalControl', (accounts) => {
             await token.finishMinting({from: mintControl})
             
             await token.reopenCrowdsale({from: unknown}).should.be.rejectedWith(EVMRevert)
-        })
-
-        contract('validating burn as capitalControl', () => {
-            it('can burn as capitalControl even when finished capital increase/decrease phase', async () => {
-                await token.setCapitalControl(capitalControl, {from: owner})
-                await token.setTokenConfigured({from: owner})
-                await token.mint(buyerA, 100, {from: mintControl})
-
-                await token.finishMinting({from: mintControl})
-                await token.burn(buyerA, 10, {from: capitalControl}) //works because capitalControl
-
-                let firstAccountBalance = await token.balanceOf(buyerA)
-                assert.equal(firstAccountBalance, 90)
-
-                let totalSupply = await token.totalSupply()
-                assert.equal(totalSupply, 90)
-            })
         })
     })
 })

@@ -22,6 +22,8 @@ import "./FeatureCapitalControl.sol";
 /** @title FeatureCapitalControlWithForcedTransferFrom. */
 contract FeatureCapitalControlWithForcedTransferFrom is FeatureCapitalControl {
 
+    constructor(address _capitalControl) FeatureCapitalControl(_capitalControl) public { }
+
 ///////////////////
 // Events
 ///////////////////

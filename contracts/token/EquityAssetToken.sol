@@ -28,5 +28,5 @@ import "openzeppelin-solidity/contracts/lifecycle/Destructible.sol";
 contract EquityAssetToken is CRWDAssetToken, FeatureCapitalControlWithForcedTransferFrom, FeaturePreventBurning, Destructible {
     uint256 public decimals = 0; //override: fixed decimals
 
-    constructor(address _capitalControl) FeatureCapitalControl(_capitalControl) public {}
+    constructor(address _capitalControl) FeatureCapitalControlWithForcedTransferFrom(_capitalControl) public {}
 }
