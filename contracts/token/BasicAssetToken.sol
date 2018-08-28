@@ -47,7 +47,7 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
 
     string public symbol;               //An identifier
 
-    uint8 public version = 1000;        //1000 is version 1
+    uint16 public version = 1000;        //1000 is version 1
 
     // defines the baseCurrency of the token
     address public baseCurrency;
