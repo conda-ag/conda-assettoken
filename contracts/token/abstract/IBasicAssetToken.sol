@@ -54,7 +54,7 @@ contract IBasicAssetToken {
 
     function reopenCrowdsaleInternal() internal returns (bool);
 
-    function inforcedTransferFromInternal(address _from, address _to, uint256 _value) internal returns (bool);
+    function enforcedTransferFromInternal(address _from, address _to, uint256 _value, bool _fullAmountRequired) internal returns (bool);
 
     event Approval(address indexed owner, address indexed spender, uint256 value);
     event Transfer(address indexed from, address indexed to, uint256 value);

@@ -376,7 +376,7 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
         return availability.reopenCrowdsale();
     }
 
-    function inforcedTransferFromInternal(address _from, address _to, uint256 _value) internal returns (bool) {
-        return supply.enforcedTransferFrom(availability, _from, _to, _value);
+    function enforcedTransferFromInternal(address _from, address _to, uint256 _value, bool _fullAmountRequired) internal returns (bool) {
+        return supply.enforcedTransferFrom(availability, _from, _to, _value, _fullAmountRequired);
     }
 }

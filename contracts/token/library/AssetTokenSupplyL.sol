@@ -179,11 +179,22 @@ library AssetTokenSupplyL {
     /// @param _to The address of the recipient
     /// @param _amount The amount of tokens to be transferred
     /// @return True if the transfer was successful
-    function enforcedTransferFrom(Supply storage _self, Availability storage _availability, address _from, address _to, uint256 _amount) 
+    function enforcedTransferFrom(
+        Supply storage _supply, 
+        Availability storage _availability, 
+        address _from, 
+        address _to, 
+        uint256 _amount, 
+        bool _fullAmountRequired) 
     internal 
     returns (bool success) 
     {
-        doTransfer(_self, _availability, _from, _to, _amount);
+        if(_amount != balanceOfAt(_supply, _from, block.number))
+        {
+            revert("Only full amount in case of lost wallet is allowed");
+        }
+
+        doTransfer(_supply, _availability, _from, _to, _amount);
 
         emit SelfApprovedTransfer(msg.sender, _from, _to, _amount);
 
