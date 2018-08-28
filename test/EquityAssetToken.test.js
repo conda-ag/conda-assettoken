@@ -50,9 +50,7 @@ contract('EquityAssetToken', (accounts) => {
         await clearing.setFee((await ERC20TestToken.new()).address, 0, 0, ZERO_ADDRESS, ZERO_ADDRESS)
         await token.setClearingAddress(clearing.address)
 
-        //set basecurrency
-        assert.equal((await token.baseRate()).toString(), 1) //baserate 1 even before setMetaData
-        await token.setCurrencyMetaData(erc20.address, 1)
+        assert.equal((await token.decimals()).toString(), 0)
 
         await token.setTokenConfigured()
 
@@ -64,9 +62,9 @@ contract('EquityAssetToken', (accounts) => {
         assert.equal((await token.totalSupply()).toString(), '1000')
     })
 
-    contract('fixed baseRate', () => {
-        it('baseRate is 1 per default', async () => {
-            assert.equal((await token.baseRate()).toString(), 1)
+    contract('fixed decimals', () => {
+        it('decimals is 0 FIXED', async () => {
+            assert.equal((await token.decimals()).toString(), 0)
         })
     })
 
@@ -473,16 +471,9 @@ contract('EquityAssetToken', (accounts) => {
             const tmpToken = await EquityAssetToken.new(capitalControl)
             const tmpEurt = await ERC20TestToken.new()
 
-            await tmpToken.setCurrencyMetaData(tmpEurt.address, 1, { from: originalOwner })
+            await tmpToken.setCurrencyMetaData(tmpEurt.address, 1337, { from: originalOwner })
             assert.equal(await tmpToken.baseCurrency(), tmpEurt.address)
-            assert.equal(await tmpToken.baseRate(), 1)
-        })
-
-        it('owner cannot set baseRate to anything other than 1', async () => {
-            const tmpToken = await EquityAssetToken.new(capitalControl)
-            const tmpEurt = await ERC20TestToken.new()
-
-            await tmpToken.setCurrencyMetaData(tmpEurt.address, 666, { from: originalOwner }).should.be.rejectedWith(EVMRevert)
+            assert.equal(await tmpToken.baseRate(), 1337)
         })
 
         it('non owner cannot change baseCurrency even if not yet configured', async () => {
