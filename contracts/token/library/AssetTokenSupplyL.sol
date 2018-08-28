@@ -453,20 +453,7 @@ library AssetTokenSupplyL {
         dividend.claimed[msg.sender] = true;
         dividend.claimedAmount = SafeMath.add(dividend.claimedAmount, claim);
 
-        
-        // transfer the dividends to the token holder
-        if (claim > 0) {
-            if (dividend.dividendType == DividendType.Ether) { 
-                msg.sender.transfer(claim);
-                emit DividendClaimed(msg.sender, _dividendIndex, claim);
-            } 
-
-            if (dividend.dividendType == DividendType.ERC20) { 
-                require(ERC20(dividend.dividendToken).transfer(msg.sender, claim));
-
-                emit DividendClaimed(msg.sender, _dividendIndex, claim);
-            }     
-        }
+        claimThis(dividend.dividendType, _dividendIndex, msg.sender, claim, dividend.dividendToken);
     }
 
     /** @dev Claim all dividiends
@@ -518,25 +505,48 @@ library AssetTokenSupplyL {
         // The recycle time has to be over
         require(dividend.timestamp < SafeMath.sub(block.timestamp, recycleLockedTimespan));
 
+        // Devidends should not have been claimed already
+        require(dividend.claimed[msg.sender] == false);
+
+        //
+        //refund
+        //
+
         // The amount, which has not been claimed is distributed to all other token owners
         _self.dividends[_dividendIndex].recycled = true;
+
+        // calculates the amount of dividends that can be claimed
+        uint256 claim = SafeMath.sub(dividend.amount, dividend.claimedAmount);
+
+        // flag that dividends have been claimed
+        dividend.claimed[msg.sender] = true;
+        dividend.claimedAmount = SafeMath.add(dividend.claimedAmount, claim);
+
+        claimThis(dividend.dividendType, _dividendIndex, msg.sender, claim, dividend.dividendToken);
         
         uint256 remainingAmount = SafeMath.sub(dividend.amount, dividend.claimedAmount);
-        uint256 dividendIndex = _self.dividends.length;
         uint256 blockNumber = SafeMath.sub(block.number, 1);
-        _self.dividends.push(
-            Dividend(
-                blockNumber,
-                block.timestamp,
-                dividend.dividendType,
-                dividend.dividendToken,
-                remainingAmount,
-                0,
-                _currentSupply,
-                false
-            )
-        );
-        emit DividendRecycled(msg.sender, blockNumber, remainingAmount, _currentSupply, dividendIndex);
+
+        emit DividendRecycled(msg.sender, blockNumber, remainingAmount, _currentSupply, _dividendIndex);
+    }
+
+    function claimThis(DividendType _dividendType, uint256 _dividendIndex, address _beneficiary, uint256 _claim, address _dividendToken) 
+    private 
+    {
+        // transfer the dividends to the token holder
+        if (_claim > 0) {
+            if (_dividendType == DividendType.Ether) { 
+                _beneficiary.transfer(_claim);
+            } 
+            else if (_dividendType == DividendType.ERC20) { 
+                require(ERC20(_dividendToken).transfer(_beneficiary, _claim));
+            }
+            else {
+                revert("unknown type");
+            }
+
+            emit DividendClaimed(_beneficiary, _dividendIndex, _claim);
+        }
     }
 
     //if this contract gets a balance in some other ERC20 contract - or even iself - then we can rescue it.

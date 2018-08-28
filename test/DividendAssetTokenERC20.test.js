@@ -146,13 +146,13 @@ contract('DividendAssetToken', (accounts) => {
             await token.recycleDividend(0, {from: owner})
         })
 
-        it('Check everyone can claim recycled dividend', async () => {
+        it('Check noone can claim recycled dividend', async () => {
             //claim all but buyerD
-            const txIdA = await claimDividendA()
-            const txIdB = await claimDividendB()
-            const txIdC = await token.claimDividendAll({from: buyerC, gasPrice: gasPrice})
-            //const txIdD = await token.claimDividendAll({from: buyerD, gasPrice: gasPrice})
-            const txIdE = await token.claimDividendAll({from: buyerE, gasPrice: gasPrice})
+            await claimDividendA()
+            await claimDividendB()
+            await token.claimDividendAll({from: buyerC, gasPrice: gasPrice})
+            //await token.claimDividendAll({from: buyerD, gasPrice: gasPrice})
+            await token.claimDividendAll({from: buyerE, gasPrice: gasPrice})
 
             const beforeBalanceA = await erc20.balanceOf(buyerA)
             const beforeBalanceB = await erc20.balanceOf(buyerB)
@@ -172,11 +172,11 @@ contract('DividendAssetToken', (accounts) => {
 
             const newDividendIndexAfterRecycle = 1
 
-            await token.claimDividend(newDividendIndexAfterRecycle, {from: buyerA, gasPrice: gasPrice})
-            await token.claimDividend(newDividendIndexAfterRecycle, {from: buyerB, gasPrice: gasPrice})
-            await token.claimDividend(newDividendIndexAfterRecycle, {from: buyerC, gasPrice: gasPrice})
-            await token.claimDividend(newDividendIndexAfterRecycle, {from: buyerD, gasPrice: gasPrice})
-            await token.claimDividend(newDividendIndexAfterRecycle, {from: buyerE, gasPrice: gasPrice})
+            await token.claimDividend(newDividendIndexAfterRecycle, {from: buyerA, gasPrice: gasPrice}).should.be.rejectedWith(EVMRevert)
+            await token.claimDividend(newDividendIndexAfterRecycle, {from: buyerB, gasPrice: gasPrice}).should.be.rejectedWith(EVMRevert)
+            await token.claimDividend(newDividendIndexAfterRecycle, {from: buyerC, gasPrice: gasPrice}).should.be.rejectedWith(EVMRevert)
+            await token.claimDividend(newDividendIndexAfterRecycle, {from: buyerD, gasPrice: gasPrice}).should.be.rejectedWith(EVMRevert)
+            await token.claimDividend(newDividendIndexAfterRecycle, {from: buyerE, gasPrice: gasPrice}).should.be.rejectedWith(EVMRevert)
 
             const afterBalanceA = await erc20.balanceOf(buyerA)
             const afterBalanceB = await erc20.balanceOf(buyerB)
@@ -184,18 +184,38 @@ contract('DividendAssetToken', (accounts) => {
             const afterBalanceD = await erc20.balanceOf(buyerD)
             const afterBalanceE = await erc20.balanceOf(buyerE)
 
-            const gasCostTxIdA = txIdA.receipt.gasUsed * gasPrice
-            const gasCostTxIdB = txIdB.receipt.gasUsed * gasPrice
-            const gasCostTxIdC = txIdC.receipt.gasUsed * gasPrice
-            const gasCostTxIdD = 0 //txIdD.receipt.gasUsed * gasPrice
-            const gasCostTxIdE = txIdE.receipt.gasUsed * gasPrice
-
             //Balances for recycled dividend 1 are 100, 250, 500, 150, total = 1000, recycled dividend is 50% of total
-            assert.equal(beforeBalanceA.add((100 / 1000) * (ONETHOUSANDTOKEN / 2)).sub(gasCostTxIdA).toNumber(), afterBalanceA.toNumber(), "buyer A should claim dividend")
-            assert.equal(beforeBalanceB.add((250 / 1000) * (ONETHOUSANDTOKEN / 2)).sub(gasCostTxIdB).toNumber(), afterBalanceB.toNumber(), "buyer B should claim dividend")
-            assert.equal(beforeBalanceC.add(0).sub(gasCostTxIdC).toNumber(), afterBalanceC.toNumber(), "buyer C should claim dividend")
-            assert.equal(beforeBalanceD.add((500 / 1000) * (ONETHOUSANDTOKEN / 2)).sub(gasCostTxIdD).toNumber(), afterBalanceD.toNumber(), "buyer D recycled his dividend")
-            assert.equal(beforeBalanceE.add((150 / 1000) * (ONETHOUSANDTOKEN / 2)).sub(gasCostTxIdE).toNumber(), afterBalanceE.toNumber(), "buyer E should claim dividend")
+            assert.equal(afterBalanceA.toNumber(), beforeBalanceA.toNumber())
+            assert.equal(afterBalanceB.toNumber(), beforeBalanceB.toNumber())
+            assert.equal(afterBalanceC.toNumber(), beforeBalanceC.toNumber())
+            assert.equal(afterBalanceD.toNumber(), beforeBalanceD.toNumber())
+            assert.equal(afterBalanceE.toNumber(), beforeBalanceE.toNumber())
+        })
+
+        it('Check owner can claim recycled dividend', async () => {
+            //claim all but buyerD
+            await token.claimDividendAll({from: buyerD, gasPrice: gasPrice}) //claims his 50%
+
+            const beforeBalanceA = await erc20.balanceOf(buyerA)
+            const beforeBalanceOwner = await erc20.balanceOf(owner)
+        
+            await timeTravel(SECONDS_IN_A_YEAR) //1 year time lock passes
+
+            await token.recycleDividend(0, {from: owner, gasPrice: gasPrice}) //act
+            
+            await token.claimDividend(0, {from: buyerA, gasPrice: gasPrice}).should.be.rejectedWith(EVMRevert)
+
+            const newDividendIndexAfterRecycle = 1
+
+            await token.claimDividend(newDividendIndexAfterRecycle, {from: buyerA, gasPrice: gasPrice}).should.be.rejectedWith(EVMRevert)
+            
+            const afterBalanceA = await erc20.balanceOf(buyerA)
+            const afterBalanceOwner = await erc20.balanceOf(owner)
+            
+            //Balances for recycled dividend 1 are 100, 250, 500, 150, total = 1000, recycled dividend is 50% of total
+            assert.equal(afterBalanceA.toNumber(), beforeBalanceA.toNumber(), "buyer A should claim dividend")
+            assert.notEqual(afterBalanceOwner, beforeBalanceOwner, "owner balance didn't change")
+            assert.equal(afterBalanceOwner.toNumber(), beforeBalanceOwner.add(ONETHOUSANDTOKEN/2).toNumber(), "owner should claim dividend")
         })
     })
 
