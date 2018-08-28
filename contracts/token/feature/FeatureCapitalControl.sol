@@ -17,10 +17,11 @@ pragma solidity ^0.4.24;
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import "./CRWDAssetToken.sol";
+import "../abstract/ICRWDAssetToken.sol";
 
-/** @title Equity AssetToken. */
-contract FeatureCapitalControl is CRWDAssetToken {
+/** @title FeatureCapitalControl. */
+contract FeatureCapitalControl is ICRWDAssetToken {
+    
     //if set can mint/burn after finished. E.g. a notary.
     address public capitalControl;
 
@@ -34,7 +35,9 @@ contract FeatureCapitalControl is CRWDAssetToken {
         _;
     }
 
-    function setCapitalControl(address _capitalControl) public canSetMetadata {
+    function setCapitalControl(address _capitalControl) public {
+        require(checkCanSetMetadata());
+
         capitalControl = _capitalControl;
     }
 
@@ -42,27 +45,19 @@ contract FeatureCapitalControl is CRWDAssetToken {
         capitalControl = _capitalControl;
     }
 
-    constructor(address _capitalControl, bool instantCreatorLockout) public {
+    constructor(address _capitalControl) public {
         capitalControl = _capitalControl;
-        availability.transfersPaused = true; //disable transfer as default
-
-        if(instantCreatorLockout == true) {
-            owner = capitalControl;
-        }
+        enableTransferInternal(false); //disable transfer as default
     }
 
 ////////////////
 // Reopen crowdsale (by capitalControl e.g. notary)
 ////////////////
 
-    /** @dev If a capitalControl is set he can reopen the crowdsale.
-      * @param _newCrowdsale the address of the new crowdsale
+    /** 
+      * @dev capitalControl can reopen the crowdsale.
       */
-    function reopenCrowdsale(address _newCrowdsale) public onlyCapitalControl returns (bool) {
-        require(crowdsale != _newCrowdsale);
-
-        crowdsale = _newCrowdsale;
-        
-        return availability.reopenCrowdsale();
+    function reopenCrowdsale() public onlyCapitalControl returns (bool) {        
+        return reopenCrowdsaleInternal();
     }
 }

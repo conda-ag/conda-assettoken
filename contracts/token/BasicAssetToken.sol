@@ -23,8 +23,10 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "./library/AssetTokenSupplyL.sol";
 
+import "./abstract/IBasicAssetToken.sol";
+
 /** @title Basic AssetToken. */
-contract BasicAssetToken is Ownable {
+contract BasicAssetToken is IBasicAssetToken, Ownable {
     /*
     * @title This contract includes the basic AssetToken features
     * @author Paul Pöltner / Conda
@@ -53,17 +55,19 @@ contract BasicAssetToken is Ownable {
     // defines the base conversion of number of tokens to the initial rate
     // this amount will be used for regulatory checks. 
     uint256 public baseRate;
-
-    string public shortDescription;
     
-    // Crowdsale Contract
-    address public crowdsale;
+    // mintControl can mint and burn when token is configured
+    address public mintControl;
+
+    //can rescue tokens
+    address public tokenRescueControl;
 
     //supply: balance, checkpoints etc.
     AssetTokenSupplyL.Supply supply;
 
     //availability: what's paused
     AssetTokenSupplyL.Availability availability;
+
     function isMintingAndBurningPaused() public view returns (bool) {
         return availability.mintingAndBurningPaused;
     }
@@ -104,32 +108,45 @@ contract BasicAssetToken is Ownable {
         return false;
     }
 
-    modifier canMintOrBurn() {
+    modifier onlyOwnerOrOverruled() {
         if(_canDoAnytime() == false) { 
             require(msg.sender == owner);
-            require(availability.tokenAlive);
+        }
+        _;
+    }
+
+    modifier canMintOrBurn() {
+        if(_canDoAnytime() == false) { 
+            require(msg.sender == mintControl);
+            require(availability.tokenConfigured);
             require(!availability.crowdsalePhaseFinished);
             require(!availability.mintingAndBurningPaused);
         }
         _;
     }
 
-    modifier canSetMetadata() {
+    function checkCanSetMetadata() internal returns (bool) {
         if(_canDoAnytime() == false) {
             require(msg.sender == owner);
-            require(!availability.tokenAlive);
+            require(!availability.tokenConfigured);
             require(!availability.crowdsalePhaseFinished);
         }
+
+        return true;
+    }
+
+    modifier canSetMetadata() {
+        checkCanSetMetadata();
         _;
     }
 
-    modifier onlyAlive() {
-        require(availability.tokenAlive);
+    modifier onlyTokenConfigured() {
+        require(availability.tokenConfigured);
         _;
     }
 
-    modifier onlyOwnerOrCrowdsale() {
-        require(msg.sender == owner || msg.sender == crowdsale);
+    modifier onlyTokenRescueControl() {
+        require(msg.sender == tokenRescueControl);
         _;
     }
 
@@ -140,14 +157,12 @@ contract BasicAssetToken is Ownable {
     /** @dev Change the token's metadata.
       * @param _name The name of the token.
       * @param _symbol The symbol of the token.
-      * @param _shortDescription The description of the token.
       */
-    function setMetaData(string _name, string _symbol, string _shortDescription) public 
+    function setMetaData(string _name, string _symbol) public 
     canSetMetadata 
     {
         name = _name;
         symbol = _symbol;
-        shortDescription = _shortDescription;
     }
 
     /** @dev Change the token's currency metadata.
@@ -166,24 +181,25 @@ contract BasicAssetToken is Ownable {
     }
 
     /** @dev Set the address of the crowdsale contract.
-      * @param _crowdsale The address of the crowdsale.
+      * @param _mintControl The address of the crowdsale.
       */
-    function setCrowdsaleAddress(address _crowdsale) public canSetMetadata {
-        require(_crowdsale != address(0));
+    function setMintControl(address _mintControl) public canSetMetadata { //ERROR: only as capitalControl (initial assignment?)
+        require(_mintControl != address(0));
 
-        crowdsale = _crowdsale;
+        mintControl = _mintControl;
     }
 
-    function setPauseControl(address _pauseControl) public 
-    onlyOwnerOrCrowdsale
+    function setRoles(address _pauseControl, address _tokenRescueControl) public 
+    canSetMetadata
     {
         availability.setPauseControl(_pauseControl);
+        tokenRescueControl = _tokenRescueControl;
     }
 
-    function setTokenAlive() public 
-    onlyOwnerOrCrowdsale
+    function setTokenConfigured() public 
+    onlyOwner
     {
-        availability.setTokenAlive();
+        availability.setTokenConfigured();
     }
 
 ///////////////////
@@ -195,8 +211,7 @@ contract BasicAssetToken is Ownable {
     /// @param _amount The amount of tokens to be transferred
     /// @return Whether the transfer was successful or not
     function transfer(address _to, uint256 _amount) public returns (bool success) {
-        require(!availability.transfersPaused);
-        supply.doTransfer(msg.sender, _to, _amount);
+        supply.doTransfer(availability, msg.sender, _to, _amount);
         return true;
     }
 
@@ -207,9 +222,7 @@ contract BasicAssetToken is Ownable {
     /// @param _amount The amount of tokens to be transferred
     /// @return True if the transfer was successful
     function transferFrom(address _from, address _to, uint256 _amount) public returns (bool success) {
-        require(!availability.transfersPaused);
-
-        return supply.transferFrom(_from, _to, _amount);
+        return supply.transferFrom(availability, _from, _to, _amount);
     }
 
     /// @param _owner The address that's balance is being requested
@@ -276,9 +289,9 @@ contract BasicAssetToken is Ownable {
         return supply.mint(_to, _amount);
     }
 
-    ///  @dev Function to stop minting new tokens and also disables burning so it finishes crowdsale. 
+    ///  @dev Function to stop minting new tokens (as mintControl).
     ///  @return True if the operation was successful.
-    function finishMinting() public onlyOwner canMintOrBurn returns (bool) {
+    function finishMinting() public canMintOrBurn returns (bool) {
         return availability.finishMinting();
     }
 
@@ -288,6 +301,17 @@ contract BasicAssetToken is Ownable {
 
     function burn(address _who, uint256 _amount) public canMintOrBurn {
         return supply.burn(_who, _amount);
+    }
+
+////////////////
+// Rescue Tokens 
+////////////////
+    //if this contract gets a balance in some other ERC20 contract - or even iself - then we can rescue it.
+    function rescueToken(address _foreignTokenAddress, address _to)
+    onlyTokenRescueControl
+    public
+    {
+        availability.rescueToken(_foreignTokenAddress, _to);
     }
 
 ////////////////
@@ -313,10 +337,16 @@ contract BasicAssetToken is Ownable {
 // Enable tokens transfers
 ////////////////
 
+    function enableTransferInternal(bool _transfersEnabled) internal {
+        availability.transfersPaused = (_transfersEnabled == false);
+    }
+
     /// @notice Enables token holders to transfer their tokens freely if true
     /// @param _transfersEnabled True if transfers are allowed
-    function enableTransfers(bool _transfersEnabled) public onlyOwner {
-        availability.transfersPaused = (_transfersEnabled == false);
+    function enableTransfers(bool _transfersEnabled) public 
+    onlyOwnerOrOverruled 
+    {
+        enableTransferInternal(_transfersEnabled);
     }
 
 ////////////////
@@ -328,7 +358,7 @@ contract BasicAssetToken is Ownable {
     function pauseTransfer(bool _transfersEnabled) public
     onlyPauseControl
     {
-        availability.transfersPaused = (_transfersEnabled == false);
+        enableTransferInternal(_transfersEnabled);
     }
 
     /// @dev `pauseMinting` can pause mint/burn
@@ -339,4 +369,14 @@ contract BasicAssetToken is Ownable {
         availability.pauseCapitalIncreaseOrDecrease(_mintingAndBurningEnabled);
     }
 
+    /** 
+      * @dev capitalControl can reopen the crowdsale.
+      */
+    function reopenCrowdsaleInternal() internal returns (bool) {
+        return availability.reopenCrowdsale();
+    }
+
+    function inforcedTransferFromInternal(address _from, address _to, uint256 _value) internal returns (bool) {
+        return supply.enforcedTransferFrom(availability, _from, _to, _value);
+    }
 }

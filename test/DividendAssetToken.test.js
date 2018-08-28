@@ -33,10 +33,13 @@ contract('DividendAssetToken', (accounts) => {
 
     let condaAccount = accounts[6]
     let companyAccount = accounts[7]
+    
+    let capitalControl = accounts[8]
 
     beforeEach(async () => {
         token = await DividendAssetToken.new()
-        await token.setTokenAlive()
+        await token.setMintControl(capitalControl)
+        await token.setTokenConfigured()
         owner = await token.owner()
         
         //mock clearing so it doesn't cost money
@@ -45,10 +48,10 @@ contract('DividendAssetToken', (accounts) => {
         await token.setClearingAddress(clearing.address)
         
         //split
-        await token.mint(buyerA, 100) //10%
-        await token.mint(buyerB, 250) //25%
-        await token.mint(buyerD, 500) //50%
-        await token.mint(buyerE, 150) //15%
+        await token.mint(buyerA, 100, {from: capitalControl}) //10%
+        await token.mint(buyerB, 250, {from: capitalControl}) //25%
+        await token.mint(buyerD, 500, {from: capitalControl}) //50%
+        await token.mint(buyerE, 150, {from: capitalControl}) //15%
 
         //Make a deposit
         await token.depositDividend({from: owner, value: ONEETHER})
@@ -259,7 +262,7 @@ contract('DividendAssetToken', (accounts) => {
 
     contract('validating recycle', () => {
         it('Add a new token balance for account C', async () => {
-            await token.mint(buyerC, 800)
+            await token.mint(buyerC, 800, {from: capitalControl})
             const balance = await token.balanceOf(buyerC)
             assert.equal(balance, 800)
         })

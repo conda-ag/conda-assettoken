@@ -2,6 +2,7 @@ pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 
 library AssetTokenSupplyL {
 
@@ -21,8 +22,9 @@ library AssetTokenSupplyL {
     }
 
     struct Availability {
-        // Flag that determines if the token is yet alive.
-        bool tokenAlive;
+        // Flag that determines if the token is yet configured.
+        // Meta data cannot be changed anymore (except capitalControl)
+        bool tokenConfigured;
 
         // Flag that determines if the token is transferable or not.
         bool transfersPaused;
@@ -75,7 +77,9 @@ library AssetTokenSupplyL {
     /// @param _to The address of the recipient
     /// @param _amount The amount of tokens to be transferred
     /// @return True if the transfer was successful
-    function doTransfer(Supply storage _self, address _from, address _to, uint256 _amount) internal {
+    function doTransfer(Supply storage _supply, Availability storage _availability, address _from, address _to, uint256 _amount) internal {
+        require(!_availability.transfersPaused);
+        require(!_availability.crowdsalePhaseFinished); //ERROR: what if reopened? should be blocked? finishedOnce?
 
         // Do not allow transfer to 0x0 or the token contract itself
         require(_to != address(0));
@@ -83,19 +87,19 @@ library AssetTokenSupplyL {
 
         // If the amount being transfered is more than the balance of the
         //  account the transfer throws
-        uint256 previousBalanceFrom = balanceOfAt(_self, _from, block.number);
+        uint256 previousBalanceFrom = balanceOfAt(_supply, _from, block.number);
         require(previousBalanceFrom >= _amount);
 
         // First update the balance array with the new value for the address
         //  sending the tokens
-        updateValueAtNow(_self.balances[_from], previousBalanceFrom.sub(_amount));
+        updateValueAtNow(_supply.balances[_from], previousBalanceFrom.sub(_amount));
 
         // Then update the balance array with the new value for the address
         //  receiving the tokens
-        uint256 previousBalanceTo = balanceOfAt(_self, _to, block.number);
+        uint256 previousBalanceTo = balanceOfAt(_supply, _to, block.number);
         require(previousBalanceTo + _amount >= previousBalanceTo); // Check for overflow
         
-        updateValueAtNow(_self.balances[_to], previousBalanceTo.add(_amount));
+        updateValueAtNow(_supply.balances[_to], previousBalanceTo.add(_amount));
 
         // An event to make the transfer easy to find on the blockchain
         emit Transfer(_from, _to, _amount);
@@ -158,12 +162,15 @@ library AssetTokenSupplyL {
     /// @param _to The address of the recipient
     /// @param _amount The amount of tokens to be transferred
     /// @return True if the transfer was successful
-    function transferFrom(Supply storage _self, address _from, address _to, uint256 _amount) public returns (bool success) {
+    function transferFrom(Supply storage _supply, Availability storage _availability, address _from, address _to, uint256 _amount) 
+    public 
+    returns (bool success) 
+    {
         // The standard ERC 20 transferFrom functionality
-        require(_self.allowed[_from][msg.sender] >= _amount);
-        _self.allowed[_from][msg.sender].sub(_amount);
+        require(_supply.allowed[_from][msg.sender] >= _amount);
+        _supply.allowed[_from][msg.sender].sub(_amount);
 
-        doTransfer(_self, _from, _to, _amount);
+        doTransfer(_supply, _availability, _from, _to, _amount);
         return true;
     }
 
@@ -172,8 +179,11 @@ library AssetTokenSupplyL {
     /// @param _to The address of the recipient
     /// @param _amount The amount of tokens to be transferred
     /// @return True if the transfer was successful
-    function enforcedTransferFrom(Supply storage _self, address _from, address _to, uint256 _amount) internal returns (bool success) {
-        doTransfer(_self, _from, _to, _amount);
+    function enforcedTransferFrom(Supply storage _self, Availability storage _availability, address _from, address _to, uint256 _amount) 
+    internal 
+    returns (bool success) 
+    {
+        doTransfer(_self, _availability, _from, _to, _amount);
 
         emit SelfApprovedTransfer(msg.sender, _from, _to, _amount);
 
@@ -300,7 +310,7 @@ library AssetTokenSupplyL {
     ///  `totalSupplyHistory`
     /// @param checkpoints The history of data being updated
     /// @param _value The new number of tokens
-    function updateValueAtNow(Checkpoint[] storage checkpoints, uint256 _value) internal {
+    function updateValueAtNow(Checkpoint[] storage checkpoints, uint256 _value) private {
         if ((checkpoints.length == 0) || (checkpoints[checkpoints.length-1].fromBlock < block.number)) {
             Checkpoint storage newCheckPoint = checkpoints[checkpoints.length++];
             newCheckPoint.fromBlock = uint128(block.number);
@@ -339,8 +349,8 @@ library AssetTokenSupplyL {
         _self.pauseControl = _pauseControl;
     }
 
-    function setTokenAlive(Availability storage _self) public {
-        _self.tokenAlive = true;
+    function setTokenConfigured(Availability storage _self) public {
+        _self.tokenConfigured = true;
     }
 
 ////////////////
@@ -496,6 +506,8 @@ library AssetTokenSupplyL {
     /** @dev Dividends which have not been claimed
       * @param _dividendIndex The index to be recycled
       */
+
+    //Error: geht zurück an wallet des owner
     function recycleDividend(Store storage _self, uint256 _dividendIndex, uint256 recycleLockedTimespan, uint256 _currentSupply) public {
         // Get the dividend distribution
         Dividend storage dividend = _self.dividends[_dividendIndex];
@@ -525,6 +537,13 @@ library AssetTokenSupplyL {
             )
         );
         emit DividendRecycled(msg.sender, blockNumber, remainingAmount, _currentSupply, dividendIndex);
+    }
+
+    //if this contract gets a balance in some other ERC20 contract - or even iself - then we can rescue it.
+    function rescueToken(Availability storage _self, address _foreignTokenAddress, address _to) internal
+    {
+        require(_self.crowdsalePhaseFinished);
+        ERC20(_foreignTokenAddress).transfer(_to, ERC20(_foreignTokenAddress).balanceOf(this));
     }
 
     event Transfer(address indexed from, address indexed to, uint256 value);
