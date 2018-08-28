@@ -68,8 +68,9 @@ To manage this funding/investment process on the Blockchain so called *Smart Con
   - CRWDAssetToken
     - DividendAssetToken
     - EquityAssetToken
-- DividendAssetTokenGenerator
-- EquityAssetTokenGenerator
+    - DividendEquityAssetToken (mix)
+
+Those contracts can be invoked via [web3.js](https://github.com/ethereum/web3.js/)
 
 ![AssetToken.png Class diagram](./diagrams/AssetToken.png "Class diagram")
 
@@ -87,8 +88,8 @@ Inherits from CRWDAssetToken and therefore also from BasicAssetToken and adds fu
 ### EquityAssetToken
 Inherits from CRWDAssetToken and therefore also from BasicAssetToken and adds functionality to pay dividends. The inheritance is mainly for separation of concerns the EquityAssetToken is the one that is really used (besides DividendAssetToken). The owner of this contract is only important until the token is set to configured. During this phase he can set metadata information. When the EquityAssetToken is set to configured (which is one-way only) the ownership is transfered to capitalControl (which is a notary or other trusted entity). The capitalControl can mint balances.
 
-### AssetTokenGenerator(s)
-The AssetTokenGenerator contracts have the main responsibility of generating tokens and remembering them
+### Website via web3.js
+Those contracts can be invoked via [web3.js](https://github.com/ethereum/web3.js/). We are building a web platform for ease of use
 
 # How it's connected
 The AssetToken shared in this repository is one essential part of the CRWD Network which has various areas and will build upon a row of smart contracts.
