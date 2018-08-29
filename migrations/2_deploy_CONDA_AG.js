@@ -96,7 +96,7 @@ module.exports = (deployer, network, accounts) => {
 
         await token.setClearingAddress(MockCRWDClearing.address, {from: owner})
 
-        await token.setTokenConfigured({from: owner})
+        await token.setTokenAlive({from: owner})
 
         for(let i=0; i < equity.length; i++) {
             // DividendEquityAssetToken.web3.eth.defaultAccount=owner

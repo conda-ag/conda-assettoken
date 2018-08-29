@@ -12,7 +12,7 @@ contract IBasicAssetToken {
 
     function setRoles(address _pauseControl, address _tokenRescueControl) public;
 
-    function setTokenConfigured() public;
+    function setTokenAlive() public;
 
     function balanceOf(address _owner) public view returns (uint256 balance);
 

@@ -42,7 +42,7 @@ contract('BasicAssetToken', (accounts) => {
         it('isMintingPhaseFinished() tells if crowdsale has finished', async () => {
             assert.equal(await token.isMintingPhaseFinished(), false) //precondition
 
-            await token.setTokenConfigured()
+            await token.setTokenAlive()
             await token.finishMinting({from: mintControl})
 
             assert.equal(await token.isMintingPhaseFinished(), true)
@@ -62,7 +62,7 @@ contract('BasicAssetToken', (accounts) => {
             assert.equal((await someToken.balanceOf(buyerA)).toString(), '0')
             assert.equal((await someToken.balanceOf(token.address)).toString(), '100')
 
-            await token.setTokenConfigured()
+            await token.setTokenAlive()
             await token.finishMinting({from: mintControl})
 
             await token.rescueToken(someToken.address, owner, {from: tokenRescueControl})
@@ -82,7 +82,7 @@ contract('BasicAssetToken', (accounts) => {
             assert.equal((await someToken.balanceOf(buyerA)).toString(), '0')
             assert.equal((await someToken.balanceOf(token.address)).toString(), '100')
 
-            await token.setTokenConfigured()
+            await token.setTokenAlive()
             await token.finishMinting({from: mintControl})
 
             await token.rescueToken(someToken.address, owner, {from: unknown}).should.be.rejectedWith(EVMRevert)
@@ -91,21 +91,21 @@ contract('BasicAssetToken', (accounts) => {
         })
     })
 
-    contract('validating setTokenConfigured()', () => {
-        it('cannot mint when token is not configured', async () => {
+    contract('validating setTokenAlive()', () => {
+        it('cannot mint when token is not alive', async () => {
             await token.mint(buyerA, 100, {from: mintControl}).should.be.rejectedWith(EVMRevert)
         })
 
-        it('setTokenConfigured() can be set by owner', async () => {
-            await token.setTokenConfigured({from: owner})
+        it('setTokenAlive() can be set by owner', async () => {
+            await token.setTokenAlive({from: owner})
         })
 
-        it('setTokenConfigured() cannot be set by investor', async () => {
-            await token.setTokenConfigured({from: buyerA}).should.be.rejectedWith(EVMRevert)
+        it('setTokenAlive() cannot be set by investor', async () => {
+            await token.setTokenAlive({from: buyerA}).should.be.rejectedWith(EVMRevert)
         })
 
-        it('can mint when configured', async () => {
-            await token.setTokenConfigured()
+        it('can mint when alive', async () => {
+            await token.setTokenAlive()
             await token.mint(buyerA, 100, {from: mintControl})
         })
     })
@@ -133,7 +133,7 @@ contract('BasicAssetToken', (accounts) => {
         })
 
         it('when A mints 100 totalSupply should be 100', async () => {
-            await token.setTokenConfigured()
+            await token.setTokenAlive()
             await token.mint(buyerA, 100, {from: mintControl})
 
             let totalSupply = await token.totalSupply()
@@ -142,7 +142,7 @@ contract('BasicAssetToken', (accounts) => {
         })
 
         it('when A and B both mint 100 totalSupply should be 200', async () => {
-            await token.setTokenConfigured()
+            await token.setTokenAlive()
             await token.mint(buyerA, 100, {from: mintControl})
             await token.mint(buyerB, 100, {from: mintControl})
 
@@ -159,7 +159,7 @@ contract('BasicAssetToken', (accounts) => {
         })
 
         it('should return correct balances after mint ', async () => {
-            await token.setTokenConfigured()
+            await token.setTokenAlive()
             await token.mint(buyerA, 100, {from: mintControl})
             await token.mint(buyerA, 100, {from: mintControl})
       
@@ -168,30 +168,30 @@ contract('BasicAssetToken', (accounts) => {
         })
 
         it('should throw an error when trying to mint but finished minting', async () => {
-            await token.setTokenConfigured()
+            await token.setTokenAlive()
             await token.finishMinting({from: mintControl})
             await token.mint(buyerA, 100, {from: mintControl}).should.be.rejectedWith(EVMRevert)
         })
 
         it('owner should not be able to mint', async () => {
-            await token.setTokenConfigured()
+            await token.setTokenAlive()
             await token.mint(buyerA, 100, {from: owner}).should.be.rejectedWith(EVMRevert)
         })
 
         it('unknown should not be able to mint', async () => {
-            await token.setTokenConfigured()
+            await token.setTokenAlive()
             await token.mint(buyerA, 100, {from: unknown}).should.be.rejectedWith(EVMRevert)
         })
 
         it('owner cannot finish minting', async () => {
-            await token.setTokenConfigured()
+            await token.setTokenAlive()
             await token.finishMinting({from: owner}).should.be.rejectedWith(EVMRevert)
         })
 
         contract('validating mint when paused', () => {
             it('trying to mint when minting is paused should fail', async () => {
                 await token.setRoles(pauseControl, ZERO_ADDRESS, {from: owner})
-                await token.setTokenConfigured()
+                await token.setTokenAlive()
                 await token.mint(buyerA, 10, {from: mintControl}) //works
                 await token.pauseCapitalIncreaseOrDecrease(false, {from: pauseControl}) //now disabled
                 assert.equal(await token.isMintingPaused(), true, "as precondition minting must be paused")
@@ -204,7 +204,7 @@ contract('BasicAssetToken', (accounts) => {
     // contract('validating burn', () => {
 
     //     it('should return correct balances after burn ', async () => {
-    //         await token.setTokenConfigured()
+    //         await token.setTokenAlive()
     //         await token.mint(buyerA, 100, {from: mintControl})
     //         await token.burn(buyerA, 100, {from: mintControl})
       
@@ -216,7 +216,7 @@ contract('BasicAssetToken', (accounts) => {
     //     })
 
     //     it('should return correct balances after complex burn ', async () => {
-    //         await token.setTokenConfigured()
+    //         await token.setTokenAlive()
     //         await token.mint(buyerA, 100, {from: mintControl})
     //         await token.mint(buyerB, 100, {from: mintControl})
     //         await token.burn(buyerA, 75, {from: mintControl})
@@ -233,14 +233,14 @@ contract('BasicAssetToken', (accounts) => {
     //     })
 
     //     it('burn should throw an error after finishing mint', async () => {
-    //         await token.setTokenConfigured()
+    //         await token.setTokenAlive()
     //         await token.mint(buyerA, 100, {from: mintControl})
     //         await token.finishMinting({from: mintControl})
     //         await token.burn(buyerA, 100).should.be.rejectedWith(EVMRevert)
     //     })
 
     //     it('only owner can burn', async () => {
-    //         await token.setTokenConfigured()
+    //         await token.setTokenAlive()
     //         await token.mint(buyerA, 100, {from: mintControl})
     //         await token.burn(buyerA, 100, {'from': buyerA}).should.be.rejectedWith(EVMRevert)
     //     })
@@ -248,7 +248,7 @@ contract('BasicAssetToken', (accounts) => {
     //     contract('validating burn when paused', () => {
     //         it('trying to burn when minting is paused should fail', async () => {
     //             await token.setRoles(pauseControl, ZERO_ADDRESS, {from: owner})
-    //             await token.setTokenConfigured()
+    //             await token.setTokenAlive()
     //             await token.mint(buyerA, 100, {from: mintControl})
     //             await token.pauseCapitalIncreaseOrDecrease(false, {from: pauseControl}) //now disabled
     //             assert.equal(await token.isMintingPaused(), true, "as precondition burning must be paused")
@@ -260,7 +260,7 @@ contract('BasicAssetToken', (accounts) => {
 
     contract('validating transfer', () => {
         it('should return correct balances after transfer', async () => {
-            await token.setTokenConfigured()
+            await token.setTokenAlive()
             await token.mint(buyerA, 100, {from: mintControl})
 
             let startAccountBalance = await token.balanceOf(buyerA)
@@ -276,19 +276,19 @@ contract('BasicAssetToken', (accounts) => {
         })
 
         it('should throw an error when trying to transfer more than balance', async () => {
-            await token.setTokenConfigured()
+            await token.setTokenAlive()
             await token.mint(buyerA, 100, {from: mintControl})
             await token.transfer(buyerB, 101).should.be.rejectedWith(EVMRevert)
         })
 
         it('should throw an error when trying to transfer to 0x0', async () => {
-            await token.setTokenConfigured()
+            await token.setTokenAlive()
             await token.mint(buyerA, 100, {from: mintControl})
             await token.transfer(0x0, 100, {from: buyerA}).should.be.rejectedWith(EVMRevert)
         })
 
         it('should throw when trying to transfer but transfer is disabled', async () => {
-            await token.setTokenConfigured()
+            await token.setTokenAlive()
             await token.mint(buyerA, 100, {from: mintControl})
             await token.enableTransfers(false)
             assert.equal(await token.balanceOf(buyerA), 100)
@@ -299,7 +299,7 @@ contract('BasicAssetToken', (accounts) => {
 
     contract('validating approve and allowance', () => {
         it('should return the correct allowance amount after approval', async () => {
-            await token.setTokenConfigured()
+            await token.setTokenAlive()
             await token.mint(buyerA, 100, {from: mintControl})
             await token.approve(buyerB, 100, { from: buyerA })
             let allowance = await token.allowance(buyerA, buyerB)
@@ -310,7 +310,7 @@ contract('BasicAssetToken', (accounts) => {
 
     contract('validating transferFrom', () => {
         it('should return correct balances after transfering from another account', async () => {
-            await token.setTokenConfigured()
+            await token.setTokenAlive()
             await token.mint(buyerA, 100, {from: mintControl})
 
             await token.approve(buyerB, 100, { from: buyerA })
@@ -327,7 +327,7 @@ contract('BasicAssetToken', (accounts) => {
         })
 
         it('should throw an error when trying to transfer more than allowed', async () => {
-            await token.setTokenConfigured()
+            await token.setTokenAlive()
             await token.mint(buyerA, 100, {from: mintControl})
 
             await token.approve(buyerB, 99 , { from: buyerA })
@@ -335,7 +335,7 @@ contract('BasicAssetToken', (accounts) => {
         })
 
         it('should throw an error when trying to transferFrom more than _from has', async () => {
-            await token.setTokenConfigured()
+            await token.setTokenAlive()
             await token.mint(buyerA, 100, {from: mintControl})
 
             let balance0 = await token.balanceOf(buyerA)
@@ -344,7 +344,7 @@ contract('BasicAssetToken', (accounts) => {
         })
 
         it('should increase by 50 then set to 0 when decreasing by more than 50', async () => {
-            await token.setTokenConfigured()
+            await token.setTokenAlive()
             await token.mint(buyerA, 100, {from: mintControl})
 
             await token.approve(buyerB, 50, { from: buyerA })
@@ -354,7 +354,7 @@ contract('BasicAssetToken', (accounts) => {
         })
         
         it('should throw an error when trying to transferFrom to 0x0', async () => {
-            await token.setTokenConfigured()
+            await token.setTokenAlive()
             await token.mint(buyerA, 100, {from: mintControl})
 
             await token.approve(buyerB, 100, { from: buyerA })
@@ -362,7 +362,7 @@ contract('BasicAssetToken', (accounts) => {
         })
 
         it('should throw when trying to transferFrom but transfer disabled', async () => {
-            await token.setTokenConfigured()
+            await token.setTokenAlive()
             await token.mint(buyerA, 100, {from: mintControl})
 
             assert.equal(await token.balanceOf(buyerA), 100)
@@ -377,7 +377,7 @@ contract('BasicAssetToken', (accounts) => {
 
     contract('validating allowance', () => {
         it('should start with zero', async () => {
-            await token.setTokenConfigured()
+            await token.setTokenAlive()
             await token.mint(buyerA, 100, {from: mintControl})
             
             let preApproved = await token.allowance(buyerA, buyerB)
@@ -388,7 +388,7 @@ contract('BasicAssetToken', (accounts) => {
     contract('validating increaseApproval', () => {
 
         it('should increase by 50', async () => {
-            await token.setTokenConfigured()
+            await token.setTokenAlive()
             await token.mint(buyerA, 100, {from: mintControl})
 
             await token.increaseApproval(buyerB, 50, { from: buyerA })
@@ -399,7 +399,7 @@ contract('BasicAssetToken', (accounts) => {
 
     contract('validating decreaseApproval', () => {
         it('should increase by 50 then decrease by 10', async () => {
-            await token.setTokenConfigured()
+            await token.setTokenAlive()
             await token.mint(buyerA, 100, {from: mintControl})
 
             await token.increaseApproval(buyerB, 50, { from: buyerA })
@@ -411,7 +411,7 @@ contract('BasicAssetToken', (accounts) => {
         })
 
         it('should increase by 50 then decrease by 51', async () => {
-            await token.setTokenConfigured()
+            await token.setTokenAlive()
             await token.mint(buyerA, 100, {from: mintControl})
 
             await token.increaseApproval(buyerB, 50, { from: buyerA })
@@ -435,7 +435,7 @@ contract('BasicAssetToken', (accounts) => {
         })
 
         it('owner cannot change name when canMintOrBurn is finished', async () => {
-            await token.setTokenConfigured()
+            await token.setTokenAlive()
             await token.finishMinting({from: mintControl})
             await token.setMetaData("changed name", "").should.be.rejectedWith(EVMRevert)
         })
@@ -453,7 +453,7 @@ contract('BasicAssetToken', (accounts) => {
         })
 
         it('owner cannot change symbol when canMintOrBurn has finished', async () => {
-            await token.setTokenConfigured()
+            await token.setTokenAlive()
             await token.finishMinting({from: mintControl})
             await token.setMetaData("", "SYM").should.be.rejectedWith(EVMRevert)
         })
@@ -471,7 +471,7 @@ contract('BasicAssetToken', (accounts) => {
         })
 
         it('owner cannot change setBaseRate when canMintOrBurn has finished', async () => {
-            await token.setTokenConfigured()
+            await token.setTokenAlive()
             await token.finishMinting({from: mintControl})
             await token.setCurrencyMetaData(eurt.address, 3, { from: owner }).should.be.rejectedWith(EVMRevert)
         })
@@ -493,7 +493,7 @@ contract('BasicAssetToken', (accounts) => {
         })
 
         it('owner cannot change setBaseCurrency when canMintOrBurn has finished', async () => {
-            await token.setTokenConfigured()
+            await token.setTokenAlive()
             await token.finishMinting({from: mintControl})
 
             let erc20TestToken = await ERC20TestToken.new()
@@ -508,7 +508,7 @@ contract('BasicAssetToken', (accounts) => {
 
     contract('validating balanceOfAt', () => {
         it('buyerA has 100 after minting 100 ', async () => {
-            await token.setTokenConfigured()
+            await token.setTokenAlive()
             await token.mint(buyerA, 100, {from: mintControl})
 
             let blockNumber = await web3.eth.blockNumber
@@ -517,7 +517,7 @@ contract('BasicAssetToken', (accounts) => {
         })
 
         it('buyerA had 100 and has 50 after sending 50', async () => {
-            await token.setTokenConfigured()
+            await token.setTokenAlive()
             await token.mint(buyerA, 100, {from: mintControl})
 
             await token.transfer(buyerB, 50, {'from': buyerA})
@@ -527,7 +527,7 @@ contract('BasicAssetToken', (accounts) => {
         })
 
         it('buyerA had 100 then sends 50 verify that he had 100 before', async () => {
-            await token.setTokenConfigured()
+            await token.setTokenAlive()
             await token.mint(buyerA, 100, {from: mintControl})
 
             let blockNumberBeforeSend = await web3.eth.blockNumber
@@ -538,7 +538,7 @@ contract('BasicAssetToken', (accounts) => {
         })
 
         it('buyerA had 100 then sends 50 then 20', async () => {
-            await token.setTokenConfigured()
+            await token.setTokenAlive()
             await token.mint(buyerA, 100, {from: mintControl})
 
             await token.transfer(buyerB, 50, {'from': buyerA})
@@ -555,7 +555,7 @@ contract('BasicAssetToken', (accounts) => {
         })
 
         it('buyerA had 100 then quickly sends 50 20 10 validate different blocks', async () => {
-            await token.setTokenConfigured()
+            await token.setTokenAlive()
             await token.mint(buyerA, 100, {from: mintControl})
 
             let blockNumberBeforeSend = await web3.eth.blockNumber
@@ -579,7 +579,7 @@ contract('BasicAssetToken', (accounts) => {
     })
 
         /*it('buyerA had 100 then QUICKLY sends 50 20 10 validate different blocks', async () => {
-            await token.setTokenConfigured()
+            await token.setTokenAlive()
             await token.mint(buyerA, 100, {from: mintControl})
 
             let blockNumberBeforeSend = await web3.eth.blockNumber
@@ -609,14 +609,14 @@ contract('BasicAssetToken', (accounts) => {
 
     contract('validating totalSupplyAt', () => {
         it('totalSupplyAt after first mint block number 0 returns zero', async () => {
-            await token.setTokenConfigured()
+            await token.setTokenAlive()
             await token.mint(buyerA, 100, {from: mintControl})
 
             assert.equal(await token.totalSupplyAt(0), 0)
         })
 
         it('buyerA gets 5x10 minted then requesting totalSupplyAt upper half', async () => {
-            await token.setTokenConfigured()
+            await token.setTokenAlive()
             let blockNumberBeforeSend = await web3.eth.blockNumber
             await token.mint(buyerA, 10, {from: mintControl})
             await token.mint(buyerA, 10, {from: mintControl})
@@ -632,7 +632,7 @@ contract('BasicAssetToken', (accounts) => {
         })
 
         it('buyerA gets 5x10 minted then requesting totalSupplyAt lower half', async () => {
-            await token.setTokenConfigured()
+            await token.setTokenAlive()
             let blockNumberBeforeSend = await web3.eth.blockNumber
             await token.mint(buyerA, 10, {from: mintControl})
             await token.mint(buyerA, 10, {from: mintControl})
@@ -681,8 +681,8 @@ contract('BasicAssetToken', (accounts) => {
             assert.equal(await token.tokenRescueControl(), ZERO_ADDRESS)
         })
 
-        it('cannot setRoles() when configured', async () => {
-            await token.setTokenConfigured()
+        it('cannot setRoles() when alive', async () => {
+            await token.setTokenAlive()
 
             await token.setRoles(pauseControl, tokenRescueControl, {from: owner}).should.be.rejectedWith(EVMRevert)
 

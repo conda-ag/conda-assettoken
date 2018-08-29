@@ -64,7 +64,7 @@ contract DividendAssetToken is CRWDAssetToken {
 ///////////////////
 
     /** @dev Receives ether to be distriubted to all token owners*/
-    function depositDividend() public payable onlyOwner onlyTokenConfigured {
+    function depositDividend() public payable onlyOwner onlyTokenAlive {
 
         // gets the current number of total token distributed
         uint256 currentSupply = totalSupplyAt(block.number);
@@ -80,7 +80,7 @@ contract DividendAssetToken is CRWDAssetToken {
       * @param _dividendToken Token address
       * @param _amount The amount of tokens for deposit
       */
-    function depositERC20Dividend(address _dividendToken, uint256 _amount) public onlyOwner onlyTokenConfigured {
+    function depositERC20Dividend(address _dividendToken, uint256 _amount) public onlyOwner onlyTokenAlive {
         // gets the current number of total token distributed
         uint256 currentSupply = totalSupplyAt(block.number);
 

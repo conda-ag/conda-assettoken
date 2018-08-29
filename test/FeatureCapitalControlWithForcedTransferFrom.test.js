@@ -43,7 +43,7 @@ contract('FeatureCapitalControlWithForcedTransferFrom', (accounts) => {
     })
 
     contract('validating updateCapitalControl()', () => {
-        it('updateCapitalControl() cannot be set by owner when not yet configured', async () => {
+        it('updateCapitalControl() cannot be set by owner when not yet alive', async () => {
             await token.updateCapitalControl(buyerA, {from: owner}).should.be.rejectedWith(EVMRevert)
         })
 
@@ -51,25 +51,25 @@ contract('FeatureCapitalControlWithForcedTransferFrom', (accounts) => {
             await token.updateCapitalControl(buyerA, {from: unknown}).should.be.rejectedWith(EVMRevert)
         })
 
-        it('updateCapitalControl() can be set by capitalControl when configured', async () => {
+        it('updateCapitalControl() can be set by capitalControl when alive', async () => {
             await token.setCapitalControl(capitalControl, {from: owner})
-            await token.setTokenConfigured({from: owner})
+            await token.setTokenAlive({from: owner})
             await token.updateCapitalControl(buyerA, {from: owner}).should.be.rejectedWith(EVMRevert)
         })
 
-        it('updateCapitalControl() cannot be set by owner even when configured', async () => {
-            await token.setTokenConfigured({from: owner})
+        it('updateCapitalControl() cannot be set by owner even when alive', async () => {
+            await token.setTokenAlive({from: owner})
             await token.updateCapitalControl(buyerA, {from: owner}).should.be.rejectedWith(EVMRevert)
         })
 
-        it('updateCapitalControl() cannot be set by unknown when configured', async () => {
-            await token.setTokenConfigured({from: owner})
+        it('updateCapitalControl() cannot be set by unknown when alive', async () => {
+            await token.setTokenAlive({from: owner})
             await token.updateCapitalControl(buyerA, {from: unknown}).should.be.rejectedWith(EVMRevert)
         })
     })
 
     contract('validating setCapitalControl()', () => {
-        it('setCapitalControl() can be set by owner when not configured', async () => {
+        it('setCapitalControl() can be set by owner when not alive', async () => {
             await token.setCapitalControl(capitalControl, {from: owner})
         })
 
@@ -77,8 +77,8 @@ contract('FeatureCapitalControlWithForcedTransferFrom', (accounts) => {
             await token.setCapitalControl(capitalControl, {from: unknown}).should.be.rejectedWith(EVMRevert)
         })
 
-        it('setCapitalControl() cannot be set when configured', async () => {
-            await token.setTokenConfigured({from: owner})
+        it('setCapitalControl() cannot be set when alive', async () => {
+            await token.setTokenAlive({from: owner})
             await token.setCapitalControl(capitalControl, {from: owner}).should.be.rejectedWith(EVMRevert)
         })
     })
@@ -86,7 +86,7 @@ contract('FeatureCapitalControlWithForcedTransferFrom', (accounts) => {
     contract('mint as capitalControl', () => {
         it('can mint as capitalControl even when finished capital increase/decrease phase', async () => {
             await token.setCapitalControl(capitalControl, {from: owner})
-            await token.setTokenConfigured({from: owner})
+            await token.setTokenAlive({from: owner})
             await token.finishMinting({from: mintControl})
             await token.mint(buyerA, 10, {from: capitalControl}) //works because capitalControl
         })
@@ -95,7 +95,7 @@ contract('FeatureCapitalControlWithForcedTransferFrom', (accounts) => {
     contract('validating reopenCrowdsale()', () => {
         it('can reopen crowdsale as capitalControl', async () => {
             await token.setCapitalControl(capitalControl, {from: owner})
-            await token.setTokenConfigured({from: owner})
+            await token.setTokenAlive({from: owner})
             await token.finishMinting({from: mintControl})
             await token.mint(buyerA, 10, {from: capitalControl}) //works because capitalControl
             await token.mint(buyerA, 10, {from: mintControl}).should.be.rejectedWith(EVMRevert) //not possible when finished
@@ -109,14 +109,14 @@ contract('FeatureCapitalControlWithForcedTransferFrom', (accounts) => {
         })
 
         it('cannot reopen crowdsale as owner', async () => {
-            await token.setTokenConfigured({from: owner})
+            await token.setTokenAlive({from: owner})
             await token.finishMinting({from: mintControl})
             
             await token.reopenCrowdsale({from: owner}).should.be.rejectedWith(EVMRevert)
         })
 
         it('cannot reopen crowdsale as non-capitalControl', async () => {
-            await token.setTokenConfigured({from: owner})
+            await token.setTokenAlive({from: owner})
             await token.finishMinting({from: mintControl})
             
             await token.reopenCrowdsale({from: unknown}).should.be.rejectedWith(EVMRevert)

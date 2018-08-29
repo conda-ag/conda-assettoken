@@ -38,7 +38,7 @@ contract('DividendAssetToken', (accounts) => {
     beforeEach(async () => {
         token = await DividendAssetToken.new()
         await token.setMintControl(capitalControl)
-        await token.setTokenConfigured()
+        await token.setTokenAlive()
         owner = await token.owner()
         
         //mock clearing so it doesn't cost money

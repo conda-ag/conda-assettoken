@@ -22,9 +22,9 @@ library AssetTokenL {
     }
 
     struct Availability {
-        // Flag that determines if the token is yet configured.
+        // Flag that determines if the token is yet alive.
         // Meta data cannot be changed anymore (except capitalControl)
-        bool tokenConfigured;
+        bool tokenAlive;
 
         // Flag that determines if the token is transferable or not.
         bool transfersPaused;
@@ -347,8 +347,8 @@ library AssetTokenL {
         _self.pauseControl = _pauseControl;
     }
 
-    function setTokenConfigured(Availability storage _self) public {
-        _self.tokenConfigured = true;
+    function setTokenAlive(Availability storage _self) public {
+        _self.tokenAlive = true;
     }
 
 ////////////////

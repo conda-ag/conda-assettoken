@@ -56,7 +56,7 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
     // this amount will be used for regulatory checks. 
     uint256 public baseRate;
     
-    // mintControl can mint when token is configured
+    // mintControl can mint when token is alive
     address public mintControl;
 
     //can rescue tokens
@@ -119,7 +119,7 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
     modifier canMint() {
         if(_canDoAnytime() == false) { 
             require(msg.sender == mintControl);
-            require(availability.tokenConfigured);
+            require(availability.tokenAlive);
             require(!availability.mintingPhaseFinished);
             require(!availability.mintingPaused);
         }
@@ -129,7 +129,7 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
     function checkCanSetMetadata() internal returns (bool) {
         if(_canDoAnytime() == false) {
             require(msg.sender == owner);
-            require(!availability.tokenConfigured);
+            require(!availability.tokenAlive);
             require(!availability.mintingPhaseFinished);
         }
 
@@ -141,8 +141,8 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
         _;
     }
 
-    modifier onlyTokenConfigured() {
-        require(availability.tokenConfigured);
+    modifier onlyTokenAlive() {
+        require(availability.tokenAlive);
         _;
     }
 
@@ -197,10 +197,10 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
         tokenRescueControl = _tokenRescueControl;
     }
 
-    function setTokenConfigured() public 
+    function setTokenAlive() public 
     onlyOwner
     {
-        availability.setTokenConfigured();
+        availability.setTokenAlive();
     }
 
 ///////////////////
