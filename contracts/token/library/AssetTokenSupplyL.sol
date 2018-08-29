@@ -326,9 +326,8 @@ library AssetTokenSupplyL {
             Checkpoint storage newCheckPoint = checkpoints[checkpoints.length++];
             newCheckPoint.fromBlock = uint128(block.number);
             newCheckPoint.value = uint128(_value);
-        } else { //TODO: ERROR?
-            Checkpoint storage oldCheckPoint = checkpoints[checkpoints.length-1];
-            oldCheckPoint.value = uint128(_value);
+        } else {
+            revert("Update in same block is not allowed. Please retry."); //improvement idea: use nonce instead of block number
         }
     }
 
