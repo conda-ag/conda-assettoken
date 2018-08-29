@@ -21,7 +21,7 @@ pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "./library/AssetTokenSupplyL.sol";
+import "./library/AssetTokenL.sol";
 
 import "./abstract/IBasicAssetToken.sol";
 
@@ -34,8 +34,8 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
     */
 
     using SafeMath for uint256;
-    using AssetTokenSupplyL for AssetTokenSupplyL.Supply;
-    using AssetTokenSupplyL for AssetTokenSupplyL.Availability;
+    using AssetTokenL for AssetTokenL.Supply;
+    using AssetTokenL for AssetTokenL.Availability;
 
 ///////////////////
 // Variables
@@ -63,10 +63,10 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
     address public tokenRescueControl;
 
     //supply: balance, checkpoints etc.
-    AssetTokenSupplyL.Supply supply;
+    AssetTokenL.Supply supply;
 
     //availability: what's paused
-    AssetTokenSupplyL.Availability availability;
+    AssetTokenL.Availability availability;
 
     function isMintingPaused() public view returns (bool) {
         return availability.mintingPaused;

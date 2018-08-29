@@ -31,7 +31,7 @@ contract DividendAssetToken is CRWDAssetToken {
     */
 
     using SafeMath for uint256;
-    using AssetTokenSupplyL for AssetTokenSupplyL.Store;
+    using AssetTokenL for AssetTokenL.Store;
 
 ///////////////////
 // Variables
@@ -40,7 +40,7 @@ contract DividendAssetToken is CRWDAssetToken {
     /** @dev `recycleLockedTimespan` devines the time, when the dividends will be recycled*/
     uint256 public recycleLockedTimespan = 365 days;
 
-    AssetTokenSupplyL.Store storedDividends;
+    AssetTokenL.Store storedDividends;
 
 ///////////////////
 // Events

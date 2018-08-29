@@ -9,7 +9,7 @@ const DividendEquityAssetToken = artifacts.require("DividendEquityAssetToken.sol
 const FeatureCapitalControl = artifacts.require("FeatureCapitalControl.sol")
 const FeatureCapitalControlWithForcedTransferFrom = artifacts.require("FeatureCapitalControlWithForcedTransferFrom.sol")
 
-const AssetTokenSupplyL = artifacts.require("AssetTokenSupplyL.sol")
+const AssetTokenL = artifacts.require("AssetTokenL.sol")
 
 const MockCRWDClearing = artifacts.require("MockCRWDClearing.sol")
 
@@ -72,10 +72,10 @@ module.exports = (deployer, network, accounts) => {
     }
 
     // deploy libraries
-    deployer.deploy(AssetTokenSupplyL)
+    deployer.deploy(AssetTokenL)
 
     //link libraries
-    deployer.link(AssetTokenSupplyL, [BasicAssetToken, DividendAssetToken, CRWDAssetToken, EquityAssetToken, FeatureCapitalControl, DividendEquityAssetToken, FeatureCapitalControlWithForcedTransferFrom])
+    deployer.link(AssetTokenL, [BasicAssetToken, DividendAssetToken, CRWDAssetToken, EquityAssetToken, FeatureCapitalControl, DividendEquityAssetToken, FeatureCapitalControlWithForcedTransferFrom])
 
     //deploy contracts
     deployer.deploy(MockCRWDClearing)
