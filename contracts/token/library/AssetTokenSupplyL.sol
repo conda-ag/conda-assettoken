@@ -78,7 +78,7 @@ library AssetTokenSupplyL {
     /// @param _amount The amount of tokens to be transferred
     /// @return True if the transfer was successful
     function doTransfer(Supply storage _supply, Availability storage _availability, address _from, address _to, uint256 _amount) internal {
-        require(!_availability.transfersPaused);
+        require(!_availability.transfersPaused); //ERROR: capitalControl also can't!
         require(!_availability.crowdsalePhaseFinished); //ERROR: what if reopened? should be blocked? finishedOnce?
 
         // Do not allow transfer to 0x0 or the token contract itself
@@ -288,7 +288,7 @@ library AssetTokenSupplyL {
 
         // Shortcut for the actual value
         if (_blockNumber >= _self.totalSupplyHistory[_self.totalSupplyHistory.length-1].fromBlock) {
-            return _self.totalSupplyHistory[_self.totalSupplyHistory.length-1].value;
+            return _self.totalSupplyHistory[_self.totalSupplyHistory.length-1].value; //ERROR: move shortcut into method bellow
         }
 
         return getValueAt(_self.totalSupplyHistory, _blockNumber);
