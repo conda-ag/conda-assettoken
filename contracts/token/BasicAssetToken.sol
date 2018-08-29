@@ -81,7 +81,7 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
     }
 
     function isTransfersPaused() public view returns (bool) {
-        return availability.transfersPaused;
+        return !availability.transfersEnabled;
     }
 
 ///////////////////
@@ -339,7 +339,7 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
 ////////////////
 
     function enableTransferInternal(bool _transfersEnabled) internal {
-        availability.transfersPaused = (_transfersEnabled == false);
+        availability.transfersEnabled = _transfersEnabled;
     }
 
     /// @notice Enables token holders to transfer their tokens freely if true

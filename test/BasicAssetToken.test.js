@@ -38,6 +38,12 @@ contract('BasicAssetToken', (accounts) => {
         assert.equal(await token.totalSupply(), 0)
     })
 
+    contract('testing initial state...', () => {
+        it('transfer should be paused per default', async () => {
+            assert.equal(await token.isTransfersPaused(), true)
+        })
+    })
+
     contract('validating isMintingPhaseFinished()', () => {
         it('isMintingPhaseFinished() tells if crowdsale has finished', async () => {
             assert.equal(await token.isMintingPhaseFinished(), false) //precondition
@@ -261,6 +267,7 @@ contract('BasicAssetToken', (accounts) => {
     contract('validating transfer', () => {
         it('should return correct balances after transfer', async () => {
             await token.setTokenAlive()
+            await token.enableTransfers(true)
             await token.mint(buyerA, 100, {from: mintControl})
 
             let startAccountBalance = await token.balanceOf(buyerA)
@@ -311,6 +318,7 @@ contract('BasicAssetToken', (accounts) => {
     contract('validating transferFrom', () => {
         it('should return correct balances after transfering from another account', async () => {
             await token.setTokenAlive()
+            await token.enableTransfers(true)
             await token.mint(buyerA, 100, {from: mintControl})
 
             await token.approve(buyerB, 100, { from: buyerA })
@@ -518,6 +526,7 @@ contract('BasicAssetToken', (accounts) => {
 
         it('buyerA had 100 and has 50 after sending 50', async () => {
             await token.setTokenAlive()
+            await token.enableTransfers(true)
             await token.mint(buyerA, 100, {from: mintControl})
 
             await token.transfer(buyerB, 50, {'from': buyerA})
@@ -528,6 +537,7 @@ contract('BasicAssetToken', (accounts) => {
 
         it('buyerA had 100 then sends 50 verify that he had 100 before', async () => {
             await token.setTokenAlive()
+            await token.enableTransfers(true)
             await token.mint(buyerA, 100, {from: mintControl})
 
             let blockNumberBeforeSend = await web3.eth.blockNumber
@@ -539,6 +549,7 @@ contract('BasicAssetToken', (accounts) => {
 
         it('buyerA had 100 then sends 50 then 20', async () => {
             await token.setTokenAlive()
+            await token.enableTransfers(true)
             await token.mint(buyerA, 100, {from: mintControl})
 
             await token.transfer(buyerB, 50, {'from': buyerA})
@@ -556,14 +567,15 @@ contract('BasicAssetToken', (accounts) => {
 
         it('buyerA had 100 then quickly sends 50 20 10 validate different blocks', async () => {
             await token.setTokenAlive()
+            await token.enableTransfers(true)
             await token.mint(buyerA, 100, {from: mintControl})
 
             let blockNumberBeforeSend = await web3.eth.blockNumber
-            let res1 = await token.transfer(buyerB, 50, {'from': buyerA})
-            let res2 = await token.transfer(buyerB, 20, {'from': buyerA})
-            let res3 = await token.transfer(buyerB, 10, {'from': buyerA})
+            await token.transfer(buyerB, 50, {'from': buyerA})
+            await token.transfer(buyerB, 20, {'from': buyerA})
+            await token.transfer(buyerB, 10, {'from': buyerA})
 
-            let res4 = await token.transfer(buyerB, 10, {'from': buyerA}) //delayed transfer
+            await token.transfer(buyerB, 10, {'from': buyerA}) //delayed transfer
 
             let blockNumberAfterSend = await web3.eth.blockNumber
 
@@ -713,9 +725,11 @@ contract('BasicAssetToken', (accounts) => {
         it('pauseTransfer() cannot be set as not-pauseControl', async () => {
             await token.setRoles(pauseControl, ZERO_ADDRESS, {from: unknown}).should.be.rejectedWith(EVMRevert)
 
+            const initalValue = await token.isTransfersPaused()
+
             await token.pauseTransfer(false, { from: unknown }).should.be.rejectedWith(EVMRevert)
 
-            assert.equal(await token.isTransfersPaused(), false)
+            assert.equal(await token.isTransfersPaused(), initalValue)
         })
     })
 

@@ -27,7 +27,7 @@ library AssetTokenL {
         bool tokenAlive;
 
         // Flag that determines if the token is transferable or not.
-        bool transfersPaused;
+        bool transfersEnabled;
 
         // Flag that minting is finished
         bool mintingPhaseFinished;
@@ -78,7 +78,7 @@ library AssetTokenL {
     /// @param _amount The amount of tokens to be transferred
     /// @return True if the transfer was successful
     function doTransfer(Supply storage _supply, Availability storage _availability, address _from, address _to, uint256 _amount) internal {
-        require(!_availability.transfersPaused); //ERROR: capitalControl also can't!
+        require(_availability.transfersEnabled); //ERROR: capitalControl also can't!
         require(!_availability.mintingPhaseFinished); //ERROR: what if reopened? should be blocked? finishedOnce?
 
         // Do not allow transfer to 0x0 or the token contract itself
@@ -359,7 +359,7 @@ library AssetTokenL {
     /// @param _transfersEnabled False if transfers are allowed
     function pauseTransfer(Availability storage _self, bool _transfersEnabled) public
     {
-        _self.transfersPaused = !_transfersEnabled;
+        _self.transfersEnabled = _transfersEnabled;
 
         if(_transfersEnabled) {
             emit TransferResumed(msg.sender);
