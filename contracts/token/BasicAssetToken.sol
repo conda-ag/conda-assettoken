@@ -41,13 +41,13 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
 // Variables
 ///////////////////
 
-    string public name;                 //The Token's name
+    string public name;                         //The token's name
 
-    uint8 public decimals = 0;          //Number of decimals of the smallest unit
+    uint8 public decimals = 0;                  //Number of decimals of the smallest unit
 
-    string public symbol;               //An identifier
+    string public symbol;                       //An identifier
 
-    uint16 public version = 1000;        //1000 is version 1
+    uint16 public constant version = 1000;      //1000 is version 1
 
     // defines the baseCurrency of the token
     address public baseCurrency;
@@ -362,7 +362,7 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
         enableTransferInternal(_transfersEnabled);
     }
 
-    /// @dev `pauseMinting` can pause mint
+    /// @dev `pauseCapitalIncreaseOrDecrease` can pause mint
     /// @param _mintingEnabled False if minting is allowed
     function pauseCapitalIncreaseOrDecrease(bool _mintingEnabled) public
     onlyPauseControl
