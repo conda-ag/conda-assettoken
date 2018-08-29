@@ -261,17 +261,6 @@ library AssetTokenL {
     /// @param _blockNumber The block number when the balance is queried
     /// @return The balance at `_blockNumber`
     function balanceOfAt(Supply storage _self, address _owner, uint _blockNumber) public view returns (uint256) {
-        Checkpoint[] storage checkpoints = _self.balances[_owner];
-        //  requested before a check point was ever created for this token
-        if (checkpoints.length == 0 || checkpoints[0].fromBlock > _blockNumber) {
-            return 0;
-        }
-
-        // Shortcut for the actual value
-        if (_blockNumber >= checkpoints[checkpoints.length-1].fromBlock) {
-            return checkpoints[checkpoints.length-1].value;
-        }
-
         return getValueAt(_self.balances[_owner], _blockNumber);
     }
 
@@ -279,16 +268,6 @@ library AssetTokenL {
     /// @param _blockNumber The block number when the totalSupply is queried
     /// @return The total amount of tokens at `_blockNumber`
     function totalSupplyAt(Supply storage _self, uint _blockNumber) public view returns(uint) {
-        //  requested before a check point was ever created for this token
-        if (_self.totalSupplyHistory.length == 0 || _self.totalSupplyHistory[0].fromBlock > _blockNumber) {
-            return 0;
-        }
-
-        // Shortcut for the actual value
-        if (_blockNumber >= _self.totalSupplyHistory[_self.totalSupplyHistory.length-1].fromBlock) {
-            return _self.totalSupplyHistory[_self.totalSupplyHistory.length-1].value; //ERROR: move shortcut into method bellow
-        }
-
         return getValueAt(_self.totalSupplyHistory, _blockNumber);
     }
 
@@ -301,6 +280,17 @@ library AssetTokenL {
     /// @param _block The block number to retrieve the value at
     /// @return The number of tokens being queried
     function getValueAt(Checkpoint[] storage checkpoints, uint _block) private view returns (uint) { 
+        
+        //  requested before a check point was ever created for this token
+        if (checkpoints.length == 0 || checkpoints[0].fromBlock > _block) {
+            return 0;
+        }
+
+        // Shortcut for the actual value
+        if (_block >= checkpoints[checkpoints.length-1].fromBlock) {
+            return checkpoints[checkpoints.length-1].value;
+        }
+
         // Binary search of the value in the array
         uint min = 0;
         uint max = checkpoints.length-1;
