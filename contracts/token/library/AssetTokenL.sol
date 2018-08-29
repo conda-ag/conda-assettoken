@@ -189,7 +189,7 @@ library AssetTokenL {
     internal 
     returns (bool success) 
     {
-        if(_amount != balanceOfAt(_supply, _from, block.number))
+        if(_fullAmountRequired && _amount != balanceOfAt(_supply, _from, block.number))
         {
             revert("Only full amount in case of lost wallet is allowed");
         }
