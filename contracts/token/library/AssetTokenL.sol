@@ -30,7 +30,7 @@ library AssetTokenL {
         bool transfersPaused;
 
         // Flag that minting is finished
-        bool crowdsalePhaseFinished;
+        bool mintingPhaseFinished;
 
         // Flag that minting is paused
         bool mintingPaused;
@@ -79,7 +79,7 @@ library AssetTokenL {
     /// @return True if the transfer was successful
     function doTransfer(Supply storage _supply, Availability storage _availability, address _from, address _to, uint256 _amount) internal {
         require(!_availability.transfersPaused); //ERROR: capitalControl also can't!
-        require(!_availability.crowdsalePhaseFinished); //ERROR: what if reopened? should be blocked? finishedOnce?
+        require(!_availability.mintingPhaseFinished); //ERROR: what if reopened? should be blocked? finishedOnce?
 
         // Do not allow transfer to 0x0 or the token contract itself
         require(_to != address(0));
@@ -334,21 +334,21 @@ library AssetTokenL {
     ///  @dev Function to stop minting new tokens.
     ///  @return True if the operation was successful.
     function finishMinting(Availability storage _self) public returns (bool) {
-        if(_self.crowdsalePhaseFinished) {
+        if(_self.mintingPhaseFinished) {
             return false;
         }
 
-        _self.crowdsalePhaseFinished = true;
+        _self.mintingPhaseFinished = true;
         emit MintFinished();
         return true;
     }
 
     function reopenCrowdsale(Availability storage _self) public returns (bool) {
-        if(_self.crowdsalePhaseFinished == false) {
+        if(_self.mintingPhaseFinished == false) {
             return false;
         }
 
-        _self.crowdsalePhaseFinished = false;
+        _self.mintingPhaseFinished = false;
         emit Reopened(msg.sender);
         return true;
     }
@@ -562,7 +562,7 @@ library AssetTokenL {
     //if this contract gets a balance in some other ERC20 contract - or even iself - then we can rescue it.
     function rescueToken(Availability storage _self, address _foreignTokenAddress, address _to) internal
     {
-        require(_self.crowdsalePhaseFinished);
+        require(_self.mintingPhaseFinished);
         ERC20(_foreignTokenAddress).transfer(_to, ERC20(_foreignTokenAddress).balanceOf(this));
     }
 

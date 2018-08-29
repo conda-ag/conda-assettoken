@@ -72,8 +72,8 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
         return availability.mintingPaused;
     }
 
-    function isCrowdsalePhaseFinished() public view returns (bool) {
-        return availability.crowdsalePhaseFinished;
+    function isMintingPhaseFinished() public view returns (bool) {
+        return availability.mintingPhaseFinished;
     }
 
     function getPauseControl() public view returns (address) {
@@ -121,7 +121,7 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
         if(_canDoAnytime() == false) { 
             require(msg.sender == mintControl);
             require(availability.tokenConfigured);
-            require(!availability.crowdsalePhaseFinished);
+            require(!availability.mintingPhaseFinished);
             require(!availability.mintingPaused);
         }
         _;
@@ -131,7 +131,7 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
         if(_canDoAnytime() == false) {
             require(msg.sender == owner);
             require(!availability.tokenConfigured);
-            require(!availability.crowdsalePhaseFinished);
+            require(!availability.mintingPhaseFinished);
         }
 
         return true;
