@@ -2,10 +2,11 @@ pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "../interfaces/ICRWDClearing.sol";
 
 /** @title mocked clearing for tests. */
-contract MockCrwdClearing {
+contract MockCrwdClearing is Ownable {
     using SafeMath for uint256;
 
     uint256 companyFee;
@@ -32,7 +33,10 @@ contract MockCrwdClearing {
         return true;
     }
 
-    function setFee(address _crwdToken, uint256 _companyFee, uint256 _investorFee, address _condaAddress, address _companyAddress) public {
+    function setFee(address _crwdToken, uint256 _companyFee, uint256 _investorFee, address _condaAddress, address _companyAddress)
+    public
+    onlyOwner 
+    {
         crwdToken = _crwdToken;
         companyFee = _companyFee;
         investorFee = _investorFee;
