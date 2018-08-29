@@ -83,9 +83,6 @@ module.exports = (deployer, network, accounts) => {
     const owner = accounts[0]
     const capitalControl = accounts[1]
 
-    console.log('HDWalletProvider ' + accounts[1])
-    
-
     console.log("OWNER:::::"+owner)
     console.log("CAPITALCONTROL:::::"+capitalControl)
 
