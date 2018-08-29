@@ -90,7 +90,6 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
 
     event Approval(address indexed owner, address indexed spender, uint256 value);
     event Transfer(address indexed from, address indexed to, uint256 value);
-    event Mint(address indexed to, uint256 amount);
     event MintDetailed(address indexed initiator, address indexed to, uint256 amount);
     event MintFinished();
     event TransferPaused(address indexed initiator);

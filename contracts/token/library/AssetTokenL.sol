@@ -222,7 +222,6 @@ library AssetTokenL {
         updateValueAtNow(_self.totalSupplyHistory, curTotalSupply.add(_amount));
         updateValueAtNow(_self.balances[_to], previousBalanceTo.add(_amount));
 
-        emit Mint(_to, _amount); //zeppelin compliant
         emit MintDetailed(msg.sender, _to, _amount);
         emit Transfer(address(0), _to, _amount);
 
@@ -249,7 +248,6 @@ library AssetTokenL {
 //         updateValueAtNow(_self.totalSupplyHistory, curTotalSupply.sub(_value));
 //         updateValueAtNow(_self.balances[_who], previousBalanceWho.sub(_value));
 
-//         emit Burn(_who, _value); //zeppelin compliant
 //         emit BurnDetailed(msg.sender, _who, _value);
 //         emit Transfer(_who, address(0), _value);
 //     }
@@ -568,10 +566,8 @@ library AssetTokenL {
 
     event Transfer(address indexed from, address indexed to, uint256 value);
     event SelfApprovedTransfer(address indexed initiator, address indexed from, address indexed to, uint256 value);
-    event Mint(address indexed to, uint256 amount);
     event MintDetailed(address indexed initiator, address indexed to, uint256 amount);
     event MintFinished();
-    // event Burn(address indexed burner, uint256 value);
     // event BurnDetailed(address indexed initiator, address indexed burner, uint256 value);
     event Approval(address indexed owner, address indexed spender, uint256 value);
     event TransferPaused(address indexed initiator);
