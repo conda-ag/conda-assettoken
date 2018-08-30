@@ -223,7 +223,7 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
     /// @return Whether the transfer was successful or not
     function transfer(address _to, uint256 _amount) public canTransfer returns (bool success) {
         supply.doTransfer(availability, msg.sender, _to, _amount);
-        return true; //ERROR: move return into library
+        return true;
     }
 
     /// @notice Send `_amount` tokens to `_to` from `_from` on the condition it
