@@ -101,6 +101,8 @@ module.exports = (deployer, network, accounts) => {
 
         await token.setRoles(pauseControl, tokenRescueControl, {from: owner})
 
+        await token.finishMinting({from: owner})
+
         await token.setTokenAlive({from: owner})
 
         for(let i=0; i < equity.length; i++) {

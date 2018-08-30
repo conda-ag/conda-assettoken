@@ -84,6 +84,10 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
         return !availability.transfersEnabled;
     }
 
+    function isTokenAlive() public view returns (bool) {
+        return availability.tokenAlive;
+    }
+
 ///////////////////
 // Events
 ///////////////////
@@ -198,7 +202,7 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
     }
 
     function setTokenAlive() public 
-    onlyOwner
+    onlyOwnerOrOverruled
     {
         availability.setTokenAlive();
     }
@@ -292,7 +296,7 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
 
     ///  @dev Function to stop minting new tokens (as mintControl).
     ///  @return True if the operation was successful.
-    function finishMinting() public canMint returns (bool) {
+    function finishMinting() public onlyOwnerOrOverruled returns (bool) {
         return availability.finishMinting();
     }
 
