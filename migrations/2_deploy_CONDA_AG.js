@@ -82,9 +82,13 @@ module.exports = (deployer, network, accounts) => {
 
     const owner = accounts[0]
     const capitalControl = accounts[1]
+    const pauseControl = accounts[2]
+    const tokenRescueControl = accounts[3]
 
     console.log("OWNER:::::"+owner)
     console.log("CAPITALCONTROL:::::"+capitalControl)
+    console.log("PAUSECONTROL:::::"+pauseControl)
+    console.log("TOKENRESCUECONTROL:::::"+tokenRescueControl)
 
     deployer.deploy(DividendEquityAssetToken, capitalControl, {from: owner}).then(async () => {
         const token = await DividendEquityAssetToken.deployed()
@@ -92,9 +96,10 @@ module.exports = (deployer, network, accounts) => {
         // DividendEquityAssetToken.web3.eth.defaultAccount=owner
 
         await token.setMetaData("CONDA AG", "CONDA", {from: owner})
-        await token.enableTransfers(false, {from: owner})
 
         await token.setClearingAddress(MockCRWDClearing.address, {from: owner})
+
+        await token.setRoles(pauseControl, tokenRescueControl, {from: owner})
 
         await token.setTokenAlive({from: owner})
 
