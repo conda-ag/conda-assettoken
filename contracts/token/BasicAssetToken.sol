@@ -155,6 +155,12 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
         _;
     }
 
+    modifier canTransfer() {
+        require(availability.transfersEnabled);
+        require(!availability.mintingPhaseFinished);
+        _;
+    }
+
 ///////////////////
 // Set / Get Metadata
 ///////////////////
@@ -215,7 +221,7 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
     /// @param _to The address of the recipient
     /// @param _amount The amount of tokens to be transferred
     /// @return Whether the transfer was successful or not
-    function transfer(address _to, uint256 _amount) public returns (bool success) {
+    function transfer(address _to, uint256 _amount) public canTransfer returns (bool success) {
         supply.doTransfer(availability, msg.sender, _to, _amount);
         return true; //ERROR: move return into library
     }
@@ -226,7 +232,7 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
     /// @param _to The address of the recipient
     /// @param _amount The amount of tokens to be transferred
     /// @return True if the transfer was successful
-    function transferFrom(address _from, address _to, uint256 _amount) public returns (bool success) {
+    function transferFrom(address _from, address _to, uint256 _amount) public canTransfer returns (bool success) {
         return supply.transferFrom(availability, _from, _to, _amount);
     }
 
