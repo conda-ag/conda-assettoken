@@ -488,8 +488,6 @@ library AssetTokenL {
     /** @dev Dividends which have not been claimed
       * @param _dividendIndex The index to be recycled
       */
-
-    //Error: geht zurück an wallet des owner
     function recycleDividend(Store storage _self, uint256 _dividendIndex, uint256 recycleLockedTimespan, uint256 _currentSupply) public {
         // Get the dividend distribution
         Dividend storage dividend = _self.dividends[_dividendIndex];
