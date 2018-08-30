@@ -1,15 +1,20 @@
 pragma solidity ^0.4.24;
 
-import "./token/DividendAssetToken.sol";
-import "./interfaces/ICRWDClearing.sol";
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+
+import "./BasicAssetToken.sol";
+import "../interfaces/ICRWDClearing.sol";
+import "./abstract/ICRWDAssetToken.sol";
 
 /** @title CRWD AssetToken. */
-contract CRWDAssetToken is DividendAssetToken {
+contract CRWDAssetToken is BasicAssetToken, ICRWDAssetToken {
     /*
-    * @title This contract is the Crwd AssetToken created for each project via the AssetTokenGenerator
+    * @title This contract is the Crwd AssetToken created for each project via an AssetTokenGenerator
     * @author Paul Pöltner / Conda
-    * @dev CRWDAssetToken inherits from DividendAssetToken which inherits from BasicAssetToken
+    * @dev DividendAssetToken inherits from CRWDAssetToken which inherits from BasicAssetToken
     */
+
+    using SafeMath for uint256;
 
     address public clearingAddress;
 
@@ -41,16 +46,16 @@ contract CRWDAssetToken is DividendAssetToken {
       * @param _amount The amount of tokens to mint.
       * @return A boolean that indicates if the operation was successful.
       */
-    function mint(address _to, uint256 _amount) public onlyOwner canMint returns (bool) {
+    function mint(address _to, uint256 _amount) public canMint returns (bool) {
         uint256 transferValue = _amount.mul(baseRate).div(1000);
-        ICRWDClearing(clearingAddress).clearFunds(baseCurrency, _to, _to, transferValue);
+        ICRWDClearing(clearingAddress).clearMintFunds(baseCurrency, _to, _to, transferValue);
         return super.mint(_to,_amount);
     }
 
     /** @dev Set clearing address that receives clearing.
       * @param _clearingAddress Address to be used for clearing.
       */
-    function setClearingAddress(address _clearingAddress) public {
+    function setClearingAddress(address _clearingAddress) public onlyOwner {
         clearingAddress = _clearingAddress;
     }
 }

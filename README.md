@@ -65,9 +65,12 @@ To manage this funding/investment process on the Blockchain so called *Smart Con
 **Smart Contracts:**
 
 - BasicAssetToken
-- DividendAssetToken
-- CRWDAssetToken
-- AssetTokenGenerator
+  - CRWDAssetToken
+    - DividendAssetToken
+    - EquityAssetToken
+    - DividendEquityAssetToken (mix)
+
+Those contracts can be invoked via [web3.js](https://github.com/ethereum/web3.js/)
 
 ![AssetToken.png Class diagram](./diagrams/AssetToken.png "Class diagram")
 
@@ -76,14 +79,17 @@ Disclaimer: Keep in mind that the figure above is a simplified representation wh
 ### BasicAssetToken
 Does conceptionally but not in practice inherit from [ERC20](https://github.com/ethereum/eips/issues/20) but has all it's method signatures and is therefore an ERC20 token and has similar functionality. It also conceptionally inherits from Mintable and entitled contract controllers like the creator may mint until finishMinting is called
 
-### DividendAssetToken
-Inherits from BasicAssetToken and adds functionality to pay dividends. Dividends can be deposited and claimed. Unclaimed dividends get recycled and are evenly distributed (this is to avoid sending to dead addresses)
-
 ### CRWDAssetToken
-Inherits from DividendAssetToken and therefore also from BasicAssetToken. The inheritance is mainly for separation of concerns the CRWDAssetToken is the one that is really used. The CRWDAssetToken is responsible for clearing which means paying e.g. platform providers to ensure a good crowdinvesting ecosystem.
+ Inherits from BasicAssetToken. The CRWDAssetToken is responsible for clearing which means paying e.g. platform providers to ensure a good crowdinvesting ecosystem. Crowdsales can be certified in clearing which gives them a higher value.
 
-### AssetTokenGenerator
-The AssetTokenGenerator contract has the main responsibility of generating tokens and remembering them
+### DividendAssetToken
+Inherits from CRWDAssetToken and therefore also from BasicAssetToken and adds functionality to pay dividends. The inheritance is mainly for separation of concerns the DividendAssetToken is the one that is really used for projects that pay out dividends. Dividends can be deposited and claimed. Unclaimed dividends get recycled and are evenly distributed (this is to avoid sending to dead addresses)
+
+### EquityAssetToken
+Inherits from CRWDAssetToken and therefore also from BasicAssetToken and adds functionality to pay dividends. The inheritance is mainly for separation of concerns the EquityAssetToken is the one that is really used (besides DividendAssetToken). The owner of this contract is only important until the token is set to alive. During this phase he can set metadata information. When the EquityAssetToken is set to alive (which is one-way only) the ownership is transfered to capitalControl (which is a notary or other trusted entity). The capitalControl can mint balances.
+
+### Website via web3.js
+Those contracts can be invoked via [web3.js](https://github.com/ethereum/web3.js/). We are building a web platform for ease of use
 
 # How it's connected
 The AssetToken shared in this repository is one essential part of the CRWD Network which has various areas and will build upon a row of smart contracts.
