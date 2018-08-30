@@ -16,7 +16,7 @@ const MockCRWDClearing = artifacts.require("MockCRWDClearing.sol")
 const equity =
     [
     {addr: "0x8846f6A9c956BB4BB5716D36F3A8275941Afca36", tokens: 14701},
-    {addr: "0xDDd56D586E10772c6C4fcF52604e44cce7d54A97", tokens: 20581},
+    {addr: "0xE4be1BFe935CD9C3D40e4e0852CAbb9C30a63d99", tokens: 20581},
     {addr: "0xaa84240e8f1d34029005935Ec08B78F38201636C", tokens: 11029},
     {addr: "0xC5d22B58C6A88e811e02473839dd0B0FBC8B2b4b", tokens: 12510},
     {addr: "0xE0dc5304fdAD430bE76494E5e2E8728622c71D25", tokens: 7945},
