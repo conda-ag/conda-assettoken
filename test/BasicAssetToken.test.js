@@ -282,6 +282,24 @@ contract('BasicAssetToken', (accounts) => {
             assert.equal(secondAccountBalance, 100)
         })
 
+        it('can transfer when alive + enabled + finished', async () => {
+            await token.setTokenAlive()
+            await token.enableTransfers(true)
+            await token.mint(buyerA, 100, {from: mintControl})
+            await token.finishMinting()
+            
+            let startAccountBalance = await token.balanceOf(buyerA)
+            assert.equal(startAccountBalance, 100)
+
+            await token.transfer(buyerB, 100, { from: buyerA })
+
+            let firstAccountBalance = await token.balanceOf(buyerA)
+            assert.equal(firstAccountBalance, 0)
+
+            let secondAccountBalance = await token.balanceOf(buyerB)
+            assert.equal(secondAccountBalance, 100)
+        })
+
         it('should throw an error when trying to transfer more than balance', async () => {
             await token.setTokenAlive()
             await token.mint(buyerA, 100, {from: mintControl})

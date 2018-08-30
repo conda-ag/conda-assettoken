@@ -157,7 +157,6 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
 
     modifier canTransfer() {
         require(availability.transfersEnabled);
-        require(!availability.mintingPhaseFinished);
         _;
     }
 
