@@ -373,7 +373,7 @@ library AssetTokenL {
     }
 
     /** @dev Receives ether to be distriubted to all token owners*/
-    function depositDividend(Store storage _self, uint256 msgValue, uint256 _currentSupply) //ERROR: msgValue ok?
+    function depositDividend(Store storage _self, uint256 msgValue, uint256 _currentSupply)
     public 
     {
         // creates a new index for the dividends
@@ -461,7 +461,7 @@ library AssetTokenL {
         // Cycle through all dividend distributions and make the payout
         for (uint i = _self.dividendsClaimed[msg.sender]; i < _self.dividends.length; i++) {
             if ((_self.dividends[i].claimed[msg.sender] == false) && (_self.dividends[i].recycled == false)) {
-                _self.dividendsClaimed[msg.sender] = SafeMath.add(i, 1); //ERROR: seems this should move into claimDividend...
+                _self.dividendsClaimed[msg.sender] = SafeMath.add(i, 1);
                 claimDividend(_self, _supply, i);
             }
         }
