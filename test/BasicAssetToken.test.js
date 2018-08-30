@@ -38,18 +38,18 @@ contract('BasicAssetToken', (accounts) => {
         assert.equal(await token.totalSupply(), 0)
     })
 
-    contract('testing initial state...', () => {
-        it('transfer should be paused per default', async () => {
-            assert.equal(await token.isTransfersPaused(), true)
-        })
-    })
+    // contract('testing initial state...', () => {
+    //     it('transfer should be paused per default', async () => {
+    //         assert.equal(await token.isTransfersPaused(), true)
+    //     })
+    // })
 
     contract('validating isMintingPhaseFinished()', () => {
         it('isMintingPhaseFinished() tells if crowdsale has finished', async () => {
             assert.equal(await token.isMintingPhaseFinished(), false) //precondition
 
             await token.setTokenAlive()
-            await token.finishMinting({from: mintControl})
+            await token.finishMinting({from: owner})
 
             assert.equal(await token.isMintingPhaseFinished(), true)
         })
@@ -69,7 +69,7 @@ contract('BasicAssetToken', (accounts) => {
             assert.equal((await someToken.balanceOf(token.address)).toString(), '100')
 
             await token.setTokenAlive()
-            await token.finishMinting({from: mintControl})
+            await token.finishMinting({from: owner})
 
             await token.rescueToken(someToken.address, owner, {from: tokenRescueControl})
             assert.equal((await someToken.balanceOf(token.address)).toString(), '0', "balance of sender/token is unexpected")
@@ -89,7 +89,7 @@ contract('BasicAssetToken', (accounts) => {
             assert.equal((await someToken.balanceOf(token.address)).toString(), '100')
 
             await token.setTokenAlive()
-            await token.finishMinting({from: mintControl})
+            await token.finishMinting({from: owner})
 
             await token.rescueToken(someToken.address, owner, {from: unknown}).should.be.rejectedWith(EVMRevert)
             assert.equal((await someToken.balanceOf(token.address)).toString(), '100', "balance of sender/token is unexpected")
@@ -175,7 +175,7 @@ contract('BasicAssetToken', (accounts) => {
 
         it('should throw an error when trying to mint but finished minting', async () => {
             await token.setTokenAlive()
-            await token.finishMinting({from: mintControl})
+            await token.finishMinting({from: owner})
             await token.mint(buyerA, 100, {from: mintControl}).should.be.rejectedWith(EVMRevert)
         })
 
@@ -189,9 +189,9 @@ contract('BasicAssetToken', (accounts) => {
             await token.mint(buyerA, 100, {from: unknown}).should.be.rejectedWith(EVMRevert)
         })
 
-        it('owner cannot finish minting', async () => {
+        it('mintControl cannot finish minting', async () => {
             await token.setTokenAlive()
-            await token.finishMinting({from: owner}).should.be.rejectedWith(EVMRevert)
+            await token.finishMinting({from: mintControl}).should.be.rejectedWith(EVMRevert)
         })
 
         contract('validating mint when paused', () => {
@@ -241,7 +241,7 @@ contract('BasicAssetToken', (accounts) => {
     //     it('burn should throw an error after finishing mint', async () => {
     //         await token.setTokenAlive()
     //         await token.mint(buyerA, 100, {from: mintControl})
-    //         await token.finishMinting({from: mintControl})
+    //         await token.finishMinting({from: owner})
     //         await token.burn(buyerA, 100).should.be.rejectedWith(EVMRevert)
     //     })
 
@@ -444,7 +444,7 @@ contract('BasicAssetToken', (accounts) => {
 
         it('owner cannot change name when canMintOrBurn is finished', async () => {
             await token.setTokenAlive()
-            await token.finishMinting({from: mintControl})
+            await token.finishMinting({from: owner})
             await token.setMetaData("changed name", "").should.be.rejectedWith(EVMRevert)
         })
     })
@@ -462,7 +462,7 @@ contract('BasicAssetToken', (accounts) => {
 
         it('owner cannot change symbol when canMintOrBurn has finished', async () => {
             await token.setTokenAlive()
-            await token.finishMinting({from: mintControl})
+            await token.finishMinting({from: owner})
             await token.setMetaData("", "SYM").should.be.rejectedWith(EVMRevert)
         })
     })
@@ -480,7 +480,7 @@ contract('BasicAssetToken', (accounts) => {
 
         it('owner cannot change setBaseRate when canMintOrBurn has finished', async () => {
             await token.setTokenAlive()
-            await token.finishMinting({from: mintControl})
+            await token.finishMinting({from: owner})
             await token.setCurrencyMetaData(eurt.address, 3, { from: owner }).should.be.rejectedWith(EVMRevert)
         })
     })
@@ -502,7 +502,7 @@ contract('BasicAssetToken', (accounts) => {
 
         it('owner cannot change setBaseCurrency when canMintOrBurn has finished', async () => {
             await token.setTokenAlive()
-            await token.finishMinting({from: mintControl})
+            await token.finishMinting({from: owner})
 
             let erc20TestToken = await ERC20TestToken.new()
             

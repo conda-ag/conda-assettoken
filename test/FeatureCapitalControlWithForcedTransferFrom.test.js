@@ -87,7 +87,7 @@ contract('FeatureCapitalControlWithForcedTransferFrom', (accounts) => {
         it('can mint as capitalControl even when finished capital increase/decrease phase', async () => {
             await token.setCapitalControl(capitalControl, {from: owner})
             await token.setTokenAlive({from: owner})
-            await token.finishMinting({from: mintControl})
+            await token.finishMinting({from: owner})
             await token.mint(buyerA, 10, {from: capitalControl}) //works because capitalControl
         })
     })
@@ -96,7 +96,7 @@ contract('FeatureCapitalControlWithForcedTransferFrom', (accounts) => {
         it('can reopen crowdsale as capitalControl', async () => {
             await token.setCapitalControl(capitalControl, {from: owner})
             await token.setTokenAlive({from: owner})
-            await token.finishMinting({from: mintControl})
+            await token.finishMinting({from: owner})
             await token.mint(buyerA, 10, {from: capitalControl}) //works because capitalControl
             await token.mint(buyerA, 10, {from: mintControl}).should.be.rejectedWith(EVMRevert) //not possible when finished
             
@@ -110,14 +110,14 @@ contract('FeatureCapitalControlWithForcedTransferFrom', (accounts) => {
 
         it('cannot reopen crowdsale as owner', async () => {
             await token.setTokenAlive({from: owner})
-            await token.finishMinting({from: mintControl})
+            await token.finishMinting({from: owner})
             
             await token.reopenCrowdsale({from: owner}).should.be.rejectedWith(EVMRevert)
         })
 
         it('cannot reopen crowdsale as non-capitalControl', async () => {
             await token.setTokenAlive({from: owner})
-            await token.finishMinting({from: mintControl})
+            await token.finishMinting({from: owner})
             
             await token.reopenCrowdsale({from: unknown}).should.be.rejectedWith(EVMRevert)
         })

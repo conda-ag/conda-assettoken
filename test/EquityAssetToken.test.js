@@ -196,7 +196,7 @@ contract('EquityAssetToken', (accounts) => {
         })
 
         it('should NOT throw an error when trying to mint but finished minting as capitalControl', async () => {
-            await token.finishMinting({from: capitalControl})
+            await token.finishMinting({from: originalOwner})
             await token.mint(buyerA, 200, {from: capitalControl})
 
             assert.equal((await token.balanceOf(buyerA)).toString(), '300')
@@ -228,7 +228,7 @@ contract('EquityAssetToken', (accounts) => {
 
     contract('validating reopenCrowdsale()', () => {
         it('can reopen crowdsale as capitalControl', async () => {
-            await token.finishMinting({from: capitalControl})
+            await token.finishMinting({from: originalOwner})
             await token.mint(buyerA, 10, {from: capitalControl}) //works because capitalControl
             await token.mint(buyerA, 10, {from: mintControl}).should.be.rejectedWith(EVMRevert) //not possible anymore
             
@@ -242,7 +242,7 @@ contract('EquityAssetToken', (accounts) => {
         })
 
         it('cannot reopen crowdsale as non-capitalControl', async () => {
-            await token.finishMinting({from: capitalControl})
+            await token.finishMinting({from: originalOwner})
             
             await token.reopenCrowdsale({from: unknown}).should.be.rejectedWith(EVMRevert)
         })
@@ -253,7 +253,7 @@ contract('EquityAssetToken', (accounts) => {
     //         it('cannot burn as capitalControl when finished as capitalcontrol (requires redeployment)', async () => {
     //             await token.mint(buyerA, 100, {from: capitalControl})
 
-    //             await token.finishMinting({from: capitalControl})
+    //             await token.finishMinting({from: owner})
     //             await token.burn(buyerA, 10, {from: capitalControl}).should.be.rejectedWith(EVMRevert) //works because capitalControl
 
     //             let firstAccountBalance = await token.balanceOf(buyerA)
