@@ -261,11 +261,19 @@ library AssetTokenL {
         return getValueAt(_self.balances[_owner], _blockNumber);
     }
 
+    function balanceOfNow(Supply storage _self, address _owner) public view returns (uint256) {
+        return getValueAt(_self.balances[_owner], block.number);
+    }
+
     /// @notice Total amount of tokens at a specific `_blockNumber`.
     /// @param _blockNumber The block number when the totalSupply is queried
     /// @return The total amount of tokens at `_blockNumber`
     function totalSupplyAt(Supply storage _self, uint _blockNumber) public view returns(uint) {
         return getValueAt(_self.totalSupplyHistory, _blockNumber);
+    }
+
+    function totalSupplyNow(Supply storage _self) public view returns(uint) {
+        return getValueAt(_self.totalSupplyHistory, block.number);
     }
 
 ////////////////

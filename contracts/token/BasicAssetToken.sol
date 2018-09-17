@@ -238,7 +238,7 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
     /// @param _owner The address that's balance is being requested
     /// @return The balance of `_owner` at the current block
     function balanceOf(address _owner) public view returns (uint256 balance) {
-        return supply.balanceOfAt(_owner, block.number);
+        return supply.balanceOfNow(_owner);
     }
 
     /// @notice `msg.sender` approves `_spender` to spend `_amount` tokens on
@@ -263,7 +263,7 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
      /// @dev This function makes it easy to get the total number of tokens
     /// @return The total number of tokens
     function totalSupply() public view returns (uint) {
-        return supply.totalSupplyAt(block.number);
+        return supply.totalSupplyNow();
     }
 
 
