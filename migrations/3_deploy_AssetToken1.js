@@ -16,7 +16,7 @@ const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 const fs = require("fs");
 const configFilename = "../deployment_config.json";
 
-const getJsonConfig = () => {
+const getDeploymentJsonConfig = () => {
     let jsonConfig = {}
     if(!fs.existsSync(configFilename)) {
         return jsonConfig; //needs to be manually created once
@@ -30,7 +30,7 @@ const getJsonConfig = () => {
 }
 
 const updateDeploymentConfig = (selectiveUpdateObject) => {
-    let jsonConfig = getJsonConfig()
+    let jsonConfig = getDeploymentJsonConfig()
 
     // console.log("Output Content before : \n"+ JSON.stringify(jsonConfig)); 
     
@@ -40,7 +40,7 @@ const updateDeploymentConfig = (selectiveUpdateObject) => {
     fs.writeFileSync(configFilename, JSON.stringify(jsonConfig, null, 2), 'utf8')
 }
 
-module.exports = (deployer, network, accounts) => {
+module.exports = async (deployer, network, accounts) => {
 
     if (accounts[1] === undefined || accounts[1] == null) {
         console.log("accounts[1]: " + accounts[1])
@@ -66,26 +66,25 @@ module.exports = (deployer, network, accounts) => {
     console.log("PAUSECONTROL:::::"+pauseControl)
     console.log("TOKENRESCUECONTROL:::::"+tokenRescueControl)
 
-    deployer.deploy(DividendEquityAssetToken, capitalControl, {from: owner}).then(async () => {
-        const token = await DividendEquityAssetToken.deployed()
+    await deployer.deploy(DividendEquityAssetToken, capitalControl, {from: owner})
+    const token = DividendEquityAssetToken.at(DividendEquityAssetToken.address)
 
-        // DividendEquityAssetToken.web3.eth.defaultAccount=owner
+    await token.setMetaData("CONDA AG Equity Token", "CONDA", {from: owner})
 
-        await token.setMetaData("CONDA AG Equity Token", "CONDA", {from: owner})
+    const deploymentConfig = getDeploymentJsonConfig()
+    let clearingAddress = ZERO_ADDRESS
+    if(deploymentConfig.hasOwnProperty('clearingAddress')) {
+        clearingAddress = deploymentConfig.clearingAddress
+    }
 
-        const deploymentConfig = getJsonConfig()
-        let clearingAddress = ZERO_ADDRESS
-        if(deploymentConfig.hasOwnProperty('clearingAddress')) {
-            clearingAddress = deploymentConfig.clearingAddress
-        }
+    console.log("=> Used clearing address: " + clearingAddress)
 
-        console.log("=> Used clearing address: " + clearingAddress)
+    await token.setClearingAddress(clearingAddress, {from: owner})
 
-        await token.setClearingAddress(clearingAddress, {from: owner})
+    await token.setRoles(pauseControl, tokenRescueControl, {from: owner})
 
-        await token.setRoles(pauseControl, tokenRescueControl, {from: owner})
+    // await token.finishMinting({from: owner})
+    // await token.setTokenAlive({from: owner})
 
-        // await token.finishMinting({from: owner})
-        // await token.setTokenAlive({from: owner})
-    })
+    updateDeploymentConfig({ AssetToken1: DividendEquityAssetToken.address })
 }
