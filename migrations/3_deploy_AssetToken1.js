@@ -86,5 +86,5 @@ module.exports = async (deployer, network, accounts) => {
     // await token.finishMinting({from: owner})
     // await token.setTokenAlive({from: owner})
 
-    updateDeploymentConfig({ AssetToken1: DividendEquityAssetToken.address })
+    updateDeploymentConfig({ assetToken1: DividendEquityAssetToken.address })
 }
