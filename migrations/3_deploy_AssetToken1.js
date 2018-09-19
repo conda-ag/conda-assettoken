@@ -32,10 +32,10 @@ const getJsonConfig = () => {
 const updateDeploymentConfig = (selectiveUpdateObject) => {
     let jsonConfig = getJsonConfig()
 
-    console.log("Output Content before : \n"+ JSON.stringify(jsonConfig)); 
+    // console.log("Output Content before : \n"+ JSON.stringify(jsonConfig)); 
     
     jsonConfig = Object.assign(jsonConfig, selectiveUpdateObject)
-    console.log("Output Content : \n"+ JSON.stringify(jsonConfig))
+    // console.log("Output Content : \n"+ JSON.stringify(jsonConfig))
     
     fs.writeFileSync(configFilename, JSON.stringify(jsonConfig, null, 2), 'utf8')
 }
