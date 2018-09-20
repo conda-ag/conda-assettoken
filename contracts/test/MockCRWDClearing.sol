@@ -35,6 +35,7 @@ contract MockCrwdClearing is Ownable, ICRWDClearing {
 
     function clearMintFunds(address /*_underlyingCurrency*/, address _from, address /*_to*/, uint256 _amount) public returns (bool) {
         
+        /* LEGACY: now called from crowdsale */
 
         if (companyFee > 0) {
             uint256 feeCompanyToPay = _amount.mul(companyFee).div(1000);
@@ -50,6 +51,9 @@ contract MockCrwdClearing is Ownable, ICRWDClearing {
 
         return true;
     }
+
+    function clearMintFundsFromCrowdsale(address _to, uint256 _amount) public returns (bool) { return true; } //from Crowdsale
+    function mintFromCrowdsale(address _to, uint256 _amount) public returns (bool) { return true; } //from Crowdsale
 
     function setFee(address _crwdToken, uint256 _companyFee, uint256 _investorFee, address _condaAddress, address _companyAddress)
     public

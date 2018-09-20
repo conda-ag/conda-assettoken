@@ -47,8 +47,7 @@ contract CRWDAssetToken is BasicAssetToken, ICRWDAssetToken {
       * @return A boolean that indicates if the operation was successful.
       */
     function mint(address _to, uint256 _amount) public canMint returns (bool) {
-        uint256 transferValue = _amount.mul(baseRate).div(1000);
-        ICRWDClearing(clearingAddress).clearMintFunds(baseCurrency, _to, _to, transferValue);
+        // ICRWDClearing(clearingAddress).clearMintFunds(baseCurrency, _to, _to, _amount.mul(baseRate).div(1000)); //legacy. now called from crowdsale
         return super.mint(_to,_amount);
     }
 
