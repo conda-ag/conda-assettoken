@@ -52,7 +52,6 @@ contract MockCrwdClearing is Ownable, ICRWDClearing {
         return true;
     }
 
-    function clearMintFundsFromCrowdsale(address _to, uint256 _amount) public returns (bool) { return true; } //from Crowdsale
     function mintFromCrowdsale(address _to, uint256 _amount) public returns (bool) { return true; } //from Crowdsale
 
     function setFee(address _crwdToken, uint256 _companyFee, uint256 _investorFee, address _condaAddress, address _companyAddress)
