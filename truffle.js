@@ -17,6 +17,8 @@ let getProvider = () => {
   } catch(err){
     return "";
   }
+
+  return new HDWalletProvider(mnemonic, node)
 }
 
 module.exports = {
