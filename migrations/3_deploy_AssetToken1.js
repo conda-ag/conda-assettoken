@@ -51,7 +51,13 @@ module.exports = async (deployer, network, accounts) => {
     await deployer.deploy(AssetTokenL)
 
     //link libraries
-    await deployer.link(AssetTokenL, [BasicAssetToken, DividendAssetToken, CRWDAssetToken, EquityAssetToken, FeatureCapitalControl, DividendEquityAssetToken, FeatureCapitalControlWithForcedTransferFrom])
+    await deployer.link(AssetTokenL, BasicAssetToken)
+    await deployer.link(AssetTokenL, DividendAssetToken)
+    await deployer.link(AssetTokenL, CRWDAssetToken)
+    await deployer.link(AssetTokenL, EquityAssetToken)
+    await deployer.link(AssetTokenL, FeatureCapitalControl)
+    await deployer.link(AssetTokenL, DividendEquityAssetToken)
+    await deployer.link(AssetTokenL, FeatureCapitalControlWithForcedTransferFrom)
 
     //deploy contracts
     // deployer.deploy(MockCRWDClearing)
