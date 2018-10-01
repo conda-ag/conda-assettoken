@@ -6,20 +6,22 @@ require('babel-polyfill');
 
 var HDWalletProvider = require("truffle-hdwallet-provider");
 
-let getProvider = () => {
-  let mnemonic = ""
-  let node = ""
-
+let getMnemonic = () => {
   try{
     const mnemonicJson = JSON.parse(require('fs').readFileSync("./mnemonic.json", "utf8"))
-    mnemonic = mnemonicJson.mnemonic
-    node = mnemonicJson.node
+    return mnemonicJson.mnemonic
   } catch(err){
-    console.log(err)
     return "";
   }
+}
 
-  return new HDWalletProvider(mnemonic, node)
+let getNode = () => {
+  try{
+    const mnemonicJson = JSON.parse(require('fs').readFileSync("./mnemonic.json", "utf8"))
+    return mnemonicJson.node
+  } catch(err){
+    return "";
+  }
 }
 
 module.exports = {
@@ -38,7 +40,7 @@ module.exports = {
       gasPrice: 0x01      // <-- Use this low gas price
     },
     ropsten: {
-      provider: () => getProvider(),
+      provider: () => new HDWalletProvider(getMnemonic(), getNode(), 0, 10),
       gas: 4700000,
       gasPrice: 100000000000,
       network_id: 3
