@@ -37,7 +37,7 @@ module.exports = {
       gasPrice: 0x01      // <-- Use this low gas price
     },
     ropsten: {
-      provider: getProvider(),
+      provider: () => getProvider(),
       gas: 4700000,
       gasPrice: 100000000000,
       network_id: 3
