@@ -11,10 +11,11 @@ let getProvider = () => {
   let node = ""
 
   try{
-    mnemonic = JSON.parse(require('fs').readFileSync("./mnemonic.json", "utf8"))
-    mnemonic = mnemonic.mnemonic
-    node = mnemonic.node
+    const mnemonicJson = JSON.parse(require('fs').readFileSync("./mnemonic.json", "utf8"))
+    mnemonic = mnemonicJson.mnemonic
+    node = mnemonicJson.node
   } catch(err){
+    console.log(err)
     return "";
   }
 
