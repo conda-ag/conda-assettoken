@@ -48,7 +48,7 @@ module.exports = async (deployer, network, accounts) => {
     }
 
     // deploy libraries
-    deployer.deploy(AssetTokenL)
+    await deployer.deploy(AssetTokenL)
 
     //link libraries
     deployer.link(AssetTokenL, [BasicAssetToken, DividendAssetToken, CRWDAssetToken, EquityAssetToken, FeatureCapitalControl, DividendEquityAssetToken, FeatureCapitalControlWithForcedTransferFrom])
@@ -67,7 +67,7 @@ module.exports = async (deployer, network, accounts) => {
     console.log("TOKENRESCUECONTROL:::::"+tokenRescueControl)
 
     await deployer.deploy(DividendEquityAssetToken, capitalControl, {from: owner})
-    const token = DividendEquityAssetToken.at(DividendEquityAssetToken.address)
+    const token = await DividendEquityAssetToken.at(DividendEquityAssetToken.address)
 
     await token.setMetaData("CONDA AG Equity Token", "CONDA", {from: owner})
 

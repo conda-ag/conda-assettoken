@@ -64,7 +64,7 @@ let getMnemonic = () => {
     }
 }
 
-module.exports = (deployer, network, accounts) => {
+module.exports = async (deployer, network, accounts) => {
 
     if (accounts[1] === undefined || accounts[1] == null) {
         console.log("accounts[1]: " + accounts[1])
@@ -72,13 +72,13 @@ module.exports = (deployer, network, accounts) => {
     }
 
     // deploy libraries
-    deployer.deploy(AssetTokenL)
+    await deployer.deploy(AssetTokenL)
 
     //link libraries
-    deployer.link(AssetTokenL, [BasicAssetToken, DividendAssetToken, CRWDAssetToken, EquityAssetToken, FeatureCapitalControl, DividendEquityAssetToken, FeatureCapitalControlWithForcedTransferFrom])
+    await deployer.link(AssetTokenL, [BasicAssetToken, DividendAssetToken, CRWDAssetToken, EquityAssetToken, FeatureCapitalControl, DividendEquityAssetToken, FeatureCapitalControlWithForcedTransferFrom])
 
     //deploy contracts
-    deployer.deploy(MockCRWDClearing)
+    await deployer.deploy(MockCRWDClearing)
 
     const owner = accounts[0]
     const capitalControl = accounts[1]
@@ -90,24 +90,24 @@ module.exports = (deployer, network, accounts) => {
     console.log("PAUSECONTROL:::::"+pauseControl)
     console.log("TOKENRESCUECONTROL:::::"+tokenRescueControl)
 
-    deployer.deploy(DividendEquityAssetToken, capitalControl, {from: owner}).then(async () => {
-        const token = await DividendEquityAssetToken.deployed()
+    await deployer.deploy(DividendEquityAssetToken, capitalControl, {from: owner})
+    
+    const token = await DividendEquityAssetToken.at(DividendEquityAssetToken.address)
 
+    // DividendEquityAssetToken.web3.eth.defaultAccount=owner
+
+    await token.setMetaData("CONDA AG Equity Token", "CONDA", {from: owner})
+
+    await token.setClearingAddress(MockCRWDClearing.address, {from: owner})
+
+    await token.setRoles(pauseControl, tokenRescueControl, {from: owner})
+
+    await token.finishMinting({from: owner})
+
+    await token.setTokenAlive({from: owner})
+
+    for(let i=0; i < equity.length; i++) {
         // DividendEquityAssetToken.web3.eth.defaultAccount=owner
-
-        await token.setMetaData("CONDA AG Equity Token", "CONDA", {from: owner})
-
-        await token.setClearingAddress(MockCRWDClearing.address, {from: owner})
-
-        await token.setRoles(pauseControl, tokenRescueControl, {from: owner})
-
-        await token.finishMinting({from: owner})
-
-        await token.setTokenAlive({from: owner})
-
-        for(let i=0; i < equity.length; i++) {
-            // DividendEquityAssetToken.web3.eth.defaultAccount=owner
-            await token.mint(equity[i].addr, equity[i].tokens, {from: capitalControl})
-        }
-    })
+        await token.mint(equity[i].addr, equity[i].tokens, {from: capitalControl})
+    }
 }
