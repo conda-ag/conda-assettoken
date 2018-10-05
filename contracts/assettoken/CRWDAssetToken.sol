@@ -3,7 +3,7 @@ pragma solidity ^0.4.24;
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 import "./BasicAssetToken.sol";
-import "../interfaces/ICRWDClearing.sol";
+import "./interfaces/ICRWDClearing.sol";
 import "./abstract/ICRWDAssetToken.sol";
 
 /** @title CRWD AssetToken. */
