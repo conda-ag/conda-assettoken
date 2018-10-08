@@ -44,6 +44,12 @@ module.exports = {
       gas: 4700000,
       gasPrice: 100000000000,
       network_id: 3
-    }   
+    },
+    kovan: {
+      provider: () => new HDWalletProvider(getMnemonic(), getNode(), 0, 10),
+      gas: 4700000,
+      gasPrice: 100000000000,
+      network_id: 42
+    }
   }
 };
