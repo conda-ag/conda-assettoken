@@ -48,7 +48,7 @@ module.exports = {
     kovan: {
       provider: () => new HDWalletProvider(getMnemonic(), getNode(), 0, 10),
       gas: 4700000,
-      gasPrice: 100000000000,
+      gasPrice: 1,
       network_id: 42
     }
   }
