@@ -485,29 +485,11 @@ contract('BasicAssetToken', (accounts) => {
         })
     })
 
-    contract('validating setBaseRate', () => {
-        it('owner can change setBaseRate when canMintOrBurn not finished', async () => {
-            await token.setCurrencyMetaData(eurt.address, 3, { from: owner })
-            assert.equal(await token.baseRate.call(), 3)
-        })
-
-        it('non owner cannot change setBaseRate even if canMintOrBurn not finished', async () => {
-            owner.should.not.eq(buyerA)
-            await token.setCurrencyMetaData(eurt.address, 3, { from: buyerA }).should.be.rejectedWith(EVMRevert)
-        })
-
-        it('owner cannot change setBaseRate when canMintOrBurn has finished', async () => {
-            await token.setTokenAlive()
-            await token.finishMinting({from: owner})
-            await token.setCurrencyMetaData(eurt.address, 3, { from: owner }).should.be.rejectedWith(EVMRevert)
-        })
-    })
-
     contract('validating setBaseCurrency', () => {
         it('owner can change setBaseCurrency when canMintOrBurn not finished', async () => {
             let erc20TestToken = await ERC20TestToken.new()
             
-            await token.setCurrencyMetaData(erc20TestToken.address, 3, { from: owner })
+            await token.setCurrencyMetaData(erc20TestToken.address, { from: owner })
             assert.equal(await token.baseCurrency.call(), erc20TestToken.address)
         })
 
@@ -515,7 +497,7 @@ contract('BasicAssetToken', (accounts) => {
             buyerA.should.not.eq(owner)
             let erc20TestToken = await ERC20TestToken.new()
             
-            await token.setCurrencyMetaData(erc20TestToken.address, 3, { from: buyerA }).should.be.rejectedWith(EVMRevert)
+            await token.setCurrencyMetaData(erc20TestToken.address, { from: buyerA }).should.be.rejectedWith(EVMRevert)
         })
 
         it('owner cannot change setBaseCurrency when canMintOrBurn has finished', async () => {
@@ -524,11 +506,11 @@ contract('BasicAssetToken', (accounts) => {
 
             let erc20TestToken = await ERC20TestToken.new()
             
-            await token.setCurrencyMetaData(erc20TestToken.address, 3, { from: owner }).should.be.rejectedWith(EVMRevert)
+            await token.setCurrencyMetaData(erc20TestToken.address, { from: owner }).should.be.rejectedWith(EVMRevert)
         })
 
         it('owner cannot change setBaseCurrency to 0x0', async () => {
-            await token.setCurrencyMetaData(ZERO_ADDRESS, 3, { from: owner }).should.be.rejectedWith(EVMRevert)
+            await token.setCurrencyMetaData(ZERO_ADDRESS, { from: owner }).should.be.rejectedWith(EVMRevert)
         })
     })
 

@@ -24,8 +24,7 @@ contract CRWDAssetToken is BasicAssetToken, ICRWDAssetToken {
       * @return A boolean that indicates if the operation was successful.
       */
     function transfer(address _to, uint256 _amount) public returns (bool success) {
-        uint256 transferValue = _amount.mul(baseRate).div(1000);
-        ICRWDClearing(clearingAddress).clearFunds(baseCurrency, msg.sender, _to, transferValue);
+        ICRWDClearing(clearingAddress).clearFunds(baseCurrency, msg.sender, _to, _amount);
         return super.transfer(_to, _amount);
     }
 
@@ -36,8 +35,7 @@ contract CRWDAssetToken is BasicAssetToken, ICRWDAssetToken {
       * @return A boolean that indicates if the operation was successful.
       */
     function transferFrom(address _from, address _to, uint256 _amount) public returns (bool success) {
-        uint256 transferValue = _amount.mul(baseRate).div(1000);
-        ICRWDClearing(clearingAddress).clearFunds(baseCurrency, _from, _to, transferValue);
+        ICRWDClearing(clearingAddress).clearFunds(baseCurrency, _from, _to, _amount);
         return super.transferFrom(_from, _to, _amount);
     }
 

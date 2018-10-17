@@ -471,9 +471,8 @@ contract('EquityAssetToken', (accounts) => {
             const tmpToken = await EquityAssetToken.new(capitalControl)
             const tmpEurt = await ERC20TestToken.new()
 
-            await tmpToken.setCurrencyMetaData(tmpEurt.address, 1337, { from: originalOwner })
+            await tmpToken.setCurrencyMetaData(tmpEurt.address, { from: originalOwner })
             assert.equal(await tmpToken.baseCurrency(), tmpEurt.address)
-            assert.equal(await tmpToken.baseRate(), 1337)
         })
 
         it('non owner cannot change baseCurrency even if not yet alive', async () => {
@@ -481,7 +480,7 @@ contract('EquityAssetToken', (accounts) => {
             const tmpEurt = await ERC20TestToken.new()
 
             originalOwner.should.not.eq(unknown)
-            await tmpToken.setCurrencyMetaData(tmpEurt.address, 1, { from: unknown }).should.be.rejectedWith(EVMRevert)
+            await tmpToken.setCurrencyMetaData(tmpEurt.address, { from: unknown }).should.be.rejectedWith(EVMRevert)
         })
 
         it('capitalControl can change anytime', async () => {
@@ -489,12 +488,12 @@ contract('EquityAssetToken', (accounts) => {
             const tmpEurt1 = await ERC20TestToken.new()
             const tmpEurt2 = await ERC20TestToken.new()
 
-            await tmpToken.setCurrencyMetaData(tmpEurt1.address, 1, { from: capitalControl })
+            await tmpToken.setCurrencyMetaData(tmpEurt1.address, { from: capitalControl })
             assert.equal(await tmpToken.baseCurrency(), tmpEurt1.address)
 
             await tmpToken.setTokenAlive()
 
-            await tmpToken.setCurrencyMetaData(tmpEurt2.address, 1, { from: capitalControl })
+            await tmpToken.setCurrencyMetaData(tmpEurt2.address, { from: capitalControl })
             assert.equal(await tmpToken.baseCurrency(), tmpEurt2.address)
         })
 
@@ -503,7 +502,7 @@ contract('EquityAssetToken', (accounts) => {
             const tmpEurt = await ERC20TestToken.new()
 
             await tmpToken.setTokenAlive()
-            await tmpToken.setCurrencyMetaData(tmpEurt.address, 1, { from: originalOwner }).should.be.rejectedWith(EVMRevert)
+            await tmpToken.setCurrencyMetaData(tmpEurt.address, { from: originalOwner }).should.be.rejectedWith(EVMRevert)
         })
     })
 
