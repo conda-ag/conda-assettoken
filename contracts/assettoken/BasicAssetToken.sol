@@ -95,6 +95,7 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
     event TransferPaused(address indexed initiator);
     event TransferResumed(address indexed initiator);
     event Reopened(address indexed initiator);
+    event MetaDataChanged(string name, string symbol, address baseCurrency);
 
 ///////////////////
 // Modifiers
@@ -171,6 +172,8 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
         symbol = _symbol;
 
         baseCurrency = _tokenBaseCurrency;
+
+        emit MetaDataChanged(_name,_symbol, _tokenBaseCurrency);
     }
 
     /** @dev Set the address of the crowdsale contract.
