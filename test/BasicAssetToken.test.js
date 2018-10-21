@@ -451,37 +451,37 @@ contract('BasicAssetToken', (accounts) => {
 
     contract('validating setName', () => {
         it('owner can change name when canMintOrBurn not finished', async () => {
-            await token.setMetaData("changed name", "")
+            await token.setMetaData("changed name", "", ZERO_ADDRESS)
             assert.equal(await token.name.call(), "changed name")
         })
 
         it('non owner cannot change name even if canMintOrBurn not finished', async () => {
             owner.should.not.eq(buyerA)
-            await token.setMetaData("changed name", "", { 'from': buyerA }).should.be.rejectedWith(EVMRevert)
+            await token.setMetaData("changed name", "", ZERO_ADDRESS, { 'from': buyerA }).should.be.rejectedWith(EVMRevert)
         })
 
         it('owner cannot change name when canMintOrBurn is finished', async () => {
             await token.setTokenAlive()
             await token.finishMinting({from: owner})
-            await token.setMetaData("changed name", "").should.be.rejectedWith(EVMRevert)
+            await token.setMetaData("changed name", "", ZERO_ADDRESS).should.be.rejectedWith(EVMRevert)
         })
     })
 
     contract('validating setSymbol', () => {
         it('owner can change symbol when canMintOrBurn not finished', async () => {
-            await token.setMetaData("", "SYM")
+            await token.setMetaData("", "SYM", ZERO_ADDRESS)
             assert.equal(await token.symbol.call(), "SYM")
         })
 
         it('non owner cannot change symbol even if canMintOrBurn not finished', async () => {
             owner.should.not.eq(buyerA)
-            await token.setMetaData("", "SYM", {'from': buyerA}).should.be.rejectedWith(EVMRevert)
+            await token.setMetaData("", "SYM", ZERO_ADDRESS, {'from': buyerA}).should.be.rejectedWith(EVMRevert)
         })
 
         it('owner cannot change symbol when canMintOrBurn has finished', async () => {
             await token.setTokenAlive()
             await token.finishMinting({from: owner})
-            await token.setMetaData("", "SYM").should.be.rejectedWith(EVMRevert)
+            await token.setMetaData("", "SYM", ZERO_ADDRESS).should.be.rejectedWith(EVMRevert)
         })
     })
 
@@ -489,7 +489,7 @@ contract('BasicAssetToken', (accounts) => {
         it('owner can change setBaseCurrency when canMintOrBurn not finished', async () => {
             let erc20TestToken = await ERC20TestToken.new()
             
-            await token.setCurrencyMetaData(erc20TestToken.address, { from: owner })
+            await token.setMetaData("", "SYM", erc20TestToken.address, { from: owner })
             assert.equal(await token.baseCurrency.call(), erc20TestToken.address)
         })
 
@@ -497,7 +497,7 @@ contract('BasicAssetToken', (accounts) => {
             buyerA.should.not.eq(owner)
             let erc20TestToken = await ERC20TestToken.new()
             
-            await token.setCurrencyMetaData(erc20TestToken.address, { from: buyerA }).should.be.rejectedWith(EVMRevert)
+            await token.setMetaData("", "SYM", erc20TestToken.address, { from: buyerA }).should.be.rejectedWith(EVMRevert)
         })
 
         it('owner cannot change setBaseCurrency when canMintOrBurn has finished', async () => {
@@ -506,11 +506,7 @@ contract('BasicAssetToken', (accounts) => {
 
             let erc20TestToken = await ERC20TestToken.new()
             
-            await token.setCurrencyMetaData(erc20TestToken.address, { from: owner }).should.be.rejectedWith(EVMRevert)
-        })
-
-        it('owner cannot change setBaseCurrency to 0x0', async () => {
-            await token.setCurrencyMetaData(ZERO_ADDRESS, { from: owner }).should.be.rejectedWith(EVMRevert)
+            await token.setMetaData("", "SYM", erc20TestToken.address, { from: owner }).should.be.rejectedWith(EVMRevert)
         })
     })
 

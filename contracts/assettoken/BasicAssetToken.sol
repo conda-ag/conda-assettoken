@@ -164,21 +164,11 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
       * @param _name The name of the token.
       * @param _symbol The symbol of the token.
       */
-    function setMetaData(string _name, string _symbol) public 
+    function setMetaData(string _name, string _symbol, address _tokenBaseCurrency) public 
     canSetMetadata 
     {
         name = _name;
         symbol = _symbol;
-    }
-
-    /** @dev Change the token's currency metadata.
-      * @param _tokenBaseCurrency Address of the token used as underlying base currency.
-      */
-    function setCurrencyMetaData(address _tokenBaseCurrency) public 
-    canSetMetadata
-    {
-        require(_tokenBaseCurrency != address(0));
-        require(_tokenBaseCurrency != address(this));
 
         baseCurrency = _tokenBaseCurrency;
     }

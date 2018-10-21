@@ -439,7 +439,7 @@ contract('EquityAssetToken', (accounts) => {
         it('owner can change metadata when not alive', async () => {
             const tmpToken = await EquityAssetToken.new(capitalControl)
 
-            await tmpToken.setMetaData("changed name", "changed symbol", {from: originalOwner})
+            await tmpToken.setMetaData("changed name", "changed symbol", ZERO_ADDRESS, {from: originalOwner})
             assert.equal(await tmpToken.name(), "changed name")
             assert.equal(await tmpToken.symbol(), "changed symbol")
         })
@@ -448,30 +448,30 @@ contract('EquityAssetToken', (accounts) => {
             const tmpToken = await EquityAssetToken.new(capitalControl)
 
             originalOwner.should.not.eq(buyerA)
-            await tmpToken.setMetaData("changed name", "changed symbol", {'from': buyerA }).should.be.rejectedWith(EVMRevert)
+            await tmpToken.setMetaData("changed name", "changed symbol", ZERO_ADDRESS, {'from': buyerA }).should.be.rejectedWith(EVMRevert)
         })
 
         it('owner cannot change metadata when alive', async () => {
             const tmpToken = await EquityAssetToken.new(capitalControl)
 
             await tmpToken.setTokenAlive()
-            await tmpToken.setMetaData("changed name", "changed symbol", {from: originalOwner}).should.be.rejectedWith(EVMRevert)
+            await tmpToken.setMetaData("changed name", "changed symbol", ZERO_ADDRESS, {from: originalOwner}).should.be.rejectedWith(EVMRevert)
         })
 
         it('capitalControl can change metadata even when alive', async () => {
             const tmpToken = await EquityAssetToken.new(capitalControl)
 
             await tmpToken.setTokenAlive()
-            await tmpToken.setMetaData("changed name", "changed symbol", {from: capitalControl})
+            await tmpToken.setMetaData("changed name", "changed symbol", ZERO_ADDRESS, {from: capitalControl})
         })
     })
 
-    contract('validating setCurrencyMetaData()', () => {
+    contract('validating setMetaData()', () => {
         it('owner can change baseRate when not alive', async () => {
             const tmpToken = await EquityAssetToken.new(capitalControl)
             const tmpEurt = await ERC20TestToken.new()
 
-            await tmpToken.setCurrencyMetaData(tmpEurt.address, { from: originalOwner })
+            await tmpToken.setMetaData("", "SYM", tmpEurt.address, { from: originalOwner })
             assert.equal(await tmpToken.baseCurrency(), tmpEurt.address)
         })
 
@@ -480,7 +480,7 @@ contract('EquityAssetToken', (accounts) => {
             const tmpEurt = await ERC20TestToken.new()
 
             originalOwner.should.not.eq(unknown)
-            await tmpToken.setCurrencyMetaData(tmpEurt.address, { from: unknown }).should.be.rejectedWith(EVMRevert)
+            await tmpToken.setMetaData("", "SYM", tmpEurt.address, { from: unknown }).should.be.rejectedWith(EVMRevert)
         })
 
         it('capitalControl can change anytime', async () => {
@@ -488,12 +488,12 @@ contract('EquityAssetToken', (accounts) => {
             const tmpEurt1 = await ERC20TestToken.new()
             const tmpEurt2 = await ERC20TestToken.new()
 
-            await tmpToken.setCurrencyMetaData(tmpEurt1.address, { from: capitalControl })
+            await tmpToken.setMetaData("", "SYM", tmpEurt1.address, { from: capitalControl })
             assert.equal(await tmpToken.baseCurrency(), tmpEurt1.address)
 
             await tmpToken.setTokenAlive()
 
-            await tmpToken.setCurrencyMetaData(tmpEurt2.address, { from: capitalControl })
+            await tmpToken.setMetaData("", "SYM", tmpEurt2.address, { from: capitalControl })
             assert.equal(await tmpToken.baseCurrency(), tmpEurt2.address)
         })
 
@@ -502,7 +502,7 @@ contract('EquityAssetToken', (accounts) => {
             const tmpEurt = await ERC20TestToken.new()
 
             await tmpToken.setTokenAlive()
-            await tmpToken.setCurrencyMetaData(tmpEurt.address, { from: originalOwner }).should.be.rejectedWith(EVMRevert)
+            await tmpToken.setMetaData("", "SYM", tmpEurt.address, { from: originalOwner }).should.be.rejectedWith(EVMRevert)
         })
     })
 

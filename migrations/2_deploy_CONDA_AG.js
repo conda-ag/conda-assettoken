@@ -13,6 +13,8 @@ const AssetTokenL = artifacts.require("AssetTokenL.sol")
 
 const MockCRWDClearing = artifacts.require("MockCRWDClearing.sol")
 
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
+
 const equity =
     [
     {addr: "0x8846f6A9c956BB4BB5716D36F3A8275941Afca36", tokens: 14701},
@@ -103,7 +105,7 @@ module.exports = (deployer, network, accounts) => {
 
     //     // DividendEquityAssetToken.web3.eth.defaultAccount=owner
 
-    //     await token.setMetaData("CONDA AG Equity Token", "CONDA", {from: owner})
+    //     await token.setMetaData("CONDA AG Equity Token", "CONDA", ZERO_ADDRESS, {from: owner})
 
     //     await token.setClearingAddress(MockCRWDClearing.address, {from: owner})
 
