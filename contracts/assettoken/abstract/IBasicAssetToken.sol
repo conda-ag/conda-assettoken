@@ -3,13 +3,13 @@ pragma solidity ^0.4.24;
 contract IBasicAssetToken {
     function checkCanSetMetadata() internal returns (bool);
 
-    function setMetaData(string _name, string _symbol) public;
-    function setCurrencyMetaData(address _tokenBaseCurrency) public;
-    function setMintControl(address _mintControl) public;
+    function setMetaData(string _name, string _symbol, address _tokenBaseCurrency) public;
     
+    function getTokenRescueControl() public view returns (address);
     function getPauseControl() public view returns (address);
     function isTransfersPaused() public view returns (bool);
 
+    function setMintControl(address _mintControl) public;
     function setRoles(address _pauseControl, address _tokenRescueControl) public;
 
     function setTokenAlive() public;
@@ -58,8 +58,11 @@ contract IBasicAssetToken {
     event Approval(address indexed owner, address indexed spender, uint256 value);
     event Transfer(address indexed from, address indexed to, uint256 value);
     event MintDetailed(address indexed initiator, address indexed to, uint256 amount);
-    event MintFinished();
+    event MintFinished(address indexed initiator);
     event TransferPaused(address indexed initiator);
     event TransferResumed(address indexed initiator);
     event Reopened(address indexed initiator);
+    event MetaDataChanged(address indexed initiator, string name, string symbol, address baseCurrency);
+    event RolesChanged(address indexed initiator, address _pauseControl, address _tokenRescueControl);
+    event MintControlChanged(address indexed initiator, address mintControl);
 }

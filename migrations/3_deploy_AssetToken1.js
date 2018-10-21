@@ -76,7 +76,7 @@ module.exports = (deployer, network, accounts) => {
         await deployer.deploy(DividendEquityAssetToken, capitalControl, {from: owner})
         const token = await DividendEquityAssetToken.at(DividendEquityAssetToken.address)
 
-        await token.setMetaData("CONDA AG Equity Token", "CONDA", {from: owner})
+        await token.setMetaData("CONDA AG Equity Token", "CONDA", ZERO_ADDRESS, {from: owner})
 
         const deploymentConfig = getDeploymentJsonConfig()
         let clearingAddress = ZERO_ADDRESS

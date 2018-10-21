@@ -36,6 +36,7 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
     using SafeMath for uint256;
     using AssetTokenL for AssetTokenL.Supply;
     using AssetTokenL for AssetTokenL.Availability;
+    using AssetTokenL for AssetTokenL.Roles;
 
 ///////////////////
 // Variables
@@ -51,18 +52,15 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
 
     // defines the baseCurrency of the token
     address public baseCurrency;
-    
-    // mintControl can mint when token is alive
-    address public mintControl;
-
-    //can rescue tokens
-    address public tokenRescueControl;
 
     //supply: balance, checkpoints etc.
     AssetTokenL.Supply supply;
 
     //availability: what's paused
     AssetTokenL.Availability availability;
+
+    //availability: who is entitled
+    AssetTokenL.Roles roles;
 
     function isMintingPaused() public view returns (bool) {
         return availability.mintingPaused;
@@ -73,7 +71,15 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
     }
 
     function getPauseControl() public view returns (address) {
-        return availability.pauseControl;
+        return roles.pauseControl;
+    }
+
+    function getTokenRescueControl() public view returns (address) {
+        return roles.tokenRescueControl;
+    }
+
+    function getMintControl() public view returns (address) {
+        return roles.mintControl;
     }
 
     function isTransfersPaused() public view returns (bool) {
@@ -91,16 +97,19 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
     event Approval(address indexed owner, address indexed spender, uint256 value);
     event Transfer(address indexed from, address indexed to, uint256 value);
     event MintDetailed(address indexed initiator, address indexed to, uint256 amount);
-    event MintFinished();
+    event MintFinished(address indexed initiator);
     event TransferPaused(address indexed initiator);
     event TransferResumed(address indexed initiator);
     event Reopened(address indexed initiator);
+    event MetaDataChanged(address indexed initiator, string name, string symbol, address baseCurrency);
+    event RolesChanged(address indexed initiator, address _pauseControl, address _tokenRescueControl);
+    event MintControlChanged(address indexed initiator, address mintControl);
 
 ///////////////////
 // Modifiers
 ///////////////////
     modifier onlyPauseControl() {
-        require(msg.sender == availability.pauseControl);
+        require(msg.sender == roles.pauseControl);
         _;
     }
 
@@ -118,7 +127,7 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
 
     modifier canMint() {
         if(_canDoAnytime() == false) { 
-            require(msg.sender == mintControl);
+            require(msg.sender == roles.mintControl);
             require(availability.tokenAlive);
             require(!availability.mintingPhaseFinished);
             require(!availability.mintingPaused);
@@ -147,7 +156,7 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
     }
 
     modifier onlyTokenRescueControl() {
-        require(msg.sender == tokenRescueControl);
+        require(msg.sender == roles.tokenRescueControl);
         _;
     }
 
@@ -164,39 +173,28 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
       * @param _name The name of the token.
       * @param _symbol The symbol of the token.
       */
-    function setMetaData(string _name, string _symbol) public 
+    function setMetaData(string _name, string _symbol, address _tokenBaseCurrency) public 
     canSetMetadata 
     {
         name = _name;
         symbol = _symbol;
-    }
-
-    /** @dev Change the token's currency metadata.
-      * @param _tokenBaseCurrency Address of the token used as underlying base currency.
-      */
-    function setCurrencyMetaData(address _tokenBaseCurrency) public 
-    canSetMetadata
-    {
-        require(_tokenBaseCurrency != address(0));
-        require(_tokenBaseCurrency != address(this));
 
         baseCurrency = _tokenBaseCurrency;
+
+        emit MetaDataChanged(msg.sender, _name, _symbol, _tokenBaseCurrency);
     }
 
     /** @dev Set the address of the crowdsale contract.
       * @param _mintControl The address of the crowdsale.
       */
     function setMintControl(address _mintControl) public canSetMetadata {
-        require(_mintControl != address(0));
-
-        mintControl = _mintControl;
+        roles.setMintControl(_mintControl);
     }
 
     function setRoles(address _pauseControl, address _tokenRescueControl) public 
     canSetMetadata
     {
-        availability.setPauseControl(_pauseControl);
-        tokenRescueControl = _tokenRescueControl;
+        roles.setRoles(_pauseControl, _tokenRescueControl);
     }
 
     function setTokenAlive() public 
@@ -311,8 +309,8 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
 ////////////////
     //if this contract gets a balance in some other ERC20 contract - or even iself - then we can rescue it.
     function rescueToken(address _foreignTokenAddress, address _to)
-    onlyTokenRescueControl
     public
+    onlyTokenRescueControl
     {
         availability.rescueToken(_foreignTokenAddress, _to);
     }
