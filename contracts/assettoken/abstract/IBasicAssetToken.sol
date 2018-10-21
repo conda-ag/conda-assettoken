@@ -4,11 +4,11 @@ contract IBasicAssetToken {
     function checkCanSetMetadata() internal returns (bool);
 
     function setMetaData(string _name, string _symbol, address _tokenBaseCurrency) public;
-    function setMintControl(address _mintControl) public;
     
     function getPauseControl() public view returns (address);
     function isTransfersPaused() public view returns (bool);
 
+    function setMintControl(address _mintControl) public;
     function setRoles(address _pauseControl, address _tokenRescueControl) public;
 
     function setTokenAlive() public;

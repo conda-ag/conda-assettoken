@@ -33,9 +33,14 @@ library AssetTokenL {
 
         // Flag that minting is paused
         bool mintingPaused;
+    }
 
+    struct Roles {
         // role that can pause/resume
         address pauseControl;
+
+        // role that can rescue accidentally sent tokens
+        address tokenRescueControl;
     }
 
     struct Store {
@@ -345,10 +350,14 @@ library AssetTokenL {
         return true;
     }
 
-    function setPauseControl(Availability storage _self, address _pauseControl) public {
+    function setRoles(Roles storage _self, address _pauseControl, address _tokenRescueControl) public {
         require(_pauseControl != address(0));
+        require(_tokenRescueControl != address(0));
         
         _self.pauseControl = _pauseControl;
+        _self.tokenRescueControl = _tokenRescueControl;
+
+        emit RolesChanged(_pauseControl, _tokenRescueControl);
     }
 
     function setTokenAlive(Availability storage _self) public {
@@ -568,4 +577,5 @@ library AssetTokenL {
     event DividendDeposited(address indexed _depositor, uint256 _blockNumber, uint256 _amount, uint256 _totalSupply, uint256 _dividendIndex);
     event DividendClaimed(address indexed _claimer, uint256 _dividendIndex, uint256 _claim);
     event DividendRecycled(address indexed _recycler, uint256 _blockNumber, uint256 _amount, uint256 _totalSupply, uint256 _dividendIndex);
+    event RolesChanged(address _pauseControl, address _tokenRescueControl);
 }
