@@ -52,9 +52,6 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
 
     // defines the baseCurrency of the token
     address public baseCurrency;
-    
-    // mintControl can mint when token is alive
-    address public mintControl;
 
     //supply: balance, checkpoints etc.
     AssetTokenL.Supply supply;
@@ -81,6 +78,10 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
         return roles.tokenRescueControl;
     }
 
+    function getMintControl() public view returns (address) {
+        return roles.mintControl;
+    }
+
     function isTransfersPaused() public view returns (bool) {
         return !availability.transfersEnabled;
     }
@@ -102,6 +103,7 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
     event Reopened(address indexed initiator);
     event MetaDataChanged(string name, string symbol, address baseCurrency);
     event RolesChanged(address _pauseControl, address _tokenRescueControl);
+    event MintControlChanged(address mintControl);
 
 ///////////////////
 // Modifiers
@@ -125,7 +127,7 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
 
     modifier canMint() {
         if(_canDoAnytime() == false) { 
-            require(msg.sender == mintControl);
+            require(msg.sender == roles.mintControl);
             require(availability.tokenAlive);
             require(!availability.mintingPhaseFinished);
             require(!availability.mintingPaused);
@@ -186,9 +188,7 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
       * @param _mintControl The address of the crowdsale.
       */
     function setMintControl(address _mintControl) public canSetMetadata {
-        require(_mintControl != address(0));
-
-        mintControl = _mintControl;
+        roles.setMintControl(_mintControl);
     }
 
     function setRoles(address _pauseControl, address _tokenRescueControl) public 

@@ -41,6 +41,9 @@ library AssetTokenL {
 
         // role that can rescue accidentally sent tokens
         address tokenRescueControl;
+
+        // role that can mint during crowdsale (usually clearing)
+        address mintControl;
     }
 
     struct Store {
@@ -360,6 +363,14 @@ library AssetTokenL {
         emit RolesChanged(_pauseControl, _tokenRescueControl);
     }
 
+    function setMintControl(Roles storage _self, address _mintControl) public {
+        require(_mintControl != address(0));
+
+        _self.mintControl = _mintControl;
+
+        emit MintControlChanged(_mintControl);
+    }
+
     function setTokenAlive(Availability storage _self) public {
         _self.tokenAlive = true;
     }
@@ -578,4 +589,5 @@ library AssetTokenL {
     event DividendClaimed(address indexed _claimer, uint256 _dividendIndex, uint256 _claim);
     event DividendRecycled(address indexed _recycler, uint256 _blockNumber, uint256 _amount, uint256 _totalSupply, uint256 _dividendIndex);
     event RolesChanged(address _pauseControl, address _tokenRescueControl);
+    event MintControlChanged(address mintControl);
 }

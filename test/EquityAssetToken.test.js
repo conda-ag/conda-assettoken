@@ -155,7 +155,7 @@ contract('EquityAssetToken', (accounts) => {
             await token.setMintControl(anyErc20Token.address, {from: capitalControl})
 
             assert.notEqual(anyErc20Token.address, ZERO_ADDRESS)
-            assert.equal(await token.mintControl.call(), anyErc20Token.address)
+            assert.equal(await token.getMintControl.call(), anyErc20Token.address)
         })
     })
 

@@ -5,6 +5,7 @@ contract IBasicAssetToken {
 
     function setMetaData(string _name, string _symbol, address _tokenBaseCurrency) public;
     
+    function getTokenRescueControl() public view returns (address);
     function getPauseControl() public view returns (address);
     function isTransfersPaused() public view returns (bool);
 
@@ -63,4 +64,5 @@ contract IBasicAssetToken {
     event Reopened(address indexed initiator);
     event MetaDataChanged(string name, string symbol, address baseCurrency);
     event RolesChanged(address _pauseControl, address _tokenRescueControl);
+    event MintControlChanged(address mintControl);
 }
