@@ -4,6 +4,8 @@ const CRWDAssetToken = artifacts.require('CRWDAssetToken.sol')
 const MOCKCRWDClearing = artifacts.require('MOCKCRWDClearing.sol')
 const ERC20TestToken = artifacts.require('ERC20TestToken.sol')
 
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
+
 require('chai')
   .use(require('chai-as-promised'))
   .should()
@@ -31,6 +33,7 @@ contract('CRWDAssetToken', (accounts) => {
         await token.enableTransfers(true)
         crwdToken = await ERC20TestToken.new()
         clearing = await MOCKCRWDClearing.new()
+        await token.setMetaData("", "", ZERO_ADDRESS, (1000 * 1e18))
         await token.setTokenAlive()
         await token.setClearingAddress(clearing.address)
     })

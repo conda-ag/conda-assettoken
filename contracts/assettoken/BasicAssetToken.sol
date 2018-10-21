@@ -90,6 +90,10 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
         return availability.tokenAlive;
     }
 
+    function getCap() public view returns (uint256) {
+        return supply.cap;
+    }
+
 ///////////////////
 // Events
 ///////////////////
@@ -101,7 +105,7 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
     event TransferPaused(address indexed initiator);
     event TransferResumed(address indexed initiator);
     event Reopened(address indexed initiator);
-    event MetaDataChanged(address indexed initiator, string name, string symbol, address baseCurrency);
+    event MetaDataChanged(address indexed initiator, string name, string symbol, address baseCurrency, uint256 cap);
     event RolesChanged(address indexed initiator, address _pauseControl, address _tokenRescueControl);
     event MintControlChanged(address indexed initiator, address mintControl);
 
@@ -173,15 +177,16 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
       * @param _name The name of the token.
       * @param _symbol The symbol of the token.
       */
-    function setMetaData(string _name, string _symbol, address _tokenBaseCurrency) public 
+    function setMetaData(string _name, string _symbol, address _tokenBaseCurrency, uint256 _cap) public 
     canSetMetadata 
     {
         name = _name;
         symbol = _symbol;
 
         baseCurrency = _tokenBaseCurrency;
+        supply.cap = _cap;
 
-        emit MetaDataChanged(msg.sender, _name, _symbol, _tokenBaseCurrency);
+        emit MetaDataChanged(msg.sender, _name, _symbol, _tokenBaseCurrency, _cap);
     }
 
     /** @dev Set the address of the crowdsale contract.

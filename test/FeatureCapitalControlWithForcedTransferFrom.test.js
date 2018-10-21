@@ -39,6 +39,7 @@ contract('FeatureCapitalControlWithForcedTransferFrom', (accounts) => {
         clearing = await MOCKCRWDClearing.new()
         await clearing.setFee((await ERC20TestToken.new()).address, 0, 0, ZERO_ADDRESS, ZERO_ADDRESS)
         await token.setClearingAddress(clearing.address)
+        await token.setMetaData("", "", ZERO_ADDRESS, (1000000 * 1e18))
 
         assert.equal((await token.decimals()).toString(), 0)
 
@@ -164,6 +165,8 @@ contract('FeatureCapitalControlWithForcedTransferFrom', (accounts) => {
         const tmpToken = await FeatureCapitalControlWithForcedTransferFrom.new(capitalControl)
         await tmpToken.setClearingAddress(clearing.address)
     
+        await tmpToken.setMetaData("", "", ZERO_ADDRESS, (1000000 * 1e18))
+
         await tmpToken.setTokenAlive()
     
         await tmpToken.mint(buyerA, 100, { from: capitalControl }) //buyerA has 100

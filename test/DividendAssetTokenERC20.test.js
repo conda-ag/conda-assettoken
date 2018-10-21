@@ -48,8 +48,7 @@ contract('DividendAssetToken', (accounts) => {
         await clearing.setFee((await ERC20TestToken.new()).address, 0, 0, condaAccount, companyAccount)
         await token.setClearingAddress(clearing.address)
 
-        //set basecurrency
-        await token.setMetaData("", "SYM", erc20.address)
+        await token.setMetaData("", "", erc20.address, (1000000 * 1e18))
 
         await token.setTokenAlive()
 

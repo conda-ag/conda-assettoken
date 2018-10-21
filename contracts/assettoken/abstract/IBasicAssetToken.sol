@@ -3,7 +3,7 @@ pragma solidity ^0.4.24;
 contract IBasicAssetToken {
     function checkCanSetMetadata() internal returns (bool);
 
-    function setMetaData(string _name, string _symbol, address _tokenBaseCurrency) public;
+    function setMetaData(string _name, string _symbol, address _tokenBaseCurrency, uint256 _cap) public;
     
     function getTokenRescueControl() public view returns (address);
     function getPauseControl() public view returns (address);
@@ -62,7 +62,7 @@ contract IBasicAssetToken {
     event TransferPaused(address indexed initiator);
     event TransferResumed(address indexed initiator);
     event Reopened(address indexed initiator);
-    event MetaDataChanged(address indexed initiator, string name, string symbol, address baseCurrency);
+    event MetaDataChanged(address indexed initiator, string name, string symbol, address baseCurrency, uint256 cap);
     event RolesChanged(address indexed initiator, address _pauseControl, address _tokenRescueControl);
     event MintControlChanged(address indexed initiator, address mintControl);
 }
