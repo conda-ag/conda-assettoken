@@ -21,6 +21,15 @@ library AssetTokenL {
 
         // minting cap max amount of tokens
         uint256 cap;
+
+        // when counts as successfully funded
+        uint256 goal;
+
+        //crowdsale start
+        uint256 startTime;
+
+        //crowdsale end
+        uint256 endTime;
     }
 
     struct Availability {

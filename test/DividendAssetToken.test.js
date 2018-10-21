@@ -1,6 +1,6 @@
 let EVMRevert = require('openzeppelin-solidity/test/helpers/assertRevert')
-let timeTravel = require('./helper/timeTravel.js')
 
+let timeTravel = require('./helper/timeTravel.js')
 const time = require('openzeppelin-solidity/test/helpers/increaseTime')
 import latestTime from 'openzeppelin-solidity/test/helpers/latestTime'
 
@@ -37,10 +37,20 @@ contract('DividendAssetToken', (accounts) => {
     
     let capitalControl = accounts[8]
 
+    let nowTime = null
+    let startTime = null
+    let endTime = null
+    let afterEndTime = null
+
     beforeEach(async () => {
+        nowTime = await latestTime()
+        startTime = nowTime + time.duration.weeks(1)
+        endTime = startTime + time.duration.weeks(2)
+        afterEndTime = endTime + time.duration.seconds(1)
+
         token = await DividendAssetToken.new()
         await token.setMintControl(capitalControl)
-        await token.setMetaData("", "", ZERO_ADDRESS, (1000 * 1e18))
+        await token.setMetaData("", "", ZERO_ADDRESS, (1000 * 1e18), (100 * 1e18), startTime, endTime)
         await token.setTokenAlive()
         await token.enableTransfers(true)
         owner = await token.owner()

@@ -5,8 +5,20 @@ import "../interface/IBasicAssetToken.sol";
 contract IBasicAssetTokenFull is IBasicAssetToken {
     function checkCanSetMetadata() internal returns (bool);
 
-    function setMetaData(string _name, string _symbol, address _tokenBaseCurrency, uint256 _cap) public;
     function getCap() public view returns (uint256);
+    function getGoal() public view returns (uint256);
+    function getStart() public view returns (uint256);
+    function getEnd() public view returns (uint256);
+    function getLimits() public view returns (uint256, uint256, uint256, uint256);
+    function setMetaData(
+        string _name, 
+        string _symbol, 
+        address _tokenBaseCurrency, 
+        uint256 _cap, 
+        uint256 _goal, 
+        uint256 _startTime, 
+        uint256 _endTime) 
+        public;
     
     function getTokenRescueControl() public view returns (address);
     function getPauseControl() public view returns (address);
@@ -65,7 +77,7 @@ contract IBasicAssetTokenFull is IBasicAssetToken {
     event TransferPaused(address indexed initiator);
     event TransferResumed(address indexed initiator);
     event Reopened(address indexed initiator);
-    event MetaDataChanged(address indexed initiator, string name, string symbol, address baseCurrency, uint256 cap);
+    event MetaDataChanged(address indexed initiator, string name, string symbol, address baseCurrency, uint256 cap, uint256 goal);
     event RolesChanged(address indexed initiator, address _pauseControl, address _tokenRescueControl);
     event MintControlChanged(address indexed initiator, address mintControl);
 }

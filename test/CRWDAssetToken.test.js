@@ -1,4 +1,6 @@
 let EVMRevert = require('openzeppelin-solidity/test/helpers/assertRevert')
+import latestTime from 'openzeppelin-solidity/test/helpers/latestTime'
+const time = require('openzeppelin-solidity/test/helpers/increaseTime')
 
 const CRWDAssetToken = artifacts.require('CRWDAssetToken.sol')
 const MOCKCRWDClearing = artifacts.require('MOCKCRWDClearing.sol')
@@ -27,13 +29,23 @@ contract('CRWDAssetToken', (accounts) => {
 
     let unknown = accounts[6]
   
+    let nowTime = null
+    let startTime = null
+    let endTime = null
+    let afterEndTime = null
+
     beforeEach(async () => {
+        nowTime = await latestTime()
+        startTime = nowTime + time.duration.weeks(1)
+        endTime = startTime + time.duration.weeks(2)
+        afterEndTime = endTime + time.duration.seconds(1)
+
         token = await CRWDAssetToken.new()
         await token.setMintControl(crowdsale)
         await token.enableTransfers(true)
         crwdToken = await ERC20TestToken.new()
         clearing = await MOCKCRWDClearing.new()
-        await token.setMetaData("", "", ZERO_ADDRESS, (1000 * 1e18))
+        await token.setMetaData("", "", ZERO_ADDRESS, (1000 * 1e18), (100 * 1e18), startTime, endTime)
         await token.setTokenAlive()
         await token.setClearingAddress(clearing.address)
     })
