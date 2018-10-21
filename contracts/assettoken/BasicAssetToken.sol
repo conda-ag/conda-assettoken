@@ -23,10 +23,10 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "./library/AssetTokenL.sol";
 
-import "./abstract/IBasicAssetToken.sol";
+import "./abstract/IBasicAssetTokenFull.sol";
 
 /** @title Basic AssetToken. */
-contract BasicAssetToken is IBasicAssetToken, Ownable {
+contract BasicAssetToken is IBasicAssetTokenFull, Ownable {
     /*
     * @title This contract includes the basic AssetToken features
     * @author Paul Pöltner / Conda

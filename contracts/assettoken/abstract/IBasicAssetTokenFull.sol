@@ -1,6 +1,8 @@
 pragma solidity ^0.4.24;
 
-contract IBasicAssetToken {
+import "../interface/IBasicAssetToken.sol";
+
+contract IBasicAssetTokenFull is IBasicAssetToken {
     function checkCanSetMetadata() internal returns (bool);
 
     function setMetaData(string _name, string _symbol, address _tokenBaseCurrency, uint256 _cap) public;

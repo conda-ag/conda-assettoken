@@ -1,7 +1,7 @@
 pragma solidity ^0.4.24;
 
-import "./IBasicAssetToken.sol";
+import "./IBasicAssetTokenFull.sol";
 
-contract ICRWDAssetToken is IBasicAssetToken {
+contract ICRWDAssetToken is IBasicAssetTokenFull {
     function setClearingAddress(address _clearingAddress) public;
 }
