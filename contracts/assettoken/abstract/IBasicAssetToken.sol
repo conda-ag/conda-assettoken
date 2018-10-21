@@ -4,7 +4,7 @@ contract IBasicAssetToken {
     function checkCanSetMetadata() internal returns (bool);
 
     function setMetaData(string _name, string _symbol) public;
-    function setCurrencyMetaData(address _tokenBaseCurrency, uint256 _baseRate) public;
+    function setCurrencyMetaData(address _tokenBaseCurrency) public;
     function setMintControl(address _mintControl) public;
     
     function getPauseControl() public view returns (address);

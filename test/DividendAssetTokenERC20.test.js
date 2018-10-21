@@ -49,7 +49,7 @@ contract('DividendAssetToken', (accounts) => {
         await token.setClearingAddress(clearing.address)
 
         //set basecurrency
-        await token.setCurrencyMetaData(erc20.address, 1)
+        await token.setCurrencyMetaData(erc20.address)
 
         await token.setTokenAlive()
 

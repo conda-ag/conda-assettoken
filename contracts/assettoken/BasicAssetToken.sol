@@ -51,10 +51,6 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
 
     // defines the baseCurrency of the token
     address public baseCurrency;
-
-    // defines the base conversion of number of tokens to the initial rate
-    // this amount will be used for regulatory checks. 
-    uint256 public baseRate;
     
     // mintControl can mint when token is alive
     address public mintControl;
@@ -177,17 +173,14 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
 
     /** @dev Change the token's currency metadata.
       * @param _tokenBaseCurrency Address of the token used as underlying base currency.
-      * @param _baseRate Base conversion of number of tokens to the initial rate.
       */
-    function setCurrencyMetaData(address _tokenBaseCurrency, uint256 _baseRate) public 
+    function setCurrencyMetaData(address _tokenBaseCurrency) public 
     canSetMetadata
     {
         require(_tokenBaseCurrency != address(0));
         require(_tokenBaseCurrency != address(this));
-        require(_baseRate != 0);
 
         baseCurrency = _tokenBaseCurrency;
-        baseRate = _baseRate;
     }
 
     /** @dev Set the address of the crowdsale contract.
