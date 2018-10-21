@@ -62,4 +62,5 @@ contract IBasicAssetToken {
     event TransferResumed(address indexed initiator);
     event Reopened(address indexed initiator);
     event MetaDataChanged(string name, string symbol, address baseCurrency);
+    event RolesChanged(address _pauseControl, address _tokenRescueControl);
 }
