@@ -58,11 +58,11 @@ contract IBasicAssetToken {
     event Approval(address indexed owner, address indexed spender, uint256 value);
     event Transfer(address indexed from, address indexed to, uint256 value);
     event MintDetailed(address indexed initiator, address indexed to, uint256 amount);
-    event MintFinished();
+    event MintFinished(address indexed initiator);
     event TransferPaused(address indexed initiator);
     event TransferResumed(address indexed initiator);
     event Reopened(address indexed initiator);
-    event MetaDataChanged(string name, string symbol, address baseCurrency);
-    event RolesChanged(address _pauseControl, address _tokenRescueControl);
-    event MintControlChanged(address mintControl);
+    event MetaDataChanged(address indexed initiator, string name, string symbol, address baseCurrency);
+    event RolesChanged(address indexed initiator, address _pauseControl, address _tokenRescueControl);
+    event MintControlChanged(address indexed initiator, address mintControl);
 }

@@ -339,7 +339,7 @@ library AssetTokenL {
         }
 
         _self.mintingPhaseFinished = true;
-        emit MintFinished();
+        emit MintFinished(msg.sender);
         return true;
     }
 
@@ -360,7 +360,7 @@ library AssetTokenL {
         _self.pauseControl = _pauseControl;
         _self.tokenRescueControl = _tokenRescueControl;
 
-        emit RolesChanged(_pauseControl, _tokenRescueControl);
+        emit RolesChanged(msg.sender, _pauseControl, _tokenRescueControl);
     }
 
     function setMintControl(Roles storage _self, address _mintControl) public {
@@ -368,7 +368,7 @@ library AssetTokenL {
 
         _self.mintControl = _mintControl;
 
-        emit MintControlChanged(_mintControl);
+        emit MintControlChanged(msg.sender, _mintControl);
     }
 
     function setTokenAlive(Availability storage _self) public {
@@ -579,7 +579,7 @@ library AssetTokenL {
     event Transfer(address indexed from, address indexed to, uint256 value);
     event SelfApprovedTransfer(address indexed initiator, address indexed from, address indexed to, uint256 value);
     event MintDetailed(address indexed initiator, address indexed to, uint256 amount);
-    event MintFinished();
+    event MintFinished(address indexed initiator);
     // event BurnDetailed(address indexed initiator, address indexed burner, uint256 value);
     event Approval(address indexed owner, address indexed spender, uint256 value);
     event TransferPaused(address indexed initiator);
@@ -588,6 +588,6 @@ library AssetTokenL {
     event DividendDeposited(address indexed _depositor, uint256 _blockNumber, uint256 _amount, uint256 _totalSupply, uint256 _dividendIndex);
     event DividendClaimed(address indexed _claimer, uint256 _dividendIndex, uint256 _claim);
     event DividendRecycled(address indexed _recycler, uint256 _blockNumber, uint256 _amount, uint256 _totalSupply, uint256 _dividendIndex);
-    event RolesChanged(address _pauseControl, address _tokenRescueControl);
-    event MintControlChanged(address mintControl);
+    event RolesChanged(address indexed initiator, address _pauseControl, address _tokenRescueControl);
+    event MintControlChanged(address indexed initiator, address mintControl);
 }
