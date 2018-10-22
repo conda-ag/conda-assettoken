@@ -231,6 +231,10 @@ library AssetTokenL {
         // Check cap
         require(curTotalSupply.add(_amount) <= _self.cap, "cap"); //leave inside library to never go over cap
 
+        // Check timeframe
+        require(_self.startTime <= now, "too soon");
+        require(_self.endTime >= now, "too late");
+
         // Check for overflow
         require(curTotalSupply + _amount >= curTotalSupply); 
         uint256 previousBalanceTo = balanceOfAt(_self, _to, block.number);

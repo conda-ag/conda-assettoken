@@ -40,7 +40,7 @@ contract('FeatureCapitalControlWithForcedTransferFrom', (accounts) => {
 
     beforeEach(async () => {
         nowTime = await latestTime()
-        startTime = nowTime + time.duration.weeks(1)
+        startTime = nowTime
         endTime = startTime + time.duration.weeks(2)
         afterEndTime = endTime + time.duration.seconds(1)
 
