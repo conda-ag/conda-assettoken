@@ -1,4 +1,6 @@
 let EVMRevert = require('openzeppelin-solidity/test/helpers/assertRevert')
+
+let timeTravel = require('./helper/timeTravel.js')
 import latestTime from 'openzeppelin-solidity/test/helpers/latestTime'
 const time = require('openzeppelin-solidity/test/helpers/increaseTime')
 
@@ -228,6 +230,29 @@ contract('BasicAssetToken', (accounts) => {
                 await token.setTokenAlive()
                 await token.mint(buyerA, (0.2 * 1e18), {from: mintControl}) //works (bellow cap)
                 await token.mint(buyerA, (0.1 * 1e18), {from: mintControl}).should.be.rejectedWith(EVMRevert) //fails
+
+                await token.mint(buyerA, 10, {from: mintControl}).should.be.rejectedWith(EVMRevert)
+            })
+        })
+
+        contract('validating mint outside timeframe before/after startTime endTime', () => {
+            it('trying to mint outside timeframe should fail', async () => {
+                await token.setRoles(pauseControl, tokenRescueControl, {from: owner})
+
+                const customStartTime = await latestTime() + time.duration.weeks(2)
+                const customEndTime = customStartTime + time.duration.weeks(1)
+
+                await token.setMetaData("", "", ZERO_ADDRESS, (2 * 1e18), (1 * 1e18), customStartTime, customEndTime)
+
+                await token.setTokenAlive()
+
+                await token.mint(buyerA, (0.1 * 1e18), {from: mintControl}).should.be.rejectedWith(EVMRevert) //fails not started
+                
+                await timeTravel(time.duration.weeks(2)) //2 weeks pass so minting should work
+                await token.mint(buyerA, (0.1 * 1e18), {from: mintControl}) //should work
+
+                await timeTravel(time.duration.weeks(1) + time.duration.seconds(1)) //1 week passes so minting should fail again
+                await token.mint(buyerA, (0.1 * 1e18), {from: mintControl}).should.be.rejectedWith(EVMRevert) //fails not started
 
                 await token.mint(buyerA, 10, {from: mintControl}).should.be.rejectedWith(EVMRevert)
             })
