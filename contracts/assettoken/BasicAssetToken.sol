@@ -23,10 +23,10 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "./library/AssetTokenL.sol";
 
-import "./abstract/IBasicAssetToken.sol";
+import "./abstract/IBasicAssetTokenFull.sol";
 
 /** @title Basic AssetToken. */
-contract BasicAssetToken is IBasicAssetToken, Ownable {
+contract BasicAssetToken is IBasicAssetTokenFull, Ownable {
     /*
     * @title This contract includes the basic AssetToken features
     * @author Paul Pöltner / Conda
@@ -90,6 +90,26 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
         return availability.tokenAlive;
     }
 
+    function getCap() public view returns (uint256) {
+        return supply.cap;
+    }
+
+    function getGoal() public view returns (uint256) {
+        return supply.goal;
+    }
+
+    function getStart() public view returns (uint256) {
+        return supply.startTime;
+    }
+
+    function getEnd() public view returns (uint256) {
+        return supply.endTime;
+    }
+
+    function getLimits() public view returns (uint256, uint256, uint256, uint256) {
+        return (supply.cap, supply.goal, supply.startTime, supply.endTime);
+    }
+
 ///////////////////
 // Events
 ///////////////////
@@ -101,7 +121,7 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
     event TransferPaused(address indexed initiator);
     event TransferResumed(address indexed initiator);
     event Reopened(address indexed initiator);
-    event MetaDataChanged(address indexed initiator, string name, string symbol, address baseCurrency);
+    event MetaDataChanged(address indexed initiator, string name, string symbol, address baseCurrency, uint256 cap, uint256 goal);
     event RolesChanged(address indexed initiator, address _pauseControl, address _tokenRescueControl);
     event MintControlChanged(address indexed initiator, address mintControl);
 
@@ -172,16 +192,33 @@ contract BasicAssetToken is IBasicAssetToken, Ownable {
     /** @dev Change the token's metadata.
       * @param _name The name of the token.
       * @param _symbol The symbol of the token.
+      * @param _tokenBaseCurrency The base currency.
+      * @param _cap The max amount of tokens that can be minted.
+      * @param _goal The goal of tokens that should be sold.
       */
-    function setMetaData(string _name, string _symbol, address _tokenBaseCurrency) public 
+    function setMetaData(
+        string _name, 
+        string _symbol, 
+        address _tokenBaseCurrency, 
+        uint256 _cap, 
+        uint256 _goal, 
+        uint256 _startTime, 
+        uint256 _endTime) 
+        public 
     canSetMetadata 
     {
+        require(_cap >= _goal);
+
         name = _name;
         symbol = _symbol;
 
         baseCurrency = _tokenBaseCurrency;
+        supply.cap = _cap;
+        supply.goal = _goal;
+        supply.startTime = _startTime;
+        supply.endTime = _endTime;
 
-        emit MetaDataChanged(msg.sender, _name, _symbol, _tokenBaseCurrency);
+        emit MetaDataChanged(msg.sender, _name, _symbol, _tokenBaseCurrency, _cap, _goal);
     }
 
     /** @dev Set the address of the crowdsale contract.

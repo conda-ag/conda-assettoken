@@ -105,7 +105,7 @@ module.exports = (deployer, network, accounts) => {
 
     //     // DividendEquityAssetToken.web3.eth.defaultAccount=owner
 
-    //     await token.setMetaData("CONDA AG Equity Token", "CONDA", ZERO_ADDRESS, {from: owner})
+    //     await token.setMetaData("CONDA AG Equity Token", "CONDA", ZERO_ADDRESS, (9000000 * 1e18), (10000 * 1e18), 0, 0, {from: owner})
 
     //     await token.setClearingAddress(MockCRWDClearing.address, {from: owner})
 

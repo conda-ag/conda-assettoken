@@ -1,5 +1,9 @@
 let EVMRevert = require('openzeppelin-solidity/test/helpers/assertRevert')
 
+let timeTravel = require('./helper/timeTravel.js')
+import latestTime from 'openzeppelin-solidity/test/helpers/latestTime'
+const time = require('openzeppelin-solidity/test/helpers/increaseTime')
+
 const BasicAssetToken = artifacts.require('BasicAssetToken.sol')
 const ERC20TestToken = artifacts.require('ERC20TestToken.sol')
 
@@ -25,8 +29,18 @@ contract('BasicAssetToken', (accounts) => {
     const mintControl = accounts[7]
 
     const unknown = accounts[9]
+
+    let nowTime = null
+    let startTime = null
+    let endTime = null
+    let afterEndTime = null
   
     beforeEach(async () => {
+        nowTime = await latestTime()
+        startTime = nowTime
+        endTime = startTime + time.duration.weeks(2)
+        afterEndTime = endTime + time.duration.seconds(1)
+
         token = await BasicAssetToken.new()
         await token.setMintControl(mintControl)
         owner = await token.owner()
@@ -35,6 +49,8 @@ contract('BasicAssetToken', (accounts) => {
         
         owner.should.not.eq(ZERO_ADDRESS)
         assert.equal(await token.totalSupply(), 0)
+
+        await token.setMetaData("", "", ZERO_ADDRESS, (1000 * 1e18), (100 * 1e18), startTime, endTime)
     })
 
     // contract('testing initial state...', () => {
@@ -200,6 +216,43 @@ contract('BasicAssetToken', (accounts) => {
                 await token.mint(buyerA, 10, {from: mintControl}) //works
                 await token.pauseCapitalIncreaseOrDecrease(false, {from: pauseControl}) //now disabled
                 assert.equal(await token.isMintingPaused(), true, "as precondition minting must be paused")
+
+                await token.mint(buyerA, 10, {from: mintControl}).should.be.rejectedWith(EVMRevert)
+            })
+        })
+
+        contract('validating mint over cap', () => {
+            it('trying to mint when more than cap should fail', async () => {
+                await token.setRoles(pauseControl, tokenRescueControl, {from: owner})
+
+                await token.setMetaData("", "", ZERO_ADDRESS, (0.2 * 1e18), (0.1 * 1e18), startTime, endTime)
+
+                await token.setTokenAlive()
+                await token.mint(buyerA, (0.2 * 1e18), {from: mintControl}) //works (bellow cap)
+                await token.mint(buyerA, (0.1 * 1e18), {from: mintControl}).should.be.rejectedWith(EVMRevert) //fails
+
+                await token.mint(buyerA, 10, {from: mintControl}).should.be.rejectedWith(EVMRevert)
+            })
+        })
+
+        contract('validating mint outside timeframe before/after startTime endTime', () => {
+            it('trying to mint outside timeframe should fail', async () => {
+                await token.setRoles(pauseControl, tokenRescueControl, {from: owner})
+
+                const customStartTime = await latestTime() + time.duration.weeks(2)
+                const customEndTime = customStartTime + time.duration.weeks(1)
+
+                await token.setMetaData("", "", ZERO_ADDRESS, (2 * 1e18), (1 * 1e18), customStartTime, customEndTime)
+
+                await token.setTokenAlive()
+
+                await token.mint(buyerA, (0.1 * 1e18), {from: mintControl}).should.be.rejectedWith(EVMRevert) //fails not started
+                
+                await timeTravel(time.duration.weeks(2)) //2 weeks pass so minting should work
+                await token.mint(buyerA, (0.1 * 1e18), {from: mintControl}) //should work
+
+                await timeTravel(time.duration.weeks(1) + time.duration.seconds(1)) //1 week passes so minting should fail again
+                await token.mint(buyerA, (0.1 * 1e18), {from: mintControl}).should.be.rejectedWith(EVMRevert) //fails not started
 
                 await token.mint(buyerA, 10, {from: mintControl}).should.be.rejectedWith(EVMRevert)
             })
@@ -450,37 +503,37 @@ contract('BasicAssetToken', (accounts) => {
 
     contract('validating setName', () => {
         it('owner can change name when canMintOrBurn not finished', async () => {
-            await token.setMetaData("changed name", "", ZERO_ADDRESS)
+            await token.setMetaData("changed name", "", ZERO_ADDRESS, (1000000 * 1e18), (100 * 1e18), startTime, endTime)
             assert.equal(await token.name.call(), "changed name")
         })
 
         it('non owner cannot change name even if canMintOrBurn not finished', async () => {
             owner.should.not.eq(buyerA)
-            await token.setMetaData("changed name", "", ZERO_ADDRESS, { 'from': buyerA }).should.be.rejectedWith(EVMRevert)
+            await token.setMetaData("changed name", "", ZERO_ADDRESS, (1000000 * 1e18), (100 * 1e18), startTime, endTime, { 'from': buyerA }).should.be.rejectedWith(EVMRevert)
         })
 
         it('owner cannot change name when canMintOrBurn is finished', async () => {
             await token.setTokenAlive()
             await token.finishMinting({from: owner})
-            await token.setMetaData("changed name", "", ZERO_ADDRESS).should.be.rejectedWith(EVMRevert)
+            await token.setMetaData("changed name", "", ZERO_ADDRESS, (1000000 * 1e18), (100 * 1e18), startTime, endTime).should.be.rejectedWith(EVMRevert)
         })
     })
 
     contract('validating setSymbol', () => {
         it('owner can change symbol when canMintOrBurn not finished', async () => {
-            await token.setMetaData("", "SYM", ZERO_ADDRESS)
+            await token.setMetaData("", "SYM", ZERO_ADDRESS, (1000000 * 1e18), (100 * 1e18), startTime, endTime)
             assert.equal(await token.symbol.call(), "SYM")
         })
 
         it('non owner cannot change symbol even if canMintOrBurn not finished', async () => {
             owner.should.not.eq(buyerA)
-            await token.setMetaData("", "SYM", ZERO_ADDRESS, {'from': buyerA}).should.be.rejectedWith(EVMRevert)
+            await token.setMetaData("", "SYM", ZERO_ADDRESS, (1000000 * 1e18), (100 * 1e18), startTime, endTime, {'from': buyerA}).should.be.rejectedWith(EVMRevert)
         })
 
         it('owner cannot change symbol when canMintOrBurn has finished', async () => {
             await token.setTokenAlive()
             await token.finishMinting({from: owner})
-            await token.setMetaData("", "SYM", ZERO_ADDRESS).should.be.rejectedWith(EVMRevert)
+            await token.setMetaData("", "SYM", ZERO_ADDRESS, (1000000 * 1e18), (100 * 1e18), startTime, endTime).should.be.rejectedWith(EVMRevert)
         })
     })
 
@@ -488,7 +541,7 @@ contract('BasicAssetToken', (accounts) => {
         it('owner can change setBaseCurrency when canMintOrBurn not finished', async () => {
             let erc20TestToken = await ERC20TestToken.new()
             
-            await token.setMetaData("", "SYM", erc20TestToken.address, { from: owner })
+            await token.setMetaData("", "", erc20TestToken.address, (1000000 * 1e18), (100 * 1e18), startTime, endTime, { from: owner })
             assert.equal(await token.baseCurrency.call(), erc20TestToken.address)
         })
 
@@ -496,7 +549,7 @@ contract('BasicAssetToken', (accounts) => {
             buyerA.should.not.eq(owner)
             let erc20TestToken = await ERC20TestToken.new()
             
-            await token.setMetaData("", "SYM", erc20TestToken.address, { from: buyerA }).should.be.rejectedWith(EVMRevert)
+            await token.setMetaData("", "", erc20TestToken.address, (1000000 * 1e18), (100 * 1e18), startTime, endTime, { from: buyerA }).should.be.rejectedWith(EVMRevert)
         })
 
         it('owner cannot change setBaseCurrency when canMintOrBurn has finished', async () => {
@@ -505,7 +558,57 @@ contract('BasicAssetToken', (accounts) => {
 
             let erc20TestToken = await ERC20TestToken.new()
             
-            await token.setMetaData("", "SYM", erc20TestToken.address, { from: owner }).should.be.rejectedWith(EVMRevert)
+            await token.setMetaData("", "", erc20TestToken.address, (1000000 * 1e18), (100 * 1e18), startTime, endTime, { from: owner }).should.be.rejectedWith(EVMRevert)
+        })
+    })
+
+    contract('validating setCap', () => {
+        it('owner can change setCap when canMintOrBurn not finished', async () => {
+            let erc20TestToken = await ERC20TestToken.new()
+            
+            await token.setMetaData("", "", erc20TestToken.address, (1337 * 1e18), (100 * 1e18), startTime, endTime, { from: owner })
+            assert.equal(await token.getCap(), (1337 * 1e18))
+        })
+
+        it('non owner cannot change setCap even if canMintOrBurn not finished', async () => {
+            buyerA.should.not.eq(owner)
+            let erc20TestToken = await ERC20TestToken.new()
+            
+            await token.setMetaData("", "", erc20TestToken.address, (1337 * 1e18), (100 * 1e18), startTime, endTime, { from: buyerA }).should.be.rejectedWith(EVMRevert)
+        })
+
+        it('owner cannot change setCap when canMintOrBurn has finished', async () => {
+            await token.setTokenAlive()
+            await token.finishMinting({from: owner})
+
+            let erc20TestToken = await ERC20TestToken.new()
+            
+            await token.setMetaData("", "", erc20TestToken.address, (1337 * 1e18), (100 * 1e18), startTime, endTime, { from: owner }).should.be.rejectedWith(EVMRevert)
+        })
+    })
+
+    contract('validating setGoal', () => {
+        it('owner can change setGoal when canMintOrBurn not finished', async () => {
+            let erc20TestToken = await ERC20TestToken.new()
+            
+            await token.setMetaData("", "", erc20TestToken.address, (100000 * 1e18), (1337 * 1e18), startTime, endTime, { from: owner })
+            assert.equal(await token.getGoal(), (1337 * 1e18))
+        })
+
+        it('non owner cannot change setGoal even if canMintOrBurn not finished', async () => {
+            buyerA.should.not.eq(owner)
+            let erc20TestToken = await ERC20TestToken.new()
+            
+            await token.setMetaData("", "", erc20TestToken.address, (100000 * 1e18), (1337 * 1e18), startTime, endTime, { from: buyerA }).should.be.rejectedWith(EVMRevert)
+        })
+
+        it('owner cannot change setGoal when canMintOrBurn has finished', async () => {
+            await token.setTokenAlive()
+            await token.finishMinting({from: owner})
+
+            let erc20TestToken = await ERC20TestToken.new()
+            
+            await token.setMetaData("", "", erc20TestToken.address, (100000 * 1e18), (1337 * 1e18), startTime, endTime, { from: owner }).should.be.rejectedWith(EVMRevert)
         })
     })
 

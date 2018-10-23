@@ -1,5 +1,8 @@
 let EVMRevert = require('openzeppelin-solidity/test/helpers/assertRevert')
 
+const time = require('openzeppelin-solidity/test/helpers/increaseTime')
+import latestTime from 'openzeppelin-solidity/test/helpers/latestTime'
+
 const FeatureCapitalControlWithForcedTransferFrom = artifacts.require('EquityAssetToken.sol')
 const ERC20TestToken = artifacts.require('ERC20TestToken.sol')
 const MOCKCRWDClearing = artifacts.require('MOCKCRWDClearing.sol')
@@ -30,7 +33,17 @@ contract('FeatureCapitalControlWithForcedTransferFrom', (accounts) => {
 
     const unknown = accounts[9]
   
+    let nowTime = null
+    let startTime = null
+    let endTime = null
+    let afterEndTime = null
+
     beforeEach(async () => {
+        nowTime = await latestTime()
+        startTime = nowTime
+        endTime = startTime + time.duration.weeks(2)
+        afterEndTime = endTime + time.duration.seconds(1)
+
         token = await FeatureCapitalControlWithForcedTransferFrom.new(capitalControl)
         await token.setMintControl(mintControl)
         owner = await token.owner()
@@ -39,6 +52,7 @@ contract('FeatureCapitalControlWithForcedTransferFrom', (accounts) => {
         clearing = await MOCKCRWDClearing.new()
         await clearing.setFee((await ERC20TestToken.new()).address, 0, 0, ZERO_ADDRESS, ZERO_ADDRESS)
         await token.setClearingAddress(clearing.address)
+        await token.setMetaData("", "", ZERO_ADDRESS, (1000000 * 1e18), (100 * 1e18), startTime, endTime)
 
         assert.equal((await token.decimals()).toString(), 0)
 
@@ -164,6 +178,8 @@ contract('FeatureCapitalControlWithForcedTransferFrom', (accounts) => {
         const tmpToken = await FeatureCapitalControlWithForcedTransferFrom.new(capitalControl)
         await tmpToken.setClearingAddress(clearing.address)
     
+        await tmpToken.setMetaData("", "", ZERO_ADDRESS, (1000000 * 1e18), (100 * 1e18), startTime, endTime)
+
         await tmpToken.setTokenAlive()
     
         await tmpToken.mint(buyerA, 100, { from: capitalControl }) //buyerA has 100

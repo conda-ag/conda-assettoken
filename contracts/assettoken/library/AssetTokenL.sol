@@ -18,6 +18,18 @@ library AssetTokenL {
 
         // `allowed` tracks any extra transfer rights as in all ERC20 tokens
         mapping (address => mapping (address => uint256)) allowed;
+
+        // minting cap max amount of tokens
+        uint256 cap;
+
+        // when counts as successfully funded
+        uint256 goal;
+
+        //crowdsale start
+        uint256 startTime;
+
+        //crowdsale end
+        uint256 endTime;
     }
 
     struct Availability {
@@ -215,6 +227,13 @@ library AssetTokenL {
     /// @return A boolean that indicates if the operation was successful.
     function mint(Supply storage _self, address _to, uint256 _amount) public returns (bool) {
         uint256 curTotalSupply = totalSupplyAt(_self, block.number);
+
+        // Check cap
+        require(curTotalSupply.add(_amount) <= _self.cap, "cap"); //leave inside library to never go over cap
+
+        // Check timeframe
+        require(_self.startTime <= now, "too soon");
+        require(_self.endTime >= now, "too late");
 
         // Check for overflow
         require(curTotalSupply + _amount >= curTotalSupply); 
