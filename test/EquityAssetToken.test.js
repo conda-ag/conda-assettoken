@@ -2,7 +2,7 @@ let EVMRevert = require('openzeppelin-solidity/test/helpers/assertRevert')
 
 let timeTravel = require('./helper/timeTravel.js')
 const time = require('openzeppelin-solidity/test/helpers/increaseTime')
-import latestTime from 'openzeppelin-solidity/test/helpers/latestTime'
+import { latestTime } from 'openzeppelin-solidity/test/helpers/latestTime'
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 

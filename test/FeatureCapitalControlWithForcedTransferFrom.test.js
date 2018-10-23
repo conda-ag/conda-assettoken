@@ -1,7 +1,7 @@
 let EVMRevert = require('openzeppelin-solidity/test/helpers/assertRevert')
 
 const time = require('openzeppelin-solidity/test/helpers/increaseTime')
-import latestTime from 'openzeppelin-solidity/test/helpers/latestTime'
+import { latestTime } from 'openzeppelin-solidity/test/helpers/latestTime'
 
 const FeatureCapitalControlWithForcedTransferFrom = artifacts.require('EquityAssetToken.sol')
 const ERC20TestToken = artifacts.require('ERC20TestToken.sol')
