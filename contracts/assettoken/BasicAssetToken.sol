@@ -140,7 +140,7 @@ contract BasicAssetToken is IBasicAssetTokenFull, Ownable {
 
     modifier onlyOwnerOrOverruled() {
         if(_canDoAnytime() == false) { 
-            require(msg.sender == owner);
+            require(isOwner(), "only owner");
         }
         _;
     }
@@ -157,7 +157,7 @@ contract BasicAssetToken is IBasicAssetTokenFull, Ownable {
 
     function checkCanSetMetadata() internal returns (bool) {
         if(_canDoAnytime() == false) {
-            require(msg.sender == owner);
+            require(isOwner(), "owner only");
             require(!availability.tokenAlive);
             require(!availability.mintingPhaseFinished);
         }
