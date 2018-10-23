@@ -1,7 +1,7 @@
 let EVMRevert = require('openzeppelin-solidity/test/helpers/assertRevert')
 
 let timeTravel = require('./helper/timeTravel.js')
-import latestTime from 'openzeppelin-solidity/test/helpers/latestTime'
+import { latestTime } from 'openzeppelin-solidity/test/helpers/latestTime'
 const time = require('openzeppelin-solidity/test/helpers/increaseTime')
 
 const BasicAssetToken = artifacts.require('BasicAssetToken.sol')
