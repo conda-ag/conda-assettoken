@@ -98,13 +98,13 @@ library AssetTokenL {
     /// @return True if the transfer was successful
     function doTransfer(Supply storage _supply, Availability storage _availability, address _from, address _to, uint256 _amount) internal {
         // Do not allow transfer to 0x0 or the token contract itself
-        require(_to != address(0));
-        require(_to != address(this));
+        require(_to != address(0), "target addr0");
+        require(_to != address(this), "target self");
 
         // If the amount being transfered is more than the balance of the
         //  account the transfer throws
         uint256 previousBalanceFrom = balanceOfAt(_supply, _from, block.number);
-        require(previousBalanceFrom >= _amount);
+        require(previousBalanceFrom >= _amount, "not enough");
 
         // First update the balance array with the new value for the address
         //  sending the tokens
@@ -113,7 +113,7 @@ library AssetTokenL {
         // Then update the balance array with the new value for the address
         //  receiving the tokens
         uint256 previousBalanceTo = balanceOfAt(_supply, _to, block.number);
-        require(previousBalanceTo + _amount >= previousBalanceTo); // Check for overflow
+        require(previousBalanceTo + _amount >= previousBalanceTo, "overflow"); // Check for overflow
         
         updateValueAtNow(_supply.balances[_to], previousBalanceTo.add(_amount));
 
