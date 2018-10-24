@@ -6,7 +6,7 @@ import { latestTime } from 'openzeppelin-solidity/test/helpers/latestTime'
 
 const DividendAssetToken = artifacts.require('DividendAssetToken.sol')
 const MOCKCRWDClearing = artifacts.require('MOCKCRWDClearing.sol')
-const StandardToken = artifacts.require('StandardToken.sol')
+const ERC20 = artifacts.require('ERC20.sol')
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
@@ -57,7 +57,7 @@ contract('DividendAssetToken', (accounts) => {
         
         //mock clearing so it doesn't cost money
         clearing = await MOCKCRWDClearing.new()
-        await clearing.setFee((await StandardToken.new()).address, 0, 0, condaAccount, companyAccount)
+        await clearing.setFee((await ERC20.new()).address, 0, 0, condaAccount, companyAccount)
         await token.setClearingAddress(clearing.address)
         
         //split

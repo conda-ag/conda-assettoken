@@ -1,13 +1,21 @@
 pragma solidity ^0.4.24;
 
-import 'openzeppelin-solidity/contracts/token/ERC20/MintableToken.sol';
+import 'openzeppelin-solidity/contracts/token/ERC20/ERC20Mintable.sol';
 
 /** @title Sample MintableToken for tests. */
-contract ERC20TestTokenRetValueSimulator is MintableToken {
-    //Investment Details
-    string public name = "Broken Token";
-    string public symbol = "BRK";
-    uint256 public decimals = 18;
+contract ERC20TestTokenRetValueSimulator is ERC20Mintable {
+
+    function name() public view returns(string) {
+        return "Broken Token";
+    }
+
+    function symbol() public view returns(string) {
+        return "BRK";
+    }
+
+    function decimals() public view returns(uint8) {
+        return 18;
+    }
 
     bool returnValue = false;
 
