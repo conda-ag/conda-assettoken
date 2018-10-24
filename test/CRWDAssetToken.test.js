@@ -4,7 +4,7 @@ const time = require('openzeppelin-solidity/test/helpers/increaseTime')
 
 const CRWDAssetToken = artifacts.require('CRWDAssetToken.sol')
 const MOCKCRWDClearing = artifacts.require('MOCKCRWDClearing.sol')
-const ERC20TestToken = artifacts.require('ERC20TestToken.sol')
+const ERC20Mintable = artifacts.require('ERC20Mintable.sol')
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
@@ -43,7 +43,7 @@ contract('CRWDAssetToken', (accounts) => {
         token = await CRWDAssetToken.new()
         await token.setMintControl(crowdsale)
         await token.enableTransfers(true)
-        crwdToken = await ERC20TestToken.new()
+        crwdToken = await ERC20Mintable.new()
         clearing = await MOCKCRWDClearing.new()
         await token.setMetaData("", "", ZERO_ADDRESS, (1000 * 1e18), (100 * 1e18), startTime, endTime)
         await token.setTokenAlive()
@@ -54,7 +54,7 @@ contract('CRWDAssetToken', (accounts) => {
         it('can be set by owner', async () => {
             token = await CRWDAssetToken.new()
             owner = await token.owner()
-            crwdToken = await ERC20TestToken.new()
+            crwdToken = await ERC20Mintable.new()
             const goodClearing = await MOCKCRWDClearing.new()
             await token.setClearingAddress(goodClearing.address)
 
@@ -63,7 +63,7 @@ contract('CRWDAssetToken', (accounts) => {
 
         it('cannot be set by unknown', async () => {
             token = await CRWDAssetToken.new()
-            crwdToken = await ERC20TestToken.new()
+            crwdToken = await ERC20Mintable.new()
             const badClearing = await MOCKCRWDClearing.new()
             await token.setClearingAddress(badClearing.address, { from: unknown }).should.be.rejectedWith(EVMRevert)
 

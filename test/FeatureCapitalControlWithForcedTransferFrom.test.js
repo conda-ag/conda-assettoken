@@ -4,7 +4,7 @@ const time = require('openzeppelin-solidity/test/helpers/increaseTime')
 import { latestTime } from 'openzeppelin-solidity/test/helpers/latestTime'
 
 const FeatureCapitalControlWithForcedTransferFrom = artifacts.require('EquityAssetToken.sol')
-const ERC20TestToken = artifacts.require('ERC20TestToken.sol')
+const ERC20Mintable = artifacts.require('ERC20Mintable.sol')
 const MOCKCRWDClearing = artifacts.require('MOCKCRWDClearing.sol')
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
@@ -50,7 +50,7 @@ contract('FeatureCapitalControlWithForcedTransferFrom', (accounts) => {
         
         //mock clearing so it doesn't cost money
         clearing = await MOCKCRWDClearing.new()
-        await clearing.setFee((await ERC20TestToken.new()).address, 0, 0, ZERO_ADDRESS, ZERO_ADDRESS)
+        await clearing.setFee((await ERC20Mintable.new()).address, 0, 0, ZERO_ADDRESS, ZERO_ADDRESS)
         await token.setClearingAddress(clearing.address)
         await token.setMetaData("", "", ZERO_ADDRESS, (1000000 * 1e18), (100 * 1e18), startTime, endTime)
 

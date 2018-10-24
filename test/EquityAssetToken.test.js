@@ -7,7 +7,7 @@ import { latestTime } from 'openzeppelin-solidity/test/helpers/latestTime'
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 const EquityAssetToken = artifacts.require('EquityAssetToken.sol')
-const ERC20TestToken = artifacts.require('ERC20TestToken.sol')
+const ERC20Mintable = artifacts.require('ERC20Mintable.sol')
 const ERC20TestTokenRetFalse = artifacts.require('ERC20TestTokenRetValueSimulator.sol')
 const MOCKCRWDClearing = artifacts.require('MOCKCRWDClearing.sol')
 
@@ -57,13 +57,13 @@ contract('EquityAssetToken', (accounts) => {
 
         token = await EquityAssetToken.new(capitalControl)
         await token.setMintControl(mintControl)
-        erc20 = await ERC20TestToken.new()
+        erc20 = await ERC20Mintable.new()
         erc20RetFalse = await ERC20TestTokenRetFalse.new()
         originalOwner = await token.owner()
         
         //mock clearing so it doesn't cost money
         clearing = await MOCKCRWDClearing.new()
-        await clearing.setFee((await ERC20TestToken.new()).address, 0, 0, ZERO_ADDRESS, ZERO_ADDRESS)
+        await clearing.setFee((await ERC20Mintable.new()).address, 0, 0, ZERO_ADDRESS, ZERO_ADDRESS)
         await token.setClearingAddress(clearing.address)
 
         assert.equal((await token.decimals()).toString(), 0)
@@ -166,7 +166,7 @@ contract('EquityAssetToken', (accounts) => {
         })
 
         it('can set erc20 address as mintControl address', async () => {
-            let anyErc20Token = await ERC20TestToken.new()
+            let anyErc20Token = await ERC20Mintable.new()
 
             await token.setMintControl(anyErc20Token.address, {from: capitalControl})
 
@@ -491,7 +491,7 @@ contract('EquityAssetToken', (accounts) => {
     contract('validating setMetaData()', () => {
         it('owner can change baseRate when not alive', async () => {
             const tmpToken = await EquityAssetToken.new(capitalControl)
-            const tmpEurt = await ERC20TestToken.new()
+            const tmpEurt = await ERC20Mintable.new()
 
             await tmpToken.setMetaData("", "SYM", tmpEurt.address, (1000000 * 1e18), (10000 * 1e18), startTime, endTime, { from: originalOwner })
             assert.equal(await tmpToken.baseCurrency(), tmpEurt.address)
@@ -499,7 +499,7 @@ contract('EquityAssetToken', (accounts) => {
 
         it('non owner cannot change baseCurrency even if not yet alive', async () => {
             const tmpToken = await EquityAssetToken.new(capitalControl)
-            const tmpEurt = await ERC20TestToken.new()
+            const tmpEurt = await ERC20Mintable.new()
 
             originalOwner.should.not.eq(unknown)
             await tmpToken.setMetaData("", "SYM", tmpEurt.address, (1000000 * 1e18), (10000 * 1e18), startTime, endTime, { from: unknown }).should.be.rejectedWith(EVMRevert)
@@ -507,8 +507,8 @@ contract('EquityAssetToken', (accounts) => {
 
         it('capitalControl can change anytime', async () => {
             const tmpToken = await EquityAssetToken.new(capitalControl)
-            const tmpEurt1 = await ERC20TestToken.new()
-            const tmpEurt2 = await ERC20TestToken.new()
+            const tmpEurt1 = await ERC20Mintable.new()
+            const tmpEurt2 = await ERC20Mintable.new()
 
             await tmpToken.setMetaData("", "SYM", tmpEurt1.address, (1000000 * 1e18), (10000 * 1e18), startTime, endTime, { from: capitalControl })
             assert.equal(await tmpToken.baseCurrency(), tmpEurt1.address)
@@ -521,7 +521,7 @@ contract('EquityAssetToken', (accounts) => {
 
         it('owner cannot change currencyMetaData when alive', async () => {
             const tmpToken = await EquityAssetToken.new(capitalControl)
-            const tmpEurt = await ERC20TestToken.new()
+            const tmpEurt = await ERC20Mintable.new()
 
             await tmpToken.setTokenAlive()
             await tmpToken.setMetaData("", "SYM", tmpEurt.address, (1000000 * 1e18), (10000 * 1e18), startTime, endTime, { from: originalOwner }).should.be.rejectedWith(EVMRevert)
