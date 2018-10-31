@@ -31,7 +31,6 @@ contract DividendAssetToken is CRWDAssetToken {
     */
 
     using SafeMath for uint256;
-    using AssetTokenL for AssetTokenL.Store;
 
 ///////////////////
 // Variables
@@ -39,8 +38,6 @@ contract DividendAssetToken is CRWDAssetToken {
 
     /** @dev `recycleLockedTimespan` devines the time, when the dividends will be recycled*/
     uint256 public recycleLockedTimespan = 365 days;
-
-    AssetTokenL.Store storedDividends;
 
 ///////////////////
 // Events
@@ -55,7 +52,7 @@ contract DividendAssetToken is CRWDAssetToken {
 ///////////////////
 
     modifier validDividendIndex(uint256 _dividendIndex) {
-        require(_dividendIndex < storedDividends.dividends.length);
+        require(_dividendIndex < supply.dividends.length);
         _;
     }
 
@@ -69,7 +66,7 @@ contract DividendAssetToken is CRWDAssetToken {
         // gets the current number of total token distributed
         uint256 currentSupply = totalSupplyAt(block.number);
         
-        storedDividends.depositDividend(msg.value, currentSupply);
+        supply.depositDividend(msg.value, currentSupply);
     }
 
 ///////////////////
@@ -84,7 +81,7 @@ contract DividendAssetToken is CRWDAssetToken {
         // gets the current number of total token distributed
         uint256 currentSupply = totalSupplyAt(block.number);
 
-        storedDividends.depositERC20Dividend(_dividendToken, _amount, currentSupply, baseCurrency);
+        supply.depositERC20Dividend(_dividendToken, _amount, currentSupply, baseCurrency);
     }
 
 ///////////////////
@@ -95,21 +92,21 @@ contract DividendAssetToken is CRWDAssetToken {
       * @param _dividendIndex the index of the specific dividend distribution
       */
     function claimDividend(uint256 _dividendIndex) public validDividendIndex(_dividendIndex) {
-        storedDividends.claimDividend(supply, _dividendIndex);
+        supply.claimDividend(_dividendIndex);
     }
 
     /** @dev Claim all dividiends
       * @notice In case function call runs out of gas run single address calls against claimDividend function
       */
     function claimDividendAll() public {
-        storedDividends.claimDividendAll(supply);
+        supply.claimDividendAll();
     }
 
     /** @dev Claim dividends in batches
       * @notice In case claimDividendAll runs out of gas
       */
     function claimInBatches(uint256 startIndex, uint256 endIndex) public {
-        storedDividends.claimInBatches(supply, startIndex, endIndex); 
+        supply.claimInBatches(startIndex, endIndex); 
     }
 
     /** @dev Dividends which have not been claimed
@@ -118,7 +115,7 @@ contract DividendAssetToken is CRWDAssetToken {
     function recycleDividend(uint256 _dividendIndex) public onlyOwner validDividendIndex(_dividendIndex) {
         uint256 currentSupply = totalSupplyAt(block.number);
 
-        storedDividends.recycleDividend(_dividendIndex, recycleLockedTimespan, currentSupply);
+        supply.recycleDividend(_dividendIndex, recycleLockedTimespan, currentSupply);
     }
 
 }

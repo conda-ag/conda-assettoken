@@ -30,6 +30,11 @@ library AssetTokenL {
 
         //crowdsale end
         uint256 endTime;
+
+        Dividend[] dividends;
+        mapping (address => uint256) dividendsClaimed;
+
+        uint256 transfersAndMintsForIndex;
     }
 
     struct Availability {
@@ -58,14 +63,9 @@ library AssetTokenL {
         address mintControl;
     }
 
-    struct Store {
-        Dividend[] dividends;
-        mapping (address => uint256) dividendsClaimed;
-    }
-
     /** @dev `Dividend` is the structure that saves the status of a dividend distribution*/
     struct Dividend {
-        uint256 blockNumber;
+        uint256 currentTransfersAndMintsForIndex;
         uint256 timestamp;
         DividendType dividendType;
         address dividendToken;
@@ -83,11 +83,11 @@ library AssetTokenL {
     ///  value
     struct Checkpoint {
 
-        // `fromBlock` is the block number that the value was generated from
-        uint128 fromBlock;
+        // `currentTransfersAndMintsForIndex` is the block number that the value was generated from
+        uint256 currentTransfersAndMintsForIndex;
 
         // `value` is the amount of tokens at a specific block number
-        uint128 value;
+        uint256 value;
     }
 
     /// @dev This is the actual transfer function in the token contract, it can
@@ -96,26 +96,29 @@ library AssetTokenL {
     /// @param _to The address of the recipient
     /// @param _amount The amount of tokens to be transferred
     /// @return True if the transfer was successful
-    function doTransfer(Supply storage _supply, Availability storage _availability, address _from, address _to, uint256 _amount) internal {
+    function doTransfer(Supply storage _self, Availability storage _availability, address _from, address _to, uint256 _amount) internal {
         // Do not allow transfer to 0x0 or the token contract itself
         require(_to != address(0), "target addr0");
         require(_to != address(this), "target self");
 
         // If the amount being transfered is more than the balance of the
         //  account the transfer throws
-        uint256 previousBalanceFrom = balanceOfAt(_supply, _from, block.number);
+        uint256 previousBalanceFrom = balanceOfAt(_self, _from, _self.transfersAndMintsForIndex);
         require(previousBalanceFrom >= _amount, "not enough");
 
         // First update the balance array with the new value for the address
         //  sending the tokens
-        updateValueAtNow(_supply.balances[_from], previousBalanceFrom.sub(_amount));
+        updateValueAtNow(_self, _self.balances[_from], previousBalanceFrom.sub(_amount));
 
         // Then update the balance array with the new value for the address
         //  receiving the tokens
-        uint256 previousBalanceTo = balanceOfAt(_supply, _to, block.number);
+        uint256 previousBalanceTo = balanceOfAt(_self, _to, _self.transfersAndMintsForIndex);
         require(previousBalanceTo + _amount >= previousBalanceTo, "overflow"); // Check for overflow
         
-        updateValueAtNow(_supply.balances[_to], previousBalanceTo.add(_amount));
+        updateValueAtNow(_self, _self.balances[_to], previousBalanceTo.add(_amount));
+
+        //info: don't move this line inside updateValueAtNow (because transfer is 2 actions)
+        _self.transfersAndMintsForIndex = _self.transfersAndMintsForIndex.add(1);
 
         // An event to make the transfer easy to find on the blockchain
         emit Transfer(_from, _to, _amount);
@@ -196,7 +199,7 @@ library AssetTokenL {
     /// @param _amount The amount of tokens to be transferred
     /// @return True if the transfer was successful
     function enforcedTransferFrom(
-        Supply storage _supply, 
+        Supply storage _self, 
         Availability storage _availability, 
         address _from, 
         address _to, 
@@ -205,12 +208,12 @@ library AssetTokenL {
     internal 
     returns (bool success) 
     {
-        if(_fullAmountRequired && _amount != balanceOfAt(_supply, _from, block.number))
+        if(_fullAmountRequired && _amount != balanceOfAt(_self, _from, _self.transfersAndMintsForIndex))
         {
             revert("Only full amount in case of lost wallet is allowed");
         }
 
-        doTransfer(_supply, _availability, _from, _to, _amount);
+        doTransfer(_self, _availability, _from, _to, _amount);
 
         emit SelfApprovedTransfer(msg.sender, _from, _to, _amount);
 
@@ -226,7 +229,7 @@ library AssetTokenL {
     /// @param _amount The amount of tokens to mint.
     /// @return A boolean that indicates if the operation was successful.
     function mint(Supply storage _self, address _to, uint256 _amount) public returns (bool) {
-        uint256 curTotalSupply = totalSupplyAt(_self, block.number);
+        uint256 curTotalSupply = totalSupplyAt(_self, _self.transfersAndMintsForIndex);
 
         // Check cap
         require(curTotalSupply.add(_amount) <= _self.cap, "cap"); //leave inside library to never go over cap
@@ -237,13 +240,16 @@ library AssetTokenL {
 
         // Check for overflow
         require(curTotalSupply + _amount >= curTotalSupply); 
-        uint256 previousBalanceTo = balanceOfAt(_self, _to, block.number);
+        uint256 previousBalanceTo = balanceOfAt(_self, _to, _self.transfersAndMintsForIndex);
 
         // Check for overflow
         require(previousBalanceTo + _amount >= previousBalanceTo); 
 
-        updateValueAtNow(_self.totalSupplyHistory, curTotalSupply.add(_amount));
-        updateValueAtNow(_self.balances[_to], previousBalanceTo.add(_amount));
+        updateValueAtNow(_self, _self.totalSupplyHistory, curTotalSupply.add(_amount));
+        updateValueAtNow(_self, _self.balances[_to], previousBalanceTo.add(_amount));
+
+        //info: don't move this line inside updateValueAtNow (because transfer is 2 actions)
+        _self.transfersAndMintsForIndex = _self.transfersAndMintsForIndex.add(1);
 
         emit MintDetailed(msg.sender, _to, _amount);
         emit Transfer(address(0), _to, _amount);
@@ -259,17 +265,17 @@ library AssetTokenL {
 //       * @param _who Eth address of person who's tokens should be burned.
 //       */
 //     function burn(Supply storage _self, address _who, uint256 _value) public {
-//         uint256 curTotalSupply = totalSupplyAt(_self, block.number);
+//         uint256 curTotalSupply = totalSupplyAt(_self, _self.transfersAndMintsForIndex);
 
 //         // Check for overflow
 //         require(curTotalSupply - _value <= curTotalSupply); 
 
-//         uint256 previousBalanceWho = balanceOfAt(_self, _who, block.number);
+//         uint256 previousBalanceWho = balanceOfAt(_self, _who, _self.transfersAndMintsForIndex);
 
 //         require(_value <= previousBalanceWho);
 
-//         updateValueAtNow(_self.totalSupplyHistory, curTotalSupply.sub(_value));
-//         updateValueAtNow(_self.balances[_who], previousBalanceWho.sub(_value));
+//         updateValueAtNow(_self, _self.totalSupplyHistory, curTotalSupply.sub(_value));
+//         updateValueAtNow(_self, _self.balances[_who], previousBalanceWho.sub(_value));
 
 //         emit BurnDetailed(msg.sender, _who, _value);
 //         emit Transfer(_who, address(0), _value);
@@ -288,7 +294,7 @@ library AssetTokenL {
     }
 
     function balanceOfNow(Supply storage _self, address _owner) public view returns (uint256) {
-        return getValueAt(_self.balances[_owner], block.number);
+        return getValueAt(_self.balances[_owner], _self.transfersAndMintsForIndex);
     }
 
     /// @notice Total amount of tokens at a specific `_blockNumber`.
@@ -299,7 +305,7 @@ library AssetTokenL {
     }
 
     function totalSupplyNow(Supply storage _self) public view returns(uint) {
-        return getValueAt(_self.totalSupplyHistory, block.number);
+        return getValueAt(_self.totalSupplyHistory, _self.transfersAndMintsForIndex);
     }
 
 ////////////////
@@ -308,17 +314,17 @@ library AssetTokenL {
 
     /// @dev `getValueAt` retrieves the number of tokens at a given block number
     /// @param checkpoints The history of values being queried
-    /// @param _block The block number to retrieve the value at
+    /// @param _specificTransfersAndMintsIndex The block number to retrieve the value at
     /// @return The number of tokens being queried
-    function getValueAt(Checkpoint[] storage checkpoints, uint _block) private view returns (uint) { 
+    function getValueAt(Checkpoint[] storage checkpoints, uint _specificTransfersAndMintsIndex) private view returns (uint) { 
         
         //  requested before a check point was ever created for this token
-        if (checkpoints.length == 0 || checkpoints[0].fromBlock > _block) {
+        if (checkpoints.length == 0 || checkpoints[0].currentTransfersAndMintsForIndex > _specificTransfersAndMintsIndex) {
             return 0;
         }
 
         // Shortcut for the actual value
-        if (_block >= checkpoints[checkpoints.length-1].fromBlock) {
+        if (_specificTransfersAndMintsIndex >= checkpoints[checkpoints.length-1].currentTransfersAndMintsForIndex) {
             return checkpoints[checkpoints.length-1].value;
         }
 
@@ -327,7 +333,7 @@ library AssetTokenL {
         uint max = checkpoints.length-1;
         while (max > min) {
             uint mid = (max + min + 1)/2;
-            if (checkpoints[mid].fromBlock<=_block) {
+            if (checkpoints[mid].currentTransfersAndMintsForIndex<=_specificTransfersAndMintsIndex) {
                 min = mid;
             } else {
                 max = mid-1;
@@ -340,14 +346,11 @@ library AssetTokenL {
     ///  `totalSupplyHistory`
     /// @param checkpoints The history of data being updated
     /// @param _value The new number of tokens
-    function updateValueAtNow(Checkpoint[] storage checkpoints, uint256 _value) private {
-        if ((checkpoints.length == 0) || (checkpoints[checkpoints.length-1].fromBlock < block.number)) {
-            Checkpoint storage newCheckPoint = checkpoints[checkpoints.length++];
-            newCheckPoint.fromBlock = uint128(block.number);
-            newCheckPoint.value = uint128(_value);
-        } else {
-            revert("Update in same block is not allowed. Please retry."); //improvement idea: use nonce instead of block number
-        }
+    function updateValueAtNow(Supply storage _self, Checkpoint[] storage checkpoints, uint256 _value) private {
+        checkpoints.push(Checkpoint(
+            _self.transfersAndMintsForIndex,
+            _value
+        ));
     }
 
     ///  @dev Function to stop minting new tokens.
@@ -419,18 +422,16 @@ library AssetTokenL {
     }
 
     /** @dev Receives ether to be distriubted to all token owners*/
-    function depositDividend(Store storage _self, uint256 msgValue, uint256 _currentSupply)
+    function depositDividend(Supply storage _self, uint256 msgValue, uint256 _currentSupply)
     public 
     {
         // creates a new index for the dividends
         uint256 dividendIndex = _self.dividends.length;
-        // gets the current number of total token distributed
-        uint256 blockNumber = SafeMath.sub(block.number, 1);
 
         // Stores the current meta data for the dividend payout
         _self.dividends.push(
             Dividend(
-                blockNumber,    // Block number when the dividends are distributed
+                _self.transfersAndMintsForIndex, // current index used for claiming
                 block.timestamp,            // Timestamp of the distribution
                 DividendType.Ether, // Type of dividends
                 address(0),
@@ -440,10 +441,10 @@ library AssetTokenL {
                 false           // Already recylced
             )
         );
-        emit DividendDeposited(msg.sender, blockNumber, msgValue, _currentSupply, dividendIndex);
+        emit DividendDeposited(msg.sender, _self.transfersAndMintsForIndex, msgValue, _currentSupply, dividendIndex);
     }
 
-    function depositERC20Dividend(Store storage _self, address _dividendToken, uint256 _amount, uint256 _currentSupply, address baseCurrency)
+    function depositERC20Dividend(Supply storage _self, address _dividendToken, uint256 _amount, uint256 _currentSupply, address baseCurrency)
     public
     {
         require(_amount > 0);
@@ -455,13 +456,11 @@ library AssetTokenL {
 
         // creates a new index for the dividends
         uint256 dividendIndex = _self.dividends.length;
-        // gets the current number of total token distributed
-        uint256 blockNumber = SafeMath.sub(block.number, 1);
 
         // Stores the current meta data for the dividend payout
         _self.dividends.push(
             Dividend(
-                blockNumber,    // Block number when the dividends are distributed
+                _self.transfersAndMintsForIndex,    // Block number when the dividends are distributed
                 block.timestamp,            // Timestamp of the distribution
                 DividendType.ERC20, 
                 _dividendToken, 
@@ -471,10 +470,10 @@ library AssetTokenL {
                 false           // Already recylced
             )
         );
-        emit DividendDeposited(msg.sender, blockNumber, _amount, _currentSupply, dividendIndex);
+        emit DividendDeposited(msg.sender, _self.transfersAndMintsForIndex, _amount, _currentSupply, dividendIndex);
     }
 
-    function claimDividend(Store storage _self, Supply storage _supply, uint256 _dividendIndex) public {
+    function claimDividend(Supply storage _self, uint256 _dividendIndex) public {
         // Loads the details for the specific Dividend payment
         Dividend storage dividend = _self.dividends[_dividendIndex];
 
@@ -485,7 +484,7 @@ library AssetTokenL {
         require(dividend.recycled == false);
 
         // get the token balance at the time of the dividend distribution
-        uint256 balance = balanceOfAt(_supply, msg.sender, dividend.blockNumber);
+        uint256 balance = balanceOfAt(_self, msg.sender, dividend.currentTransfersAndMintsForIndex.sub(1));
 
         // calculates the amount of dividends that can be claimed
         uint256 claim = balance.mul(dividend.amount).div(dividend.totalSupply);
@@ -500,7 +499,7 @@ library AssetTokenL {
     /** @dev Claim all dividiends
       * @notice In case function call runs out of gas run single address calls against claimDividend function
       */
-    function claimDividendAll(Store storage _self, Supply storage _supply) public {
+    function claimDividendAll(Supply storage _self) public {
         //early exit if all claimed
         require(_self.dividendsClaimed[msg.sender] < _self.dividends.length);
 
@@ -508,7 +507,7 @@ library AssetTokenL {
         for (uint i = _self.dividendsClaimed[msg.sender]; i < _self.dividends.length; i++) {
             if ((_self.dividends[i].claimed[msg.sender] == false) && (_self.dividends[i].recycled == false)) {
                 _self.dividendsClaimed[msg.sender] = SafeMath.add(i, 1);
-                claimDividend(_self, _supply, i);
+                claimDividend(_self, i);
             }
         }
     }
@@ -516,7 +515,7 @@ library AssetTokenL {
     /** @dev Claim dividends in batches
       * @notice In case claimDividendAll runs out of gas
       */
-    function claimInBatches(Store storage _self, Supply storage _supply, uint256 startIndex, uint256 endIndex) public {
+    function claimInBatches(Supply storage _self, uint256 startIndex, uint256 endIndex) public {
         require(startIndex < endIndex);
 
         //early exit if already claimed
@@ -526,7 +525,7 @@ library AssetTokenL {
         for (uint i = startIndex; i <= endIndex; i++) {
             if ((_self.dividends[i].claimed[msg.sender] == false) && (_self.dividends[i].recycled == false)) {
                 _self.dividendsClaimed[msg.sender] = SafeMath.add(_self.dividendsClaimed[msg.sender], 1);
-                claimDividend(_self, _supply, i);
+                claimDividend(_self, i);
             }
         }
     }
@@ -534,7 +533,7 @@ library AssetTokenL {
     /** @dev Dividends which have not been claimed
       * @param _dividendIndex The index to be recycled
       */
-    function recycleDividend(Store storage _self, uint256 _dividendIndex, uint256 recycleLockedTimespan, uint256 _currentSupply) public {
+    function recycleDividend(Supply storage _self, uint256 _dividendIndex, uint256 recycleLockedTimespan, uint256 _currentSupply) public {
         // Get the dividend distribution
         Dividend storage dividend = _self.dividends[_dividendIndex];
 
@@ -564,9 +563,8 @@ library AssetTokenL {
         claimThis(dividend.dividendType, _dividendIndex, msg.sender, claim, dividend.dividendToken);
         
         uint256 remainingAmount = SafeMath.sub(dividend.amount, dividend.claimedAmount);
-        uint256 blockNumber = SafeMath.sub(block.number, 1);
 
-        emit DividendRecycled(msg.sender, blockNumber, remainingAmount, _currentSupply, _dividendIndex);
+        emit DividendRecycled(msg.sender, _self.transfersAndMintsForIndex, remainingAmount, _currentSupply, _dividendIndex);
     }
 
     function claimThis(DividendType _dividendType, uint256 _dividendIndex, address _beneficiary, uint256 _claim, address _dividendToken) 

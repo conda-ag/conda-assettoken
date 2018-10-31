@@ -638,11 +638,9 @@ contract('BasicAssetToken', (accounts) => {
             await token.enableTransfers(true)
             await token.mint(buyerA, 100, {from: mintControl})
 
-            let blockNumberBeforeSend = await web3.eth.blockNumber
-
             await token.transfer(buyerB, 50, {'from': buyerA})
 
-            assert.equal(await token.balanceOfAt(buyerA, blockNumberBeforeSend), 100)
+            assert.equal(await token.balanceOfAt(buyerA, 0), 100)
         })
 
         it('buyerA had 100 then sends 50 then 20', async () => {
@@ -663,28 +661,21 @@ contract('BasicAssetToken', (accounts) => {
             assert.equal(await token.balanceOfAt(buyerA, blockNumber), 0)
         })
 
-        it('buyerA had 100 then quickly sends 50 20 10 validate different blocks', async () => {
+        it('buyerA had 100 then quickly sends 50 20 10 10 validate history', async () => {
             await token.setTokenAlive()
             await token.enableTransfers(true)
             await token.mint(buyerA, 100, {from: mintControl})
 
-            let blockNumberBeforeSend = await web3.eth.blockNumber
             await token.transfer(buyerB, 50, {'from': buyerA})
             await token.transfer(buyerB, 20, {'from': buyerA})
             await token.transfer(buyerB, 10, {'from': buyerA})
+            await token.transfer(buyerB, 10, {'from': buyerA})
 
-            await token.transfer(buyerB, 10, {'from': buyerA}) //delayed transfer
-
-            let blockNumberAfterSend = await web3.eth.blockNumber
-
-            assert.equal(blockNumberAfterSend, blockNumberBeforeSend+4)
-            assert.notEqual(blockNumberBeforeSend, blockNumberAfterSend)
-
-            assert.equal(await token.balanceOfAt(buyerA, blockNumberAfterSend-0), 10)
-            assert.equal(await token.balanceOfAt(buyerA, blockNumberAfterSend-1), 20)
-            assert.equal(await token.balanceOfAt(buyerA, blockNumberAfterSend-2), 30)
-            assert.equal(await token.balanceOfAt(buyerA, blockNumberAfterSend-3), 50)
-            assert.equal(await token.balanceOfAt(buyerA, blockNumberAfterSend-4), 100)
+            assert.equal(await token.balanceOfAt(buyerA, 0), 100)
+            assert.equal(await token.balanceOfAt(buyerA, 1), 50)
+            assert.equal(await token.balanceOfAt(buyerA, 2), 30)
+            assert.equal(await token.balanceOfAt(buyerA, 3), 20)
+            assert.equal(await token.balanceOfAt(buyerA, 4), 10)
         })
     })
 
@@ -718,43 +709,28 @@ contract('BasicAssetToken', (accounts) => {
     })*/
 
     contract('validating totalSupplyAt', () => {
-        it('totalSupplyAt after first mint block number 0 returns zero', async () => {
+        it('totalSupplyAt after first mint block number 0 returns 100', async () => {
             await token.setTokenAlive()
             await token.mint(buyerA, 100, {from: mintControl})
 
-            assert.equal(await token.totalSupplyAt(0), 0)
+            assert.equal(await token.totalSupplyAt(0), 100)
         })
 
-        it('buyerA gets 5x10 minted then requesting totalSupplyAt upper half', async () => {
+        it('buyerA gets 5x10 minted then requesting totalSupplyAt', async () => {
             await token.setTokenAlive()
-            let blockNumberBeforeSend = await web3.eth.blockNumber
             await token.mint(buyerA, 10, {from: mintControl})
             await token.mint(buyerA, 10, {from: mintControl})
             await token.mint(buyerA, 10, {from: mintControl})
             await token.mint(buyerA, 10, {from: mintControl})
             await token.mint(buyerA, 10, {from: mintControl})
-            let blockNumberAfterSend = await web3.eth.blockNumber
 
-            assert.equal(blockNumberAfterSend, blockNumberBeforeSend+5)
-            assert.notEqual(blockNumberBeforeSend, blockNumberAfterSend)
 
-            assert.equal(await token.totalSupplyAt(blockNumberBeforeSend+4), 40)
-        })
-
-        it('buyerA gets 5x10 minted then requesting totalSupplyAt lower half', async () => {
-            await token.setTokenAlive()
-            let blockNumberBeforeSend = await web3.eth.blockNumber
-            await token.mint(buyerA, 10, {from: mintControl})
-            await token.mint(buyerA, 10, {from: mintControl})
-            await token.mint(buyerA, 10, {from: mintControl})
-            await token.mint(buyerA, 10, {from: mintControl})
-            await token.mint(buyerA, 10, {from: mintControl})
-            let blockNumberAfterSend = await web3.eth.blockNumber
-
-            assert.equal(blockNumberAfterSend, blockNumberBeforeSend+5)
-            assert.notEqual(blockNumberBeforeSend, blockNumberAfterSend)
-
-            assert.equal(await token.totalSupplyAt(blockNumberBeforeSend+1), 10)
+            assert.equal(await token.totalSupplyAt(0), 10)
+            assert.equal(await token.totalSupplyAt(1), 20)
+            assert.equal(await token.totalSupplyAt(2), 30)
+            assert.equal(await token.totalSupplyAt(3), 40)
+            assert.equal(await token.totalSupplyAt(4), 50)
+            assert.equal(await token.totalSupply(), 50)
         })
     })
 
