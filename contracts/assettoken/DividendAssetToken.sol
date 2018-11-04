@@ -64,7 +64,7 @@ contract DividendAssetToken is CRWDAssetToken {
     function depositDividend() public payable onlyOwner onlyTokenAlive {
 
         // gets the current number of total token distributed
-        uint256 currentSupply = totalSupplyAt(block.number);
+        uint256 currentSupply = supply.totalSupplyNow();
         
         supply.depositDividend(msg.value, currentSupply);
     }
@@ -79,7 +79,7 @@ contract DividendAssetToken is CRWDAssetToken {
       */
     function depositERC20Dividend(address _dividendToken, uint256 _amount) public onlyOwner onlyTokenAlive {
         // gets the current number of total token distributed
-        uint256 currentSupply = totalSupplyAt(block.number);
+        uint256 currentSupply = supply.totalSupplyNow();
 
         supply.depositERC20Dividend(_dividendToken, _amount, currentSupply, baseCurrency);
     }
@@ -113,7 +113,7 @@ contract DividendAssetToken is CRWDAssetToken {
       * @param _dividendIndex The index to be recycled
       */
     function recycleDividend(uint256 _dividendIndex) public onlyOwner validDividendIndex(_dividendIndex) {
-        uint256 currentSupply = totalSupplyAt(block.number);
+        uint256 currentSupply = supply.totalSupplyNow();
 
         supply.recycleDividend(_dividendIndex, recycleLockedTimespan, currentSupply);
     }
