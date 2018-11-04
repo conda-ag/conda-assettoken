@@ -237,6 +237,11 @@ contract('DividendAssetToken', (accounts) => {
             const dividendPaymentCount = years*12
             for(let i=0; i<dividendPaymentCount; i++) {
                 await token.depositDividend({from: owner, value: QUARTERETHER})
+
+                //simulate some transfer activity that has no effect but increases history count
+                const tokenBalanceBuyerB = await token.balanceOf(buyerB)
+                await token.transfer(condaAccount, tokenBalanceBuyerB, {from: buyerB}) //send away
+                await token.transfer(buyerB, tokenBalanceBuyerB, {from: condaAccount}) //get back
             }
 
             await claimInBatch(years)
