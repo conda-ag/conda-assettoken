@@ -217,7 +217,6 @@ contract('DividendAssetToken', (accounts) => {
             const dividendPaymentCount = 5*12
             for(let i=0; i<dividendPaymentCount; i++) {
                 await token.depositDividend({from: owner, value: QUARTERETHER})
-                await timeTravel(SECONDS_IN_A_MONTH) //1 month passes
             }
             
             await claimDividendAAll()
@@ -238,7 +237,6 @@ contract('DividendAssetToken', (accounts) => {
             const dividendPaymentCount = years*12
             for(let i=0; i<dividendPaymentCount; i++) {
                 await token.depositDividend({from: owner, value: QUARTERETHER})
-                await timeTravel(SECONDS_IN_A_MONTH) //1 month passes
             }
 
             await claimInBatch(years)
