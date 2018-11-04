@@ -46,9 +46,9 @@ contract IBasicAssetTokenFull is IBasicAssetToken {
 
     function rescueToken(address _foreignTokenAddress, address _to) public;
 
-    function balanceOfAt(address _owner, uint _blockNumber) public view returns (uint256);
+    function balanceOfAt(address _owner, uint _specificTransfersAndMintsIndex) public view returns (uint256);
 
-    function totalSupplyAt(uint _blockNumber) public view returns(uint);
+    function totalSupplyAt(uint _specificTransfersAndMintsIndex) public view returns(uint);
 
     function enableTransfers(bool _transfersEnabled) public;
 

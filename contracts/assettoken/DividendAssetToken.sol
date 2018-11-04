@@ -43,9 +43,9 @@ contract DividendAssetToken is CRWDAssetToken {
 // Events
 ///////////////////
 
-    event DividendDeposited(address indexed _depositor, uint256 _blockNumber, uint256 _amount, uint256 _totalSupply, uint256 _dividendIndex);
+    event DividendDeposited(address indexed depositor, uint256 transferAndMintIndex, uint256 amount, uint256 totalSupply, uint256 dividendIndex);
     event DividendClaimed(address indexed _claimer, uint256 _dividendIndex, uint256 _claim);
-    event DividendRecycled(address indexed _recycler, uint256 _blockNumber, uint256 _amount, uint256 _totalSupply, uint256 _dividendIndex);
+    event DividendRecycled(address indexed recycler, uint256 transferAndMintIndex, uint256 amount, uint256 totalSupply, uint256 dividendIndex);
 
 ///////////////////
 // Modifier

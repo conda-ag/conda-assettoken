@@ -9,8 +9,8 @@ library AssetTokenL {
 
     struct Supply {
         // `balances` is the map that tracks the balance of each address, in this
-        //  contract when the balance changes the block number that the change
-        //  occurred is also included in the map
+        //  contract when the balance changes. TransfersAndMints-index when the change
+        //  occurred is also included
         mapping (address => Checkpoint[]) balances;
 
         // Tracks the history of the `totalSupply` of the token
@@ -78,15 +78,13 @@ library AssetTokenL {
 
     enum DividendType { Ether, ERC20 }
 
-    /// @dev `Checkpoint` is the structure that attaches a block number to a
-    ///  given value, the block number attached is the one that last changed the
-    ///  value
+    /// @dev `Checkpoint` is the structure that attaches a history index to a given value
     struct Checkpoint {
 
-        // `currentTransfersAndMintsForIndex` is the block number that the value was generated from
+        // `currentTransfersAndMintsForIndex` is the index when the value was generated
         uint256 currentTransfersAndMintsForIndex;
 
-        // `value` is the amount of tokens at a specific block number
+        // `value` is the amount of tokens at a specific index
         uint256 value;
     }
 
@@ -285,23 +283,23 @@ library AssetTokenL {
 // Query balance and totalSupply in History
 ////////////////
 
-    /// @dev Queries the balance of `_owner` at a specific `_blockNumber`
+    /// @dev Queries the balance of `_owner` at `_specificTransfersAndMintsIndex`
     /// @param _owner The address from which the balance will be retrieved
-    /// @param _blockNumber The block number when the balance is queried
-    /// @return The balance at `_blockNumber`
-    function balanceOfAt(Supply storage _self, address _owner, uint _blockNumber) public view returns (uint256) {
-        return getValueAt(_self.balances[_owner], _blockNumber);
+    /// @param _specificTransfersAndMintsIndex The balance at index
+    /// @return The balance at `_specificTransfersAndMintsIndex`
+    function balanceOfAt(Supply storage _self, address _owner, uint _specificTransfersAndMintsIndex) public view returns (uint256) {
+        return getValueAt(_self.balances[_owner], _specificTransfersAndMintsIndex);
     }
 
     function balanceOfNow(Supply storage _self, address _owner) public view returns (uint256) {
         return getValueAt(_self.balances[_owner], _self.transfersAndMintsForIndex);
     }
 
-    /// @notice Total amount of tokens at a specific `_blockNumber`.
-    /// @param _blockNumber The block number when the totalSupply is queried
-    /// @return The total amount of tokens at `_blockNumber`
-    function totalSupplyAt(Supply storage _self, uint _blockNumber) public view returns(uint) {
-        return getValueAt(_self.totalSupplyHistory, _blockNumber);
+    /// @notice Total amount of tokens at `_specificTransfersAndMintsIndex`.
+    /// @param _specificTransfersAndMintsIndex The totalSupply at index
+    /// @return The total amount of tokens at `_specificTransfersAndMintsIndex`
+    function totalSupplyAt(Supply storage _self, uint _specificTransfersAndMintsIndex) public view returns(uint) {
+        return getValueAt(_self.totalSupplyHistory, _specificTransfersAndMintsIndex);
     }
 
     function totalSupplyNow(Supply storage _self) public view returns(uint) {
@@ -312,9 +310,9 @@ library AssetTokenL {
 // Internal helper functions to query and set a value in a snapshot array
 ////////////////
 
-    /// @dev `getValueAt` retrieves the number of tokens at a given block number
+    /// @dev `getValueAt` retrieves the number of tokens at a given index
     /// @param checkpoints The history of values being queried
-    /// @param _specificTransfersAndMintsIndex The block number to retrieve the value at
+    /// @param _specificTransfersAndMintsIndex The index to retrieve the history checkpoint value at
     /// @return The number of tokens being queried
     function getValueAt(Checkpoint[] storage checkpoints, uint _specificTransfersAndMintsIndex) private view returns (uint) { 
         
@@ -460,8 +458,8 @@ library AssetTokenL {
         // Stores the current meta data for the dividend payout
         _self.dividends.push(
             Dividend(
-                _self.transfersAndMintsForIndex,    // Block number when the dividends are distributed
-                block.timestamp,            // Timestamp of the distribution
+                _self.transfersAndMintsForIndex, // index that counts up on transfers and mints
+                block.timestamp, // Timestamp of the distribution
                 DividendType.ERC20, 
                 _dividendToken, 
                 _amount,      // Total amount that has been distributed
@@ -602,9 +600,9 @@ library AssetTokenL {
     event TransferPaused(address indexed initiator);
     event TransferResumed(address indexed initiator);
     event Reopened(address indexed initiator);
-    event DividendDeposited(address indexed _depositor, uint256 _blockNumber, uint256 _amount, uint256 _totalSupply, uint256 _dividendIndex);
-    event DividendClaimed(address indexed _claimer, uint256 _dividendIndex, uint256 _claim);
-    event DividendRecycled(address indexed _recycler, uint256 _blockNumber, uint256 _amount, uint256 _totalSupply, uint256 _dividendIndex);
-    event RolesChanged(address indexed initiator, address _pauseControl, address _tokenRescueControl);
+    event DividendDeposited(address indexed depositor, uint256 transferAndMintIndex, uint256 amount, uint256 totalSupply, uint256 dividendIndex);
+    event DividendClaimed(address indexed claimer, uint256 dividendIndex, uint256 claim);
+    event DividendRecycled(address indexed recycler, uint256 transferAndMintIndex, uint256 amount, uint256 totalSupply, uint256 dividendIndex);
+    event RolesChanged(address indexed initiator, address pauseControl, address tokenRescueControl);
     event MintControlChanged(address indexed initiator, address mintControl);
 }

@@ -122,7 +122,7 @@ contract BasicAssetToken is IBasicAssetTokenFull, Ownable {
     event TransferResumed(address indexed initiator);
     event Reopened(address indexed initiator);
     event MetaDataChanged(address indexed initiator, string name, string symbol, address baseCurrency, uint256 cap, uint256 goal);
-    event RolesChanged(address indexed initiator, address _pauseControl, address _tokenRescueControl);
+    event RolesChanged(address indexed initiator, address pauseControl, address tokenRescueControl);
     event MintControlChanged(address indexed initiator, address mintControl);
 
 ///////////////////
@@ -264,7 +264,7 @@ contract BasicAssetToken is IBasicAssetTokenFull, Ownable {
     }
 
     /// @param _owner The address that's balance is being requested
-    /// @return The balance of `_owner` at the current block
+    /// @return The balance of `_owner` now (at the current index)
     function balanceOf(address _owner) public view returns (uint256 balance) {
         return supply.balanceOfNow(_owner);
     }
@@ -289,7 +289,7 @@ contract BasicAssetToken is IBasicAssetTokenFull, Ownable {
     }
 
      /// @dev This function makes it easy to get the total number of tokens
-    /// @return The total number of tokens
+    /// @return The total number of tokens now (at current index)
     function totalSupply() public view returns (uint) {
         return supply.totalSupplyNow();
     }
@@ -356,19 +356,19 @@ contract BasicAssetToken is IBasicAssetTokenFull, Ownable {
 // Query balance and totalSupply in History
 ////////////////
 
-    /// @dev Queries the balance of `_owner` at a specific `_blockNumber`
+    /// @dev Queries the balance of `_owner` at `_specificTransfersAndMintsIndex`
     /// @param _owner The address from which the balance will be retrieved
-    /// @param _blockNumber The block number when the balance is queried
-    /// @return The balance at `_blockNumber`
-    function balanceOfAt(address _owner, uint _blockNumber) public view returns (uint256) {
-        return supply.balanceOfAt(_owner, _blockNumber);
+    /// @param _specificTransfersAndMintsIndex The balance at index
+    /// @return The balance at `_specificTransfersAndMintsIndex`
+    function balanceOfAt(address _owner, uint _specificTransfersAndMintsIndex) public view returns (uint256) {
+        return supply.balanceOfAt(_owner, _specificTransfersAndMintsIndex);
     }
 
-    /// @notice Total amount of tokens at a specific `_blockNumber`.
-    /// @param _blockNumber The block number when the totalSupply is queried
-    /// @return The total amount of tokens at `_blockNumber`
-    function totalSupplyAt(uint _blockNumber) public view returns(uint) {
-        return supply.totalSupplyAt(_blockNumber);
+    /// @notice Total amount of tokens at `_specificTransfersAndMintsIndex`.
+    /// @param _specificTransfersAndMintsIndex The totalSupply at index
+    /// @return The total amount of tokens at `_specificTransfersAndMintsIndex`
+    function totalSupplyAt(uint _specificTransfersAndMintsIndex) public view returns(uint) {
+        return supply.totalSupplyAt(_specificTransfersAndMintsIndex);
     }
 
 ////////////////
