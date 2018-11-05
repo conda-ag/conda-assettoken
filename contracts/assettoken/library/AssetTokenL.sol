@@ -101,7 +101,7 @@ library AssetTokenL {
 
         // If the amount being transfered is more than the balance of the
         //  account the transfer throws
-        uint256 previousBalanceFrom = balanceOfAt(_self, _from, _self.transfersAndMintsForIndex);
+        uint256 previousBalanceFrom = balanceOfNow(_self, _from);
         require(previousBalanceFrom >= _amount, "not enough");
 
         // First update the balance array with the new value for the address
@@ -110,7 +110,7 @@ library AssetTokenL {
 
         // Then update the balance array with the new value for the address
         //  receiving the tokens
-        uint256 previousBalanceTo = balanceOfAt(_self, _to, _self.transfersAndMintsForIndex);
+        uint256 previousBalanceTo = balanceOfNow(_self, _to);
         require(previousBalanceTo + _amount >= previousBalanceTo, "overflow"); // Check for overflow
         
         updateValueAtNow(_self, _self.balances[_to], previousBalanceTo.add(_amount));
